@@ -1,7 +1,7 @@
 Please carefully read completely and internalized your operating instructions in the attached/pasted text.
 Now, please meticulously plan to create a complete, fully functioning, production-ready and enterprise-grade polished website that is a clone of `https://veloxposretail.base44.app/` (latter needs to login `https://veloxposretail.base44.app/login` using ID `sepnetflix2023@outlook.com` and password `$Abcd1234`). There are also skills in the repo included `skills/` folder that may be relevant and helpful (refer to repo included `skills/skills-catalog.md` to find relevant skills for help in building an awesome clone of `https://veloxposretail.base44.app/`)
 
-Consider using the included skills `skills/replicate-web-app/SKILL.md` , `skills/web-application-engineering/SKILL.md` , `skills/web-application/SKILL.md` , `skills/clone-app-pat-pro`, `skills/agent-browser` and `skills/tdd`.
+Consider using the repo included skills `skills/replicate-web-app/SKILL.md` , `skills/web-application-engineering/SKILL.md` , `skills/web-application/SKILL.md` , `skills/clone-app-pat-pro`, `skills/agent-browser` , `docs/neo-crm_SKILL.md` and `skills/tdd`.
 
 Do not run your default `init-fullstack.sh` to initialize the new codebase, `git clone https://github.com/nordeim/web-retail-pos.git` and use the cloned `web-retail-pos/` folder as the root of your new folder. Use the cloned repo folder for scaffolding purposes - customize and extend it as necessary. List and read the repo included `.md` markdown files, particularly `docs/Tailwind-V4-Validation-Report.md` before you begin planning to build the complete codebase for a complete, fully functioning, production-ready and enterprise-grade polished website that is a clone of `https://veloxposretail.base44.app/`
 
