@@ -8,10 +8,9 @@
 // ---------------------------------------------------------------------------
 
 import * as React from "react";
-import { Eye, Mail, ReceiptText, Search } from "lucide-react";
+import { Eye, Mail, Receipt, ReceiptText, Search } from "lucide-react";
 
 import { MethodPill, PageHeading, StatusPill } from "@/components/pos/shared";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -58,12 +57,19 @@ export function SalesView() {
   // V6/F4: the row's "Enviar ticket" — the reference emails via its platform
   // API; the clone's local-first equivalent opens the operator's mail client
   // with the complete ticket pre-filled (no SMTP channel — disclosed).
+  // V8/F3: the reference prompts for the destination ("Enviar ticket a:")
+  // before sending through its platform's SMTP (live-measured XHR to
+  // Core/SendEmail). The clone's honest equivalent hands the PRE-ADDRESSED
+  // ticket to the operator's mail client; a cancelled prompt is a no-op,
+  // exactly like the reference.
   const sendByEmail = async (sale: Sale) => {
+    const to = window.prompt("Enviar ticket a:");
+    if (!to) return;
     try {
       const fresh = await apiGet<Sale>(`/api/sales/${sale.id}`);
-      window.location.href = buildTicketMailto(fresh);
+      window.location.href = buildTicketMailto(fresh, to.trim());
     } catch {
-      window.location.href = buildTicketMailto(sale);
+      window.location.href = buildTicketMailto(sale, to.trim());
     }
   };
 
@@ -175,80 +181,83 @@ export function SalesView() {
 function SaleDetailDialog({ sale, onClose }: { sale: Sale | null; onClose: () => void }) {
   return (
     <Dialog open={sale !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md border-[#262a36] bg-[#12141f] text-slate-100">
+      <DialogContent className="max-w-md border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
+          {/* V8/F2: the reference's title icon — lucide-receipt, indigo. */}
           <DialogTitle className="flex items-center gap-2" data-testid="sale-detail-title">
-            <ReceiptText className="h-5 w-5 text-violet-400" />
+            <Receipt className="h-5 w-5 text-indigo-500" />
             {sale ? `Ticket ${sale.ticketNo}` : ""}
           </DialogTitle>
         </DialogHeader>
         {sale ? (
           <div className="space-y-4 text-sm">
-            <dl className="space-y-2 text-slate-400">
-              <div className="flex justify-between gap-3">
-                <dt>Fecha:</dt>
-                <dd className="text-slate-200">
+            {/* V8/F2: the reference's meta block is a 2×2 GRID of stacked
+                label/value cells (live-measured: Fecha/Cajero share a row,
+                Método/Caja the next; label slate-500, value font-medium). */}
+            <dl className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <dt className="text-slate-500">Fecha:</dt>
+                <dd className="font-medium">
                   {formatMediumSpanish(new Date(sale.createdAt))}
                 </dd>
               </div>
-              <div className="flex justify-between gap-3">
-                <dt>Cajero:</dt>
-                <dd className="text-slate-200">{sale.cashierName}</dd>
+              <div>
+                <dt className="text-slate-500">Cajero:</dt>
+                <dd className="font-medium">{sale.cashierName}</dd>
               </div>
-              <div className="flex justify-between gap-3">
-                <dt>Método:</dt>
-                <dd className="text-slate-200">
+              <div>
+                <dt className="text-slate-500">Método:</dt>
+                <dd className="font-medium">
                   {sale.method === "tarjeta" ? "Tarjeta" : "Efectivo"}
                 </dd>
               </div>
-              <div className="flex justify-between gap-3">
-                <dt>Caja:</dt>
-                <dd className="text-slate-200">{sale.registerName || "—"}</dd>
+              <div>
+                <dt className="text-slate-500">Caja:</dt>
+                <dd className="font-medium">{sale.registerName || "—"}</dd>
               </div>
               {sale.clientName ? (
-                <div className="flex justify-between gap-3">
-                  <dt>Cliente:</dt>
-                  <dd className="text-slate-200">{sale.clientName}</dd>
+                <div>
+                  <dt className="text-slate-500">Cliente:</dt>
+                  <dd className="font-medium">{sale.clientName}</dd>
                 </div>
               ) : null}
             </dl>
 
-            <ul className="space-y-2 border-t border-[#1e2235] pt-3" data-testid="sale-detail-items">
+            {/* V8/F2: the reference's items block — "{qty}x {name}" plain
+                spans + font-medium prices over the LIGHT slate-100 hairline
+                (its own divider choice inside the dark modal — measured). */}
+            <ul className="space-y-2 border-t border-slate-100 pt-3" data-testid="sale-detail-items">
               {sale.items.map((item) => (
-                <li key={item.id} className="flex items-baseline justify-between gap-3">
-                  <span className="text-slate-200">
-                    <strong>{item.qty}</strong> × {item.name}
+                <li key={item.id} className="flex justify-between text-sm">
+                  <span>
+                    {item.qty}x {item.name}
                   </span>
-                  <span className="font-semibold">{formatMoney(item.lineTotal)}</span>
+                  <span className="font-medium">{formatMoney(item.lineTotal)}</span>
                 </li>
               ))}
             </ul>
 
-            <dl className="space-y-1 border-t border-[#1e2235] pt-3">
-              <div className="flex justify-between text-slate-400">
+            {/* V8/F2: totals over the slate-200 hairline; the Total row is
+                the reference's text-lg font-bold closer. Its own slate-800
+                color is unreadable on this surface (contrast ≈1.4:1,
+                VLM-verified) — a readable light tone ships instead
+                (SD-18, the aspect-true-preview posture). */}
+            <dl className="space-y-1 border-t border-slate-200 pt-3 text-sm">
+              <div className="flex justify-between text-slate-500">
                 <dt>Subtotal</dt>
                 <dd>{formatMoney(sale.subtotal)}</dd>
               </div>
-              <div className="flex justify-between text-slate-400">
+              <div className="flex justify-between text-slate-500">
                 <dt>IVA</dt>
                 <dd>{formatMoney(sale.tax)}</dd>
               </div>
-              <div className="flex justify-between text-base font-bold text-slate-100">
+              <div className="flex justify-between text-lg font-bold text-slate-100">
                 <dt>Total</dt>
                 <dd data-testid="sale-detail-total">{formatMoney(sale.total)}</dd>
               </div>
             </dl>
           </div>
         ) : null}
-        <div className="flex justify-end">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="border-[#262a36] bg-transparent text-slate-300 hover:bg-white/5 hover:text-white"
-          >
-            Close
-          </Button>
-        </div>
       </DialogContent>
     </Dialog>
   );

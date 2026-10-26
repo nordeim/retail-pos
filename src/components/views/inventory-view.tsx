@@ -227,7 +227,7 @@ export function InventoryView() {
       ) : null}
 
       <Dialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
-        <DialogContent className="max-w-sm border-[#262a36] bg-[#12141f] text-slate-100">
+        <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
           <DialogHeader>
             <DialogTitle>Eliminar producto</DialogTitle>
           </DialogHeader>
@@ -326,7 +326,7 @@ function ProductDialog({
 
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto border-[#262a36] bg-[#12141f] text-slate-100">
+      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           <DialogTitle>{product ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
         </DialogHeader>
@@ -366,7 +366,7 @@ function ProductDialog({
               >
                   <SelectValue placeholder="Seleccionar" />
                 </SelectTrigger>
-                <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
+                <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
                   <SelectItem value="none">Sin categoría</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
@@ -454,7 +454,7 @@ function ProductDialog({
                 <SelectTrigger className="mt-1.5 w-full" data-testid="product-unit-select">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
+                <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
                   {UNITS.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option}

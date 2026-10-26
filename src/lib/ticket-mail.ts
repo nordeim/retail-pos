@@ -36,9 +36,12 @@ export function ticketEmailBody(sale: Sale): string {
   return lines.join("\n");
 }
 
-/** Builds the mailto: URL the row action navigates to. */
-export function buildTicketMailto(sale: Sale): string {
+/** Builds the mailto: URL the row action navigates to. V8/F3: the
+ *  reference prompts "Enviar ticket a:" before sending through its platform
+ *  SMTP; the clone asks the same question and hands the PRE-ADDRESSED
+ *  ticket to the operator's mail client (no SMTP channel — SD-19). */
+export function buildTicketMailto(sale: Sale, to?: string): string {
   const subject = encodeURIComponent(`Ticket ${sale.ticketNo}`);
   const body = encodeURIComponent(ticketEmailBody(sale));
-  return `mailto:?subject=${subject}&body=${body}`;
+  return `mailto:${to ?? ""}?subject=${subject}&body=${body}`;
 }

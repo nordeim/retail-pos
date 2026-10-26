@@ -201,7 +201,7 @@ export function RegistersView() {
       ) : null}
 
       <Dialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
-        <DialogContent className="max-w-sm border-[#262a36] bg-[#12141f] text-slate-100">
+        <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
           <DialogHeader>
             <DialogTitle>Eliminar caja</DialogTitle>
           </DialogHeader>
@@ -261,7 +261,7 @@ function NewRegisterDialog({
 
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-w-sm border-[#262a36] bg-[#12141f] text-slate-100">
+      <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           <DialogTitle>Nueva Caja</DialogTitle>
         </DialogHeader>
@@ -352,7 +352,7 @@ function OpenShiftDialog({
 
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-w-sm border-[#262a36] bg-[#12141f] text-slate-100">
+      <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           <DialogTitle>Abrir Turno — {register.name}</DialogTitle>
         </DialogHeader>
@@ -363,7 +363,7 @@ function OpenShiftDialog({
               <SelectTrigger className="mt-1.5 w-full bg-[#0d0f1a]" data-testid="shift-cashier-select">
                 <SelectValue placeholder="Seleccionar cajero" />
               </SelectTrigger>
-              <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
+              <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
                 {cashiers.map((cashier) => (
                   <SelectItem key={cashier.id} value={cashier.id}>
                     {cashier.name}
@@ -459,7 +459,7 @@ function CloseShiftDialog({
 
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-w-sm border-[#262a36] bg-[#12141f] text-slate-100">
+      <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           <DialogTitle>Cerrar Turno — {register.name}</DialogTitle>
         </DialogHeader>

@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.2.0
+version: 1.3.0
 last_updated: "2026-10-26"
 tags:
   - pos
@@ -25,8 +25,8 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v7 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 324/324 unit · 98/98 e2e**. Evidence labels:
+> template), validated against the codebase at the v8 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 342/342 unit · 105/105 e2e**. Evidence labels:
 > **Verified** (executed here), **Reasoned** (inference), **Assumed**
 > (decision).
 
@@ -68,8 +68,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 324 tests / 23 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 98 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 342 tests / 24 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 105 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -99,8 +99,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 324/324
-bun run test:e2e           # playwright: 98/98 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 342/342
+bun run test:e2e           # playwright: 105/105 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -202,6 +202,41 @@ The v7 contract additions (AGENTS.md 17-18, all live-measured):
 - The Ajustes logo block renders the pending/stored logo at
   `h-[56px] w-[56px]` (NOT `h-14` — the v5 swatch pin forbids that token
   in settings-view) + a Quitar that PATCHes `logoUrl: null`.
+
+The v8 contract additions (AGENTS.md 19-20, all live-measured):
+- The auth DEEP-LINK round-trip: a logged-out app-route hit bounces to
+  `/login?from_url=<encoded path+search>` and login RETURNS there via
+  `safeReturnTo(raw, origin)` (`src/lib/router.ts`) — same-origin
+  absolute URLs and site-relative paths pass; foreign origins,
+  protocol-relative URLs, and javascript:/data: fail closed to "/";
+  "/login" maps to "/". The param is an open-redirect vector if trusted
+  blindly — never redirect to a raw URL value. The reference's gates on
+  404s and /signup are base44 platform artifacts (its token lives in
+  localStorage; the clone's httpOnly cookie is strictly stronger).
+- Dialog chrome is TWO measured surfaces, not one: `DialogContent`
+  rides `border-[#262a36] bg-[#0f121a] text-[#e7e9ef]`; `SelectContent`
+  (dropdown panels) ride `bg-[#161922] text-[#e7e9ef]`.
+- The Ventas ticket modal is the reference's layout: a
+  `grid grid-cols-2 gap-3 text-sm` meta block of STACKED
+  `dt.text-slate-500` + `dd.font-medium` cells (Fecha/Cajero row 1,
+  Método/Caja row 2), `{qty}x {name}` item lines (plain span + a
+  `font-medium` price) over `border-t border-slate-100 pt-3`, totals
+  over `border-t border-slate-200 pt-3` with `text-slate-500` rows and
+  a `text-lg font-bold` Total (the reference's own slate-800 Total is
+  unreadable at ≈1.4:1 — a readable tone ships, SD-18), the `Receipt`
+  `text-indigo-500` title icon, and NO footer Close button (the X
+  alone; its accessible name is "Close" via shadcn's sr-only span —
+  e2e pins it by its ≤20px width).
+- The mail action PROMPTS `window.prompt("Enviar ticket a:")` before
+  anything else — cancel is a no-op — then opens
+  `mailto:<entered>?subject=&body=` via `buildTicketMailto(sale, to)`.
+  e2e lesson: a synchronous prompt BLOCKS the Playwright click action —
+  arm `page.once("dialog", …)` (accept/dismiss) BEFORE the click so the
+  handler runs concurrently and unblocks it.
+- The Ajustes colors pair each `type=color` swatch with an EDITABLE hex
+  `<Input>` (h-9, same form field, two-way; the swatch shows #000000
+  while the typed value is mid-edit; the `hexColor` schema regex stays
+  the server-side gate — invalid hex 400s to a toast on save).
 
 ## §5 Component Architecture & Patterns
 
@@ -378,8 +413,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 324/324 vitest
-bun run test:e2e      # 98/98 playwright (production posture)
+bun run test          # 342/342 vitest
+bun run test:e2e      # 105/105 playwright (production posture)
 ```
 
 Verification beyond the gates:

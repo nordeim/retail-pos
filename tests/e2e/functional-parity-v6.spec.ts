@@ -100,8 +100,15 @@ test.describe("functional parity (v6)", () => {
     // window.location is unforgeable in Chromium, so the mailto: itself
     // can't be captured here — the builder string is unit-pinned. The e2e
     // proof of wiring: the handler's fresh-fetch fires (and the external
-    // protocol navigation is a harmless no-op in headless).
+    // protocol navigation is a harmless no-op in headless). V8/F3: the
+    // handler now prompts "Enviar ticket a:" FIRST (the reference's
+    // interaction) — the prompt BLOCKS the click, so it must be accepted
+    // concurrently for the fetch to fire.
     const saleRequest = page.waitForRequest(/\/api\/sales\/[^/]+$/, { timeout: 5000 });
+    page.once("dialog", (dialogInfo) => {
+      expect(dialogInfo.message()).toBe("Enviar ticket a:");
+      void dialogInfo.accept("cliente@tienda.mx");
+    });
     await firstMail.click();
     const request = await saleRequest;
     expect(request.method()).toBe("GET");
@@ -131,7 +138,11 @@ test.describe("functional parity (v6)", () => {
 
   test("B9: the document head ships the reference's meta suite", async ({ page }) => {
     await page.goto("/Dashboard");
-    await expect(page).toHaveTitle("VeloxPOS");
+    // V8 note: the TAB title is per-route since v7 ("Dashboard | VeloxPOS"
+    // — pinned by functional-parity-v7); this pin owns the STATIC head
+    // metas, which stay the root card on every route (single-page
+    // architecture, SD-14). The old static-title assertion was a latent
+    // race against the v7 title effect and is retired here.
     await expect(page.locator('link[rel="icon"]')).toHaveCount(1);
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", "VeloxPOS");
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(

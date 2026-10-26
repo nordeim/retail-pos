@@ -215,6 +215,35 @@ rules:
     Ajustes logo block renders the pending/stored `logoUrl` as a 56px
     preview (`h-[56px] w-[56px]` — NOT `h-14`, the v5 swatch pin forbids
     that token in settings-view) plus a Quitar that PATCHes null.
+19. The from_url round-trip (v8, live-measured): a logged-out hit on ANY
+    app route bounces to `/login?from_url=<encodeURIComponent(pathname +
+    search)>`, and a successful login returns the user to that route —
+    NEVER redirect blindly to a value that rode the URL:
+    `safeReturnTo(raw, origin)` in `src/lib/router.ts` is THE validator
+    (same-origin absolute URLs and site-relative paths pass; foreign
+    origins, protocol-relative URLs, and javascript:/data: fail closed to
+    "/"; "/login" maps to "/" so the param can never loop). The reference
+    also gates 404s and /signup behind login — NOT replicated (platform
+    artifacts; the clone's public 404/signup are superset behaviors,
+    SD-20). The reference's own token lives in localStorage; the clone's
+    httpOnly cookie stays.
+20. Dialog + modal contracts (v8, live-measured): every `DialogContent`
+    rides the measured chrome `border-[#262a36] bg-[#0f121a]
+    text-[#e7e9ef]`; every `SelectContent` (dropdown panel — a DIFFERENT
+    reference surface) rides `bg-[#161922] text-[#e7e9ef]`. The Ventas
+    ticket modal is the reference's layout: a `grid grid-cols-2 gap-3
+    text-sm` meta block of STACKED `dt.text-slate-500`/`dd.font-medium`
+    cells, items as `{qty}x {name}` + `font-medium` prices over
+    `border-slate-100`, totals over `border-slate-200` with `text-slate-500`
+    rows and a `text-lg font-bold` Total (the reference's own slate-800
+    Total color is unreadable — a readable tone ships, SD-18), title icon
+    `Receipt` `text-indigo-500`, and NO footer Close button (the X alone).
+    The mail action PROMPTS `window.prompt("Enviar ticket a:")` first —
+    cancel is a no-op — then opens `mailto:<entered>?subject=&body=`
+    (`buildTicketMailto(sale, to)`); there is no SMTP channel (SD-19).
+    The Ajustes colors pair each `type=color` swatch with an EDITABLE hex
+    `<Input>` bound to the same field (the swatch falls back to #000000
+    mid-edit; the `hexColor` schema regex is the server-side gate).
 
 ## The mobile drawer contract
 

@@ -68,7 +68,7 @@ test.describe("terminal sales", () => {
     await row.getByRole("button", { name: /Ver ticket/ }).click();
     await expect(page.getByTestId("sale-detail-title")).toContainText("Ticket V-");
     await expect(page.getByTestId("sale-detail-total")).toHaveText("$64.38");
-    await expect(page.getByTestId("sale-detail-items")).toContainText("3 × Coca-Cola 600ml");
+    await expect(page.getByTestId("sale-detail-items")).toContainText("3x Coca-Cola 600ml");
 
     // 8. Close the shift so later specs start from the closed baseline.
     await page.goto("/Registers");

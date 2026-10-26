@@ -433,3 +433,81 @@ Stage Summary:
   aspect-true 56px preview vs the reference's squashed 56×14; text
   inputs stay on the unobservable dialogs. Standing disclosures
   unchanged (in-memory limiter, no SMTP, donut palette, terminal grid).
+
+---
+Task ID: V8-FULL
+Agent: general-purpose (session V8, 2026-10-26)
+Task: Full remediation-plan-v8 cycle (audit → plan → TDD execute → ship →
+push) — the from_url deep-link round-trip + the measured dialog/modal
+sweep.
+
+Work Log:
+- Baseline at 4d1ac4c: lint 0 · tsc 0 · 324/324 unit · build ✓ · 98/98
+  e2e (the v7 close intact; the remote's only delta was session_8.md).
+- Audit: v7 source diff clean (all contracts hold); reference UNCHANGED
+  on every pinned surface (shell/card/tile/drawer/reports/charts/
+  searches/login-while-authenticated). NEW findings: the from_url
+  round-trip (F1 — logged-out deep routes bounce to
+  /login?from_url=<url> and RETURN there post-login; even 404s and
+  /signup gate, base44 artifacts, SD-20; the reference's token lives in
+  localStorage — the clone's httpOnly cookie is stronger, kept); the
+  ticket modal's measured layout (F2 — 2×2 stacked meta grid, {qty}x
+  lines, slate-100/200 dividers, 18px bold Total with the reference's
+  own unreadable slate-800 disclosed as SD-18, Receipt/indigo-500
+  title icon, no footer Close); the mail prompt (F3 — "Enviar ticket
+  a:" then platform SMTP; clone prompts + pre-addressed mailto:, SD-19);
+  the Ajustes hex inputs (F4 — editable Input vs the static span); the
+  dialog chrome (F5 — #0f121a/#e7e9ef vs #12141f/slate-100; F6 — the
+  dropdown panels are a THIRD surface, #161922).
+- Wrote docs/remediation-plan-v8.md (14-item ledger, SD-18..SD-22,
+  B1-B5 batches, F6/F7/F8 execution findings appended mid-stream).
+- TDD execution, all pins red first:
+  - B1: safeReturnTo(raw, origin) in router.ts (9-case matrix:
+    same-origin/relative pass; foreign/protocol-relative/javascript:/
+    data: fail closed to "/"; /login maps to "/"); the 401 gate carries
+    from_url (pathname+search encoded); login returns through the seam.
+  - B2: SaleDetailDialog rebuilt to the measured layout (grid meta,
+    {qty}x lines, light dividers, text-lg bold Total, Receipt indigo,
+    footer Close removed); 10 DialogContent sites → bg-[#0f121a]
+    text-[#e7e9ef]; 5 SelectContent sites → bg-[#161922].
+  - B3: window.prompt("Enviar ticket a:") + buildTicketMailto(sale, to)
+    (cancel = no-op; back-compat without a recipient).
+  - B4: the Personalización hex Inputs (two-way with the swatch; the
+    hexColor schema regex is the server gate).
+  - B5 docs: AGENTS.md 19-20; CLAUDE.md 342/105 + the auth round-trip
+    note; README badge + Ventas/Auth rows; PAD v1.6.0 + ADR-018 + §8;
+    SKILL v1.3.0 (counts + the v8 block); session_9.md; this entry.
+- Tests: tests/functional-parity-v8.test.ts (18 unit pins) +
+  tests/e2e/functional-parity-v8.spec.ts (7 e2e pins: the bounce, the
+  return, the open-redirect guard, the modal geometry incl. the 2×2
+  grid + 18px/700 Total + the one-≤20px-Close rule, the prompt dialog
+  (page.once + concurrent accept/dismiss — a sync prompt BLOCKS the
+  click), the hex two-way, the computed #0f121a).
+- F7 legacy-pin alignment (contracts changed deliberately, pins updated
+  not weakened): terminal-sales "3 × " → "3x "; v6 B5 mail pin arms the
+  prompt accept; v6 B9's static-title assertion retired (a latent race
+  vs the v7 title effect — failed on a warm-server isolated run; the
+  v7 spec owns titles).
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 342/342 · e2e 105/105.
+- Ship: 18 screenshots regenerated; VLM spot-checks (ajustes hex pairs,
+  cobrar panel) PASS; live parity probes on every changed surface
+  (/Cashiers deep link → login → return with title; modal grid/lines/
+  Total/chrome; hex two-way; prompt + cancel no-op).
+
+Stage Summary:
+- v8 closed the auth deep-link gap (the reference's from_url round-trip
+  with a fail-closed validator), rebuilt the ticket modal to its
+  measured layout, added the mail recipient prompt with the
+  pre-addressed mailto:, shipped the Ajustes hex inputs, and measured
+  the dialog/dropdown chrome family (three surfaces: #0f121a dialogs,
+  #161922 dropdowns, #e7e9ef text).
+- Probe lessons recorded: dialogs and dropdown panels are DIFFERENT
+  reference surfaces (measure them separately); a synchronous
+  window.prompt blocks a Playwright click until handled concurrently;
+  shadcn's X close carries an sr-only "Close" name (pin by width);
+  legacy pins can carry latent races (B9 passed only while the first
+  poll preceded the v7 title effect).
+- Known-open (disclosed): SD-18 (readable Total tone), SD-19 (mailto:
+  transport), SD-20 (public 404/signup superset). Standing disclosures
+  unchanged (SD-14 og:url/canonical, aspect-true preview, unobservable
+  dialog inputs, in-memory limiter, donut palette, terminal grid).

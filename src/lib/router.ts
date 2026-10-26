@@ -103,6 +103,36 @@ export function documentTitleForPath(pathname: string): string {
   return `${slugCased || "VeloxPOS"} | VeloxPOS`;
 }
 
+/**
+ * The post-login destination for the 401 gate's `from_url` round-trip
+ * (V8/F1 — the reference bounces a logged-out deep route to
+ * `/login?from_url=<url>` and RETURNS there after sign-in; live-measured:
+ * /Dashboard → login → /Dashboard). SECURITY: the value rides the URL, so
+ * it is an open-redirect vector if trusted blindly — this seam accepts
+ * only same-origin absolute URLs and site-relative paths, and fails closed
+ * to "/" for everything else (foreign origins, protocol-relative URLs,
+ * javascript:/data: schemes). "/login" itself maps to "/" so a stale
+ * from_url can never loop the login page.
+ */
+export function safeReturnTo(
+  raw: string | null | undefined,
+  origin: string,
+): string {
+  if (!raw) return "/";
+  let parsed: URL;
+  try {
+    parsed = new URL(raw, origin);
+  } catch {
+    return "/";
+  }
+  // javascript:/data: parse with a null or foreign origin — the origin
+  // equality check rejects every non-http(s) scheme and every other host.
+  if (parsed.origin !== origin) return "/";
+  const target = parsed.pathname + parsed.search;
+  if (target === "/login" || target.startsWith("/login?")) return "/";
+  return target;
+}
+
 /** The page heading each view renders (reference copy). */
 export const VIEW_TITLES: Record<ViewId, { title: string; subtitle: string }> = {
   terminal: { title: "Terminal", subtitle: "Punto de venta" },

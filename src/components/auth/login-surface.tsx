@@ -19,6 +19,7 @@ import { Lock, Mail, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiSend, ApiError } from "@/lib/api";
+import { safeReturnTo } from "@/lib/router";
 
 type Screen = "login" | "forgot" | "sent" | "reset";
 
@@ -44,8 +45,12 @@ export function LoginSurface() {
     setError("");
     try {
       await apiSend("POST", "/api/auth/login", { email, password });
+      // V8/F1: return to the deep-linked route the 401 gate came from
+      // (/login?from_url=… — the reference's round-trip). safeReturnTo
+      // fails closed to "/" for anything not same-origin.
+      const fromUrl = new URLSearchParams(window.location.search).get("from_url");
+      window.location.replace(safeReturnTo(fromUrl, window.location.origin));
       // Full reload — the shell boots fresh with the session cookie.
-      window.location.replace("/");
     } catch (err: unknown) {
       setError(err instanceof ApiError ? err.message : "No se pudo iniciar sesión.");
       setBusy(false);

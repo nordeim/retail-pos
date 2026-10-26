@@ -1,6 +1,6 @@
 # VeloxPOS — Punto de venta, your store
 
-![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-324%20%2B%2098%20green-22c55e)
+![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-342%20%2B%20105%20green-22c55e)
 
 **VeloxPOS** is a production-ready, self-hosted clone (functional superset) of
 the [`veloxposretail.base44.app`](https://veloxposretail.base44.app/) point-of-sale
@@ -34,13 +34,13 @@ and pinned by tests rather than left to luck.
 | 🖥️ Terminal de venta | Product grid with search + category chips, live ticket (qty ±), COBRAR with cash-change math or card, stock decrements atomically |
 | 📊 Dashboard | Sales today, transactions, product count, low-stock count, 7-day sales chart, category donut, low-stock alerts |
 | 📦 Inventario | Full product CRUD with barcode, category, price/cost, stock/min-stock, per-product IVA %, unit, active flag; search + category filters |
-| 🧾 Historial de Ventas | Receipt list + per-ticket detail (items, subtotal/IVA/total, cashier, register), search by ticket/client/cashier |
+| 🧾 Historial de Ventas | Receipt list + per-ticket detail (2×2 meta card, items, subtotal/IVA/total), search by ticket/client/cashier; email a ticket to any address (the mail client opens pre-addressed) |
 | 🗄️ Cajas | Register cards with open/close shift lifecycle, opening float, closing count, delete guard while a shift is open |
 | 👥 Cajeros | Cashier CRUD + recent-shifts table (the reference ships this page with no create path — a documented superset gap-fill) |
 | 📈 Reportes | 7/14/30/90-day windows, revenue/transactions/average-ticket KPIs, daily series, per-method breakdown |
 | ⚙️ Ajustes | Store identity, live accent-color theming, ticket footer, card-payment provider, category management |
 | 📱 Mobile navigation | A working hamburger drawer (288px, 8 links, Esc/backdrop/route close, scroll lock) — the reference has none |
-| 🔐 Auth | Email/password with scrypt hashing, HMAC session cookies, rate limiting, register→verify→reset flows |
+| 🔐 Auth | Email/password with scrypt hashing, HMAC session cookies, rate limiting, register→verify→reset flows, deep-link return (`/login?from_url=…`) |
 
 ## Architecture
 
@@ -69,7 +69,7 @@ flowchart TB
 | API | Next route handlers + Zod 4 | Strip-mode validation, typed error mapper |
 | DB | Prisma 6 + SQLite | Zero-ops persistence at `<repo>/db/custom.db` |
 | Charts | Hand-rolled SVG | Zero dependencies, deterministic, pixel-controlled |
-| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (324 + 98 green) |
+| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (342 + 105 green) |
 | Runtime | Bun 1.3 | Scripts, seed, and the standalone server |
 
 ## Quick start

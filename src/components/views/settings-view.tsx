@@ -255,7 +255,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
                   <SelectTrigger className="mt-1.5 w-full" data-testid="settings-currency">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
+                  <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
                     {CURRENCIES.map((currency) => (
                       <SelectItem key={currency} value={currency}>
                         {currency}
@@ -272,33 +272,50 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
           title="Personalización"
           icon={<Palette className="h-4.5 w-4.5 text-violet-400" />}
         >
-          <div className="grid gap-4 sm:grid-cols-2">
+          {/* V8/F4: the reference's Personalización grid (grid-cols-1 →
+              md:grid-cols-2) with each color as a swatch PAIRED with an
+              editable hex Input (live-measured: "w-10 h-10 rounded-lg
+              cursor-pointer" + the shadcn h-9 rounded-xl text field,
+              same value, two-way). */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="settings-primary" className="text-slate-200">Color primario</Label>
-              <div className="mt-1.5 flex items-center gap-3">
+              <div className="flex items-center gap-3 mt-1">
                 <input
                   id="settings-primary"
                   type="color"
-                  value={form.primaryColor}
+                  value={/^#[0-9a-fA-F]{6}$/.test(form.primaryColor) ? form.primaryColor : "#000000"}
                   onChange={(event) => set("primaryColor", event.target.value)}
                   data-testid="settings-primary-color"
                   className="h-10 w-10 cursor-pointer rounded-lg"
                 />
-                <span className="text-sm text-slate-400">{form.primaryColor}</span>
+                <Input
+                  aria-label="Color primario (hex)"
+                  value={form.primaryColor}
+                  onChange={(event) => set("primaryColor", event.target.value)}
+                  data-testid="settings-primary-hex"
+                  className="h-9 w-full"
+                />
               </div>
             </div>
             <div>
               <Label htmlFor="settings-secondary" className="text-slate-200">Color secundario</Label>
-              <div className="mt-1.5 flex items-center gap-3">
+              <div className="flex items-center gap-3 mt-1">
                 <input
                   id="settings-secondary"
                   type="color"
-                  value={form.secondaryColor}
+                  value={/^#[0-9a-fA-F]{6}$/.test(form.secondaryColor) ? form.secondaryColor : "#000000"}
                   onChange={(event) => set("secondaryColor", event.target.value)}
                   data-testid="settings-secondary-color"
                   className="h-10 w-10 cursor-pointer rounded-lg"
                 />
-                <span className="text-sm text-slate-400">{form.secondaryColor}</span>
+                <Input
+                  aria-label="Color secundario (hex)"
+                  value={form.secondaryColor}
+                  onChange={(event) => set("secondaryColor", event.target.value)}
+                  data-testid="settings-secondary-hex"
+                  className="h-9 w-full"
+                />
               </div>
             </div>
           </div>
@@ -334,7 +351,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
               <SelectTrigger className="mt-1.5 w-full max-w-xs" data-testid="settings-card-provider">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
+              <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
                 {CARD_PROVIDERS.map((provider) => (
                   <SelectItem key={provider} value={provider}>
                     {provider}

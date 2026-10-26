@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (324 tests / 23 files)
-bun run test:e2e       # playwright e2e layer (98 specs, boots standalone :3100)
+bun run test           # vitest unit layer (342 tests / 24 files)
+bun run test:e2e       # playwright e2e layer (105 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -124,6 +124,13 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   `thinLabelIndices`; Y labels are integers ($ on Reports). The TAB TITLE
   is per-route (`DOCUMENT_TITLES` in `src/lib/router.ts`; the 404 slug
   title rides the guarded observer in `src/app/not-found-title.tsx`).
+- The auth round-trip (v8): a logged-out app route bounces to
+  `/login?from_url=…` and login RETURNS there through
+  `safeReturnTo(raw, origin)` (`src/lib/router.ts` — same-origin only,
+  fails closed to "/"). Dialogs ride `bg-[#0f121a] text-[#e7e9ef]`;
+  dropdown panels `bg-[#161922]`; the ticket modal is the reference's
+  2×2 meta grid + `{qty}x` lines; the mail action prompts for the
+  recipient; the Ajustes colors carry editable hex inputs.
 - Table contract (v5, live-measured): headers `text-xs font-semibold
   text-slate-500 uppercase` per-column-aligned; rows ride
   `border-b border-slate-50` + `hover:bg-white/40`; body cells `text-sm

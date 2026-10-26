@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.5.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.6.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -61,6 +61,19 @@
 > pending/stored render + a Quitar that PATCHes null — the v6 plan had
 > promised a preview that never shipped); ADR-017 added.
 
+> v1.6.0 (2026-10-26): the remediation-plan-v8 execution — the auth
+> deep-link round-trip + the measured dialog/modal sweep: the 401 gate
+> carries `from_url` and login returns to the deep-linked route through
+> `safeReturnTo` (same-origin only, fail-closed — the reference's
+> round-trip, live-measured); the Ventas ticket modal rebuilt to the
+> reference's layout (2×2 stacked meta grid, `{qty}x` lines, light slate
+> dividers, the 18px bold Total — its own slate-800 Total color disclosed
+> as unreadable, SD-18); the mail action prompts "Enviar ticket a:"
+> before the pre-addressed mailto: (SD-19); the Ajustes colors pair each
+> swatch with an editable hex input; and every dialog measured to the
+> reference's `#0f121a`/`#e7e9ef` chrome with dropdown panels at
+> `#161922`; ADR-018 added.
+
 ## Table of Contents
 
 1. System Overview & Decisions
@@ -115,6 +128,7 @@ lowest-risk path. **Verified.**
 | ADR-015 | The v5 view-internals contract set: the flush shell gutter (`lg:ml-[220px]`/`[68px]` — the view's own padding provides the 24px gutter, H1 at x=244); the Terminal as the ONE full-bleed view (`lg:h-screen` two-pane, ticket panel as the `rounded-none border-l bg-[#0d0f1a]` RAIL with the transient "Agregado" banner and ShoppingBag COBRAR); the reference table system (slate-50 hairlines, `hover:bg-white/40`, `text-slate-600` body, mono indigo ticket cells, per-column header alignment, the dense cajeros shifts variant); the two-shape StatusPill (6px soft table badges `green-100/green-700` + `slate-100/slate-500`, vs the register-card `rounded-full` pill); 12px-radius transparent form controls; the reference's neutral `--secondary` token (`33 37 49`); tinted reports chips (15%/30%/400-tone, NOT gradient) + the Reports-only bright H1 (`tone="bright"`) | Accepted — Verified (277 unit + 83 e2e, live probe parity) |
 | ADR-016 | The v6 functional-superset contract set: dialog footer buttons are the reference's 42px glass pair, and the cva Button ships a dedicated EMPTY `glass` variant because the default/outline variants' bg/text utilities clobber the flat `.glass-button` fill (F6); product photos + the store logo persist as data URLs (canvas-resized ≤512px, JPEG q0.85, 300KB guard, 600k schema ceiling) with NO infrastructure dependency; the Unidad enum is the reference's six + Servicio; all mutation failures toast (`void err` forbidden); the Ventas mail row action opens a `mailto:` carrying the full ticket (no SMTP — disclosed); the document head mirrors the reference (title "VeloxPOS", its description, OG/Twitter cards, appleWebApp, a WORKING manifest, the app-router icon.png convention, the generated 1200x630 og-image); the UI primitives carry zero dead study-app classes (the checked Switch fills with the live-measured `#7f62f4`) | Accepted — Verified (311 unit + 91 e2e, live probe parity) |
 | ADR-017 | The v7 per-route title + data-lifecycle contract set: the document title is per-route (the reference's exact strings — root "VeloxPOS", "<View> | VeloxPOS" elsewhere, "Store Settings | VeloxPOS" for Ajustes, "Signup | VeloxPOS", and the title-cased route slug on 404s) via `DOCUMENT_TITLES`/`documentTitleForPath()` + the shell's post-ready effect + the signup server layout + the guarded MutationObserver on 404s (Next's client metadata manager re-applies the root title once after mount — the observer wins the last write); "Quitar" clears the stored image with `imageUrl: null` (schema `.nullable()`; an undefined key is dropped by JSON.stringify and skipped by `sentKeysPatch` — the v6 clear was a silent server no-op); a failed pick or picker-cancel never touches the stored value; the product-dialog numeric fields are `type="number"` with steps (the reference's own control type — spinners, role=spinbutton, native filtering); the Ajustes logo block renders the 56px pending/stored preview + a Quitar that PATCHes null | Accepted — Verified (324 unit + 98 e2e, live probe parity) |
+| ADR-018 | The v8 auth round-trip + measured dialog contract set: a logged-out hit on any app route bounces to `/login?from_url=<encoded current path>` and a successful login returns the user to that route through `safeReturnTo(raw, origin)` (same-origin absolute URLs and site-relative paths pass; foreign origins, protocol-relative URLs, and javascript:/data: fail closed to "/"; "/login" maps to "/" — the param is an open-redirect vector if trusted blindly; the reference's own gates on 404s and /signup are base44 platform artifacts, NOT replicated, SD-20); the Ventas ticket modal is the reference's measured layout (a `grid grid-cols-2 gap-3 text-sm` meta block of stacked `text-slate-500`/`font-medium` cells, `{qty}x {name}` item lines with `font-medium` prices over `border-slate-100`, totals over `border-slate-200` with `text-slate-500` rows and a `text-lg font-bold` Total, the `Receipt` `text-indigo-500` title icon, no footer Close button — the reference's own slate-800 Total color is an unreadable contrast bug, a readable tone ships, SD-18); the mail action prompts `window.prompt("Enviar ticket a:")` first (cancel = no-op) and the entered address rides `buildTicketMailto(sale, to)` (no SMTP channel — the mail client opens pre-addressed, SD-19); the Ajustes colors pair each swatch with an editable hex Input (the `hexColor` schema regex is the server gate); every `DialogContent` rides the measured `bg-[#0f121a] text-[#e7e9ef]` chrome and every `SelectContent` panel `bg-[#161922]` | Accepted — Verified (342 unit + 105 e2e, live probe parity) |
 
 ---
 
@@ -303,8 +317,8 @@ Two layers, two runners, disjoint file globs:
 
 | Layer | Runner | Scope | Count |
 |---|---|---|---|
-| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 324 tests / 23 files — Verified |
-| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 98 specs — Verified |
+| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 342 tests / 24 files — Verified |
+| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 105 specs — Verified |
 
 - **Unit seams**: money (the verified ticket math), ticket (V-ID shape),
   router (8-view map + aliases), date (es-MX formatters), validation

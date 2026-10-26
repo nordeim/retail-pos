@@ -127,7 +127,15 @@ export default function Home() {
       } catch (err: unknown) {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 401) {
-          window.location.replace("/login");
+          // V8/F1: the reference bounces a logged-out deep route to
+          // /login?from_url=<current-url> and returns there after sign-in
+          // (live-measured on /Dashboard and 404s). The login surface
+          // decodes it through safeReturnTo (same-origin only).
+          window.location.replace(
+            `/login?from_url=${encodeURIComponent(
+              window.location.pathname + window.location.search,
+            )}`,
+          );
           return;
         }
         setGateError(

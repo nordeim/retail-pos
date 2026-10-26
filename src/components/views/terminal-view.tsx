@@ -429,7 +429,7 @@ function PaymentDialog({
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md border-[#262a36] bg-[#12141f] text-slate-100">
+      <DialogContent className="max-w-md border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           <DialogTitle>Cobrar venta</DialogTitle>
         </DialogHeader>
