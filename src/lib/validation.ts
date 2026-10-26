@@ -141,8 +141,10 @@ export const productCreateSchema = z.object({
   unit: z.enum(UNITS).optional().default("Pieza"),
   // V6/F2: data-URL product photos (canvas-resized client-side to ~30-80KB;
   // see src/lib/image.ts). 600k chars ≈ a 450KB image — the client guard
-  // rejects anything past 300KB of source bytes anyway.
-  imageUrl: z.string().max(600_000).optional(),
+  // rejects anything past 300KB of source bytes anyway. V7/F1: NULLABLE —
+  // "Quitar" sends null (an undefined key is dropped by JSON.stringify and
+  // skipped by sentKeysPatch, so the old clear was a silent server no-op).
+  imageUrl: z.string().max(600_000).nullable().optional(),
   active: z.boolean().optional().default(true),
 });
 

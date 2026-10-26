@@ -19,7 +19,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Zap } from "lucide-react";
 import { apiGet, ApiError } from "@/lib/api";
 import { useAppStore, usePosStore, type AppUser, type LoadedKey } from "@/lib/store";
-import type { ViewId } from "@/lib/router";
+import { DOCUMENT_TITLES, type ViewId } from "@/lib/router";
 import { cn } from "@/lib/utils";
 
 import { TerminalView } from "@/components/views/terminal-view";
@@ -156,6 +156,15 @@ export default function Home() {
       document.documentElement.style.setProperty("--vx-secondary", secondaryColor);
     }
   }, [primaryColor, secondaryColor]);
+
+  // V7/M1: the tab title follows the active view — the reference titles
+  // every route ("Dashboard | VeloxPOS", "Inventory | VeloxPOS", …; only
+  // the root is the bare "VeloxPOS"). Applied once the shell is ready so
+  // /login (its own route, its own title) never flickers.
+  React.useEffect(() => {
+    if (status !== "ready") return;
+    document.title = DOCUMENT_TITLES[view] ?? "VeloxPOS";
+  }, [status, view]);
 
   if (status !== "ready") {
     return (

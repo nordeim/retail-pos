@@ -303,7 +303,10 @@ function ProductDialog({
         minStock: Number(minStock) || 0,
         ivaRate: Number(ivaRate) || 0,
         unit,
-        imageUrl: imageUrl === "" ? undefined : imageUrl,
+        // V7/F1: null (not undefined) when cleared — an undefined key is
+        // dropped by JSON.stringify and skipped by sentKeysPatch, so the
+        // old form left the stored image on the server forever.
+        imageUrl: imageUrl === "" ? null : imageUrl,
         active,
       };
       if (product) {
@@ -378,8 +381,12 @@ function ProductDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="product-price" className="text-slate-200">Precio de venta *</Label>
+              {/* V7/V2: type=number — the reference's own control type (its
+                  spinners render on hover; native keystroke filtering). */}
               <Input
                 id="product-price"
+                type="number"
+                step="0.01"
                 inputMode="decimal"
                 value={price}
                 onChange={(event) => setPrice(event.target.value)}
@@ -391,6 +398,8 @@ function ProductDialog({
               <Label htmlFor="product-cost" className="text-slate-200">Costo</Label>
               <Input
                 id="product-cost"
+                type="number"
+                step="0.01"
                 inputMode="decimal"
                 value={cost}
                 onChange={(event) => setCost(event.target.value)}
@@ -404,6 +413,8 @@ function ProductDialog({
               <Label htmlFor="product-stock" className="text-slate-200">Stock actual</Label>
               <Input
                 id="product-stock"
+                type="number"
+                step="1"
                 inputMode="numeric"
                 value={stock}
                 onChange={(event) => setStock(event.target.value)}
@@ -414,6 +425,8 @@ function ProductDialog({
               <Label htmlFor="product-min-stock" className="text-slate-200">Stock mínimo</Label>
               <Input
                 id="product-min-stock"
+                type="number"
+                step="1"
                 inputMode="numeric"
                 value={minStock}
                 onChange={(event) => setMinStock(event.target.value)}
@@ -427,6 +440,8 @@ function ProductDialog({
               <Label htmlFor="product-iva" className="text-slate-200">IVA (%)</Label>
               <Input
                 id="product-iva"
+                type="number"
+                step="1"
                 inputMode="numeric"
                 value={ivaRate}
                 onChange={(event) => setIvaRate(event.target.value)}
@@ -461,15 +476,16 @@ function ProductDialog({
               onChange={(event) => {
                 const file = event.target.files?.[0] ?? null;
                 setImageError("");
-                if (!file) {
-                  setImageUrl("");
-                  return;
-                }
+                // V7/F3: a bare return on picker-cancel — the old branch
+                // cleared the preview when a browser fired change with an
+                // empty FileList; only an explicit Quitar clears.
+                if (!file) return;
                 void fileToDataUrl(file).then((result) => {
                   if (result.ok) {
                     setImageUrl(result.dataUrl);
                   } else {
-                    setImageUrl("");
+                    // A failed pick leaves any previously stored image in
+                    // place — only the inline error changes (V7/F1).
                     setImageError(
                       result.reason === "too-large"
                         ? "La imagen supera 300 KB."

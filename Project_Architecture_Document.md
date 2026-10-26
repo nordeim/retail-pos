@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.4.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.5.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -47,6 +47,19 @@
 > the app-router icon convention + the generated og-image), and the total
 > sf-* token purge across the remaining UI primitives (switch, toast,
 > badge, card, skeleton, progress, checkbox, slider); ADR-016 added.
+>
+> v1.5.0 (2026-10-26): the remediation-plan-v7 execution — the per-route
+> title system (the reference titles EVERY route; v6 had measured only the
+> root): `DOCUMENT_TITLES` + `documentTitleForPath()` in the router, the
+> shell's view-synced title effect, the signup layout metadata, and the
+> 404 slug title through a guarded MutationObserver (Next's client
+> metadata manager re-applies the root title ~0-50ms after mount); the
+> image "Quitar" clear path fixed to a REAL server-side clear
+> (`imageUrl: null` + schema `.nullable()` — undefined keys never ride the
+> PATCH); the product-dialog numeric fields converted to the reference's
+> `type="number"` with steps; and the Ajustes logo preview (the 56px
+> pending/stored render + a Quitar that PATCHes null — the v6 plan had
+> promised a preview that never shipped); ADR-017 added.
 
 ## Table of Contents
 
@@ -101,6 +114,7 @@ lowest-risk path. **Verified.**
 | ADR-014 | The v4 visual-parity contract set: native Tailwind radius scale (shadcn `--radius` remap removed — the reference's own shadcn runs native), the reference card system on `vx-card` (translucent `rgba(16,18,32,.9)` + white-alpha hairline + elevation shadow), the `glass-button-primary/success/warning` gradient action system (135° ramps + colored hairline + glow + hover lift, CSS extracted live), the translucent-violet active nav pill on a RING (never a border — layout-neutral), StatCard blob anatomy, the icon-left reports summary cards, and the official social brand marks + hosted logo PNG on the auth surface | Accepted — Verified (238 unit + 74 e2e, live probe parity) |
 | ADR-015 | The v5 view-internals contract set: the flush shell gutter (`lg:ml-[220px]`/`[68px]` — the view's own padding provides the 24px gutter, H1 at x=244); the Terminal as the ONE full-bleed view (`lg:h-screen` two-pane, ticket panel as the `rounded-none border-l bg-[#0d0f1a]` RAIL with the transient "Agregado" banner and ShoppingBag COBRAR); the reference table system (slate-50 hairlines, `hover:bg-white/40`, `text-slate-600` body, mono indigo ticket cells, per-column header alignment, the dense cajeros shifts variant); the two-shape StatusPill (6px soft table badges `green-100/green-700` + `slate-100/slate-500`, vs the register-card `rounded-full` pill); 12px-radius transparent form controls; the reference's neutral `--secondary` token (`33 37 49`); tinted reports chips (15%/30%/400-tone, NOT gradient) + the Reports-only bright H1 (`tone="bright"`) | Accepted — Verified (277 unit + 83 e2e, live probe parity) |
 | ADR-016 | The v6 functional-superset contract set: dialog footer buttons are the reference's 42px glass pair, and the cva Button ships a dedicated EMPTY `glass` variant because the default/outline variants' bg/text utilities clobber the flat `.glass-button` fill (F6); product photos + the store logo persist as data URLs (canvas-resized ≤512px, JPEG q0.85, 300KB guard, 600k schema ceiling) with NO infrastructure dependency; the Unidad enum is the reference's six + Servicio; all mutation failures toast (`void err` forbidden); the Ventas mail row action opens a `mailto:` carrying the full ticket (no SMTP — disclosed); the document head mirrors the reference (title "VeloxPOS", its description, OG/Twitter cards, appleWebApp, a WORKING manifest, the app-router icon.png convention, the generated 1200x630 og-image); the UI primitives carry zero dead study-app classes (the checked Switch fills with the live-measured `#7f62f4`) | Accepted — Verified (311 unit + 91 e2e, live probe parity) |
+| ADR-017 | The v7 per-route title + data-lifecycle contract set: the document title is per-route (the reference's exact strings — root "VeloxPOS", "<View> | VeloxPOS" elsewhere, "Store Settings | VeloxPOS" for Ajustes, "Signup | VeloxPOS", and the title-cased route slug on 404s) via `DOCUMENT_TITLES`/`documentTitleForPath()` + the shell's post-ready effect + the signup server layout + the guarded MutationObserver on 404s (Next's client metadata manager re-applies the root title once after mount — the observer wins the last write); "Quitar" clears the stored image with `imageUrl: null` (schema `.nullable()`; an undefined key is dropped by JSON.stringify and skipped by `sentKeysPatch` — the v6 clear was a silent server no-op); a failed pick or picker-cancel never touches the stored value; the product-dialog numeric fields are `type="number"` with steps (the reference's own control type — spinners, role=spinbutton, native filtering); the Ajustes logo block renders the 56px pending/stored preview + a Quitar that PATCHes null | Accepted — Verified (324 unit + 98 e2e, live probe parity) |
 
 ---
 
@@ -289,8 +303,8 @@ Two layers, two runners, disjoint file globs:
 
 | Layer | Runner | Scope | Count |
 |---|---|---|---|
-| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 147 tests / 14 files — Verified |
-| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 49 specs — Verified |
+| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 324 tests / 23 files — Verified |
+| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 98 specs — Verified |
 
 - **Unit seams**: money (the verified ticket math), ticket (V-ID shape),
   router (8-view map + aliases), date (es-MX formatters), validation
@@ -309,7 +323,7 @@ Two layers, two runners, disjoint file globs:
   port with `db/e2e.db` (force-reset + reseeded per run); one storageState
   login (rate-limiter budget); `AUTH_SECRET` pinned to a 64-hex shape.
 - **Gates**: `lint → typecheck → build → test → test:e2e`, all green at
-  PAD v1.0.0 (worklog entry). Failure policy: fix the cause; never weaken a
+  PAD v1.5.0 (worklog entry). Failure policy: fix the cause; never weaken a
   pin (AGENTS.md).
 
 ---
@@ -363,11 +377,12 @@ Two layers, two runners, disjoint file globs:
 | 1 | Reference dead ends designed-from-language (active-shift terminal UI, payment dialog, close-shift dialog are unobservable on the reference) | Disclosed — dossier §8; treated as superset designs, evidence-labeled Assumed |
 | 2 | The 12th seeded product is count-pinned only (below the reference's fold) | Disclosed — dossier §8 |
 | 3 | In-memory rate limiter (per-process) | Accepted for single-tenant; revisit for multi-instance |
-| 4 | Product images: the dialog accepts a file but the clone does not store/serve uploads | Known gap (reference stores an image URL) |
-| 5 | Receipt email action (`Mail` icon) is present but not wired (no SMTP) | Known gap |
+| 4 | ~~Product images: the dialog accepts a file but the clone does not store/serve uploads~~ | CLOSED by v6/ADR-016 (data-URL storage) — retired from the open list |
+| 5 | ~~Receipt email action (`Mail` icon) is present but not wired (no SMTP)~~ | CLOSED by v6/ADR-016 (`mailto:` with the full ticket) — retired from the open list |
 | 6 | Dockerfile/DEPLOYMENT.md inherited from the scaffold reference the old app name in prose | Pending doc refresh |
 | 7 | `next.config.ts` sets `typescript.ignoreBuildErrors: true` (scaffold default) | Mitigated by the mandatory `bun run typecheck` gate; keeping the gate green is the contract |
 | 8 | a11y: the reference's own low-contrast headings are replicated for parity (axe color-contrast excluded, disclosed) | Disclosed deviation |
+| 9 | Per-route og:url/canonical/twitter:url variance (the reference varies them per route; the single-page architecture serves one server-rendered card — SD-14) | Disclosed deviation (v7) |
 
 ---
 

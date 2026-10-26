@@ -5,9 +5,12 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { NotFoundTitle } from "./not-found-title";
+
 export default function NotFound() {
   return (
     <main className="vx-canvas flex min-h-dvh items-center justify-center p-4">
+      <NotFoundTitle />
       <div
         className="vx-card w-full max-w-md p-10 text-center shadow-[0_30px_80px_rgba(0,0,0,0.45)]"
         data-testid="not-found-card"

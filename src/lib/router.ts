@@ -65,6 +65,44 @@ export function viewFromPath(pathname: string): ViewId {
   return hit?.id ?? "terminal";
 }
 
+/**
+ * The document (tab) title each view carries — the reference's own strings,
+ * live-measured on EVERY route (v7/M1: v6 had measured only the root, which
+ * is the one route without a suffix). Ajustes titles as "Store Settings"
+ * (the reference's English route naming — its UI is Spanish but its titles
+ * are not), and the Terminal is the bare "VeloxPOS".
+ */
+export const DOCUMENT_TITLES: Record<ViewId, string> = {
+  terminal: "VeloxPOS",
+  dashboard: "Dashboard | VeloxPOS",
+  inventario: "Inventory | VeloxPOS",
+  ventas: "Sales | VeloxPOS",
+  cajas: "Registers | VeloxPOS",
+  cajeros: "Cashiers | VeloxPOS",
+  reportes: "Reports | VeloxPOS",
+  ajustes: "Store Settings | VeloxPOS",
+};
+
+/**
+ * The document title for a path — known paths resolve to their view's title
+ * (case-insensitive, aliases included); unknown paths get the reference's
+ * 404 treatment: the first segment's hyphens become spaces, each word is
+ * capitalized, and " | VeloxPOS" is appended ("/foo-bar-baz" →
+ * "Foo Bar Baz | VeloxPOS" — live-measured on the reference).
+ */
+export function documentTitleForPath(pathname: string): string {
+  const segment = pathname.split("/").filter(Boolean)[0];
+  if (!segment) return DOCUMENT_TITLES.terminal;
+  const hit = NAV_ITEMS.find((item) => item.path.toLowerCase() === `/${segment.toLowerCase()}`);
+  if (hit) return DOCUMENT_TITLES[hit.id];
+  const slugCased = segment
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+  return `${slugCased || "VeloxPOS"} | VeloxPOS`;
+}
+
 /** The page heading each view renders (reference copy). */
 export const VIEW_TITLES: Record<ViewId, { title: string; subtitle: string }> = {
   terminal: { title: "Terminal", subtitle: "Punto de venta" },

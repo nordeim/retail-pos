@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.1.0
+version: 1.2.0
 last_updated: "2026-10-26"
 tags:
   - pos
@@ -25,8 +25,8 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v6 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 311/311 unit · 91/91 e2e**. Evidence labels:
+> template), validated against the codebase at the v7 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 324/324 unit · 98/98 e2e**. Evidence labels:
 > **Verified** (executed here), **Reasoned** (inference), **Assumed**
 > (decision).
 
@@ -68,8 +68,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 238 tests / 20 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 70 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 324 tests / 23 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 98 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -99,8 +99,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 238/238
-bun run test:e2e           # playwright: 70/70 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 324/324
+bun run test:e2e           # playwright: 98/98 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -181,6 +181,27 @@ The v6 contract additions (AGENTS.md 14-16, all live-measured):
   The Ventas mail action builds a `mailto:` from `src/lib/ticket-mail.ts`.
 - Zero dead study-app classes: the checked Switch fills `#7f62f4` (the
   reference's live-measured violet).
+
+The v7 contract additions (AGENTS.md 17-18, all live-measured):
+- The document TITLE is per-route — `DOCUMENT_TITLES` in
+  `src/lib/router.ts` is the single map (root "VeloxPOS" only;
+  "Dashboard | VeloxPOS" … "Store Settings | VeloxPOS"; the reference
+  titles in English even though its UI is Spanish). The shell applies it
+  after the auth gate flips `ready` (later than Next's one-time
+  post-hydration metadata re-apply, so it sticks); 404s title the
+  slug-cased route via `documentTitleForPath()` + the GUARDED
+  MutationObserver in `src/app/not-found-title.tsx` (rewrite only when
+  the title differs — no mutation loop; disconnect on unmount).
+- "Quitar" sends `imageUrl: null` (schema `.nullable()`). NEVER
+  `undefined` — JSON.stringify drops the key and `sentKeysPatch` skips
+  it, so the clear silently no-ops server-side (the v6 bug). A failed
+  pick or picker-cancel leaves the stored value untouched.
+- The product-dialog numeric fields (Precio/Costo/Stock/Stock mínimo/
+  IVA) are `type="number"` with steps — the reference's own control
+  (spinners render, role=spinbutton, native keystroke filtering).
+- The Ajustes logo block renders the pending/stored logo at
+  `h-[56px] w-[56px]` (NOT `h-14` — the v5 swatch pin forbids that token
+  in settings-view) + a Quitar that PATCHes `logoUrl: null`.
 
 ## §5 Component Architecture & Patterns
 
@@ -357,8 +378,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 238/238 vitest
-bun run test:e2e      # 70/70 playwright (production posture)
+bun run test          # 324/324 vitest
+bun run test:e2e      # 98/98 playwright (production posture)
 ```
 
 Verification beyond the gates:

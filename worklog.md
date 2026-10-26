@@ -318,3 +318,118 @@ Stage Summary:
   channel (mailto: is the local-first equivalent); donut palette +
   populated legend unobservable; terminal product-grid design = superset
   decision.
+
+---
+Task ID: V7-AUDIT
+Agent: general-purpose (session V7, 2026-10-26)
+Task: Pull refresh, docs re-read, baseline verification, and the v7
+audit (source + live both apps) ahead of remediation-plan-v7.
+
+Work Log:
+- Pulled to main @ 9b82111 (remote added docs/session_6.md only — the
+  v6-close code is untouched). Re-read AGENTS.md (16 contracts), CLAUDE,
+  README, PAD v1.4.0, retail-pos_SKILL.md, session_5/6, remediation-plan-v6,
+  worklog.
+- Baseline gates at 9b82111: lint 0 · tsc 0 · unit 311/311 · build ✓ ·
+  e2e 91/91 — the v6 close verified intact.
+- Source audit of the v6 diff: image.ts/ticket-mail.ts clean (typed guards,
+  bitmap.close, pure builders); toasts wired on all 4 deletes; glass variant
+  clean; head suite + manifest complete; SaleItem.lineTotal type-safe.
+- Source findings: F1 — product image "Quitar" sends imageUrl:undefined,
+  sentKeysPatch skips undefined, schema not nullable → the stored image
+  SURVIVES a remove+save (live-verified end to end: preview returns on
+  fresh reopen, API still returns the data URL). F3 — the `!file` branch
+  clears the local preview on picker-cancel. F2 — the settings logo preview
+  promised by v6 B3 + the code comment does NOT exist (no img rendered; the
+  reference live-renders a 56px data-URL preview at pick time), and the
+  logo cannot be removed once set.
+- Live audit (agent-browser, both apps): reference UNCHANGED on shell
+  (220/244, vx-card rgba(16,18,32,.9)), tables (12px/600/slate-500 headers,
+  slate-50 hairlines), tile glow (rgba(139,92,246,.3) pair), modal (11
+  fields, 42px glass buttons), switch (#7f62f4), head suite, mobile flex
+  sidebar (still no drawer — clone drawer stays the superset). Clone drawer
+  contract re-verified live: 8 links, 40px links, uniform 44px pitch,
+  scroll-lock, aria-expanded, focus in/out, Escape + focus return.
+- NEW reference behavior found: PER-ROUTE document titles — root
+  "VeloxPOS", "Dashboard | VeloxPOS", "Inventory | VeloxPOS", "Sales |
+  VeloxPOS", "Registers | VeloxPOS", "Cashiers | VeloxPOS", "Reports |
+  VeloxPOS", "Store Settings | VeloxPOS", "Signup | VeloxPOS", and a
+  title-cased slug title on 404s ("/foo-bar-baz" → "Foo Bar Baz |
+  VeloxPOS"); og:title/og:url/canonical vary per route too. The clone ships
+  a static "VeloxPOS" everywhere (v6 M1 measured only the root).
+- NEW: the reference's product modal numeric fields are type=number
+  (spinners render, role=spinbutton); the clone uses text+inputMode
+  (measured live both sides; Categoría/Unidad triggers + image input
+  byte-match).
+- Docs staleness: PAD §11 rows #4/#5 still "Known gap" (both fixed in v6);
+  retail-pos_SKILL.md §2/§3/§12 still carry 238/70 counts (actual 311/91).
+
+Stage Summary:
+- Findings for v7: F1 (High, image-clear server no-op), V1 (Medium,
+  per-route titles), F2 (Medium, settings logo preview + remove), V2
+  (Low, number inputs), F3 (Low, picker-cancel clear), D1/D2 (docs).
+- Everything else the v6 ledger pinned is unchanged and green — no
+  reference drift beyond the title system.
+
+---
+Task ID: V7-FULL
+Agent: general-purpose (session V7, 2026-10-26)
+Task: Full remediation-plan-v7 cycle (audit → plan → TDD execute → ship →
+push) — the per-route title system + the data-lifecycle fixes.
+
+Work Log:
+- Baseline at 9b82111: lint 0 · tsc 0 · 311/311 unit · build ✓ · 91/91
+  e2e (the v6 close intact; the remote's only delta was session_6.md).
+- Audit (see V7-AUDIT entry): reference unchanged on every pinned
+  surface; NEW findings = per-route titles (M1), image "Quitar" server
+  no-op (F1), picker-cancel clear (F3), missing settings logo preview +
+  no remove (F2), type=number modal fields (V2), PAD §11 + SKILL count
+  staleness (D1/D2).
+- Wrote docs/remediation-plan-v7.md (16-item ledger, SD-14..SD-17,
+  B1-B5 batches, F4/F5/F6 execution findings appended mid-stream).
+- TDD execution, all pins red first:
+  - B1 titles: DOCUMENT_TITLES + documentTitleForPath() (router, pure);
+    the shell effect (post-ready); signup/layout.tsx server metadata;
+    not-found-title.tsx — initially a bare effect, live-probe showed
+    Next's metadata manager re-applies the root title ~0-50ms after
+    mount (F4) → GUARDED MutationObserver (rewrite-on-diff, disconnect
+    on unmount).
+  - B2 image clear: imageUrl .nullable(); dialog sends null on clear;
+    !file bare return; failed picks leave the stored value untouched.
+  - B3 numeric inputs: the five product-dialog fields type=number with
+    steps (0.01 money / 1 counts).
+  - B4 settings logo: 56px preview (h-[56px] w-[56px] — the v5 pins
+    rejected h-14 w-14 + a solid backdrop, F6) + Quitar → PATCH null.
+  - B5 docs: AGENTS.md contracts 17-18; CLAUDE.md 324/98 + title note;
+    README badge 324+98; PAD v1.5.0 + ADR-017 + §11 #4/#5 retired +
+    §8 counts de-staled; retail-pos_SKILL.md v1.2.0 (counts + v7 block).
+- Tests: tests/functional-parity-v7.test.ts (13 unit pins) +
+  tests/e2e/functional-parity-v7.spec.ts (7 e2e pins: SPA-switch titles,
+  full-load titles ×8, 404 slug title, signup title, image-clear server
+  round-trip incl. API null + fresh-dialog agreement, number-input
+  spinners + native filtering, settings logo pick/Quitar/PATCH null).
+- e2e lessons: locator('aside') is strict-mode ambiguous (sidebar +
+  ticket rail both <aside>) → getByTestId("desktop-sidebar"); fill()
+  refuses invalid text on number inputs → pressSequentially; the file
+  input's id is settings-logo (the -input suffix is the testid).
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 324/324 · e2e 98/98.
+- Ship: 18 screenshots regenerated; VLM spot-checks (inventario, ajustes,
+  404) PASS; live parity probes on the changed surfaces (modal number +
+  spinners + 42px + title; settings 56×56 preview → Quitar → API null);
+  docs/session_7.md; this entry.
+
+Stage Summary:
+- v7 closed the title-system gap (every route + the 404 slug + signup),
+  made "Quitar" a real server-side clear on both media paths, converted
+  the modal's numeric fields to the reference's control type, shipped
+  the missing logo preview + remove, and de-staled the docs (PAD §11
+  rows retired, SKILL counts corrected to the live gate numbers).
+- Probe lessons recorded: Next's client metadata manager re-applies the
+  root title once after mount (guarded-observer pattern wins the last
+  write); rebuild before typecheck after adding route segments (stale
+  .next/types globals); source-sweep pins double as design review (the
+  v5 swatch pin correctly rejected the first preview geometry).
+- Known-open (disclosed): per-route og:url/canonical variance (SD-14);
+  aspect-true 56px preview vs the reference's squashed 56×14; text
+  inputs stay on the unobservable dialogs. Standing disclosures
+  unchanged (in-memory limiter, no SMTP, donut palette, terminal grid).

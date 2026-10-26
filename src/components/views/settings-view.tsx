@@ -38,7 +38,9 @@ const DEFAULTS = {
   secondaryColor: "#8b5cf6",
   ticketFooter: "",
   cardProvider: "Ninguno",
-  logoUrl: "",
+  // V7/F2: the logo can be explicitly CLEARED (Quitar sets null — the
+  // column boots NULL and the PATCH wiring persists null).
+  logoUrl: "" as string | null,
 };
 
 export function SettingsView() {
@@ -142,17 +144,46 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
               {/* V5: the reference's styled control — a glass "Subir logo"
                   button (label wrapping the hidden input keeps it a single
                   click-target with native input semantics). */}
-              <label
-                htmlFor="settings-logo"
-                data-testid="settings-logo-button"
-                className="glass-button vx-focus mt-1.5 inline-flex max-w-xs cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium"
-              >
-                <Upload className="h-4 w-4 shrink-0" />
-                <span>Subir logo</span>
-                {logoName ? (
-                  <span className="truncate text-xs text-slate-400">{logoName}</span>
+              <div className="mt-1.5 flex flex-wrap items-center gap-3">
+                <label
+                  htmlFor="settings-logo"
+                  data-testid="settings-logo-button"
+                  className="glass-button vx-focus inline-flex max-w-xs cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium"
+                >
+                  <Upload className="h-4 w-4 shrink-0" />
+                  <span>Subir logo</span>
+                  {logoName ? (
+                    <span className="truncate text-xs text-slate-400">{logoName}</span>
+                  ) : null}
+                </label>
+                {/* V7/F2: the reference renders a data-URL preview at pick
+                    time; ours keeps the aspect true at 56px and persists it
+                    (logoUrl rides the PATCH — null clears, see Quitar). */}
+                {form.logoUrl ? (
+                  <span
+                    className="flex items-center gap-2"
+                    data-testid="settings-logo-preview"
+                  >
+                    <img
+                      src={form.logoUrl}
+                      alt="Vista previa del logotipo"
+                      className="h-[56px] w-[56px] rounded-xl border border-[#1e2235] object-contain p-1"
+                    />
+                    <button
+                      type="button"
+                      className="vx-focus rounded-lg p-1 text-xs text-slate-400 hover:text-red-400"
+                      onClick={() => {
+                        set("logoUrl", null);
+                        setLogoName("");
+                        const input = document.getElementById("settings-logo") as HTMLInputElement | null;
+                        if (input) input.value = "";
+                      }}
+                    >
+                      Quitar
+                    </button>
+                  </span>
                 ) : null}
-              </label>
+              </div>
               <input
                 id="settings-logo"
                 type="file"

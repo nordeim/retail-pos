@@ -190,6 +190,31 @@ rules:
     (`src/lib/ticket-mail.ts` — no SMTP channel, disclosed). UI primitives
     reference NO class that is absent from globals.css (the sf-* purge is
     total; the checked Switch fills with the measured `#7f62f4`).
+17. The document TITLE is per-route (v7, live-measured on every reference
+    route): `DOCUMENT_TITLES` in `src/lib/router.ts` is the single map
+    ("VeloxPOS" at the root; "Dashboard | VeloxPOS", "Inventory |
+    VeloxPOS", "Sales | VeloxPOS", "Registers | VeloxPOS", "Cashiers |
+    VeloxPOS", "Reports | VeloxPOS", "Store Settings | VeloxPOS"; Ajustes
+    titles in English like the reference). The shell's effect applies it on
+    view change (after `status === "ready"` — later than Next's one-time
+    post-hydration metadata re-apply, so it sticks); `/signup` titles via
+    its server layout; 404s title the slug-cased route through
+    `documentTitleForPath()` + the GUARDED MutationObserver in
+    `src/app/not-found-title.tsx` (a bare effect write is overwritten
+    ~0-50ms after mount — the observer wins the last write and disconnects
+    on unmount). The per-route og:url/canonical variance is NOT replicated
+    (single-page architecture — disclosed SD-14).
+18. Image-clear + numeric inputs (v7): "Quitar" is a REAL clear — the
+    dialog sends `imageUrl: null` (schema `.nullable()`); NEVER `undefined`
+    (JSON.stringify drops the key and `sentKeysPatch` skips it — the clear
+    silently no-ops server-side). A failed pick or a picker-cancel leaves
+    the stored value untouched; only an explicit Quitar clears. The
+    product-dialog numeric fields (Precio/Costo/Stock/Stock mínimo/IVA)
+    are `type="number"` with steps — the reference's own control type
+    (spinners render, role=spinbutton, native keystroke filtering). The
+    Ajustes logo block renders the pending/stored `logoUrl` as a 56px
+    preview (`h-[56px] w-[56px]` — NOT `h-14`, the v5 swatch pin forbids
+    that token in settings-view) plus a Quitar that PATCHes null.
 
 ## The mobile drawer contract
 

@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (311 tests / 22 files)
-bun run test:e2e       # playwright e2e layer (91 specs, boots standalone :3100)
+bun run test           # vitest unit layer (324 tests / 23 files)
+bun run test:e2e       # playwright e2e layer (98 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -121,7 +121,9 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   uppercase white/60 14px) — measured live; the H1 is 24px FIXED at every
   width (Reports is the reference's only BRIGHT H1 — `tone="bright"`
   white/90). Chart X labels thin to ≤8 (first+last kept) via
-  `thinLabelIndices`; Y labels are integers ($ on Reports).
+  `thinLabelIndices`; Y labels are integers ($ on Reports). The TAB TITLE
+  is per-route (`DOCUMENT_TITLES` in `src/lib/router.ts`; the 404 slug
+  title rides the guarded observer in `src/app/not-found-title.tsx`).
 - Table contract (v5, live-measured): headers `text-xs font-semibold
   text-slate-500 uppercase` per-column-aligned; rows ride
   `border-b border-slate-50` + `hover:bg-white/40`; body cells `text-sm
