@@ -70,7 +70,27 @@ test.describe("terminal sales", () => {
     await expect(page.getByTestId("sale-detail-total")).toHaveText("$64.38");
     await expect(page.getByTestId("sale-detail-items")).toContainText("3x Coca-Cola 600ml");
 
-    // 8. Close the shift so later specs start from the closed baseline.
+    // 8. The live sale lands in the reports (V10/SD-36: the seeded history
+    // is now the reference's own April/March dates — outside every window —
+    // so the aggregation is covered through the LIVE selling path). The
+    // method section only lists a method once a windowed sale EXISTS — it
+    // doubles as the data-loaded wait. Earlier specs (sale-integrity's
+    // control) may have added sales of their own — assert the terminal
+    // sale's contribution numerically, order-robustly.
+    await page.goto("/Reports");
+    await expect(page.getByTestId("report-by-method")).toContainText("Efectivo");
+    const reported = await page.evaluate(() => {
+      const tx = document.querySelector('[data-testid="report-transactions"]')?.textContent ?? "";
+      const rev = document.querySelector('[data-testid="report-revenue"]')?.textContent ?? "";
+      return {
+        transactions: parseInt((tx.match(/\d+/) ?? ["0"])[0], 10),
+        revenue: parseFloat((rev.match(/\$([\d.]+)/) ?? ["0", "0"])[1]),
+      };
+    });
+    expect(reported.transactions).toBeGreaterThanOrEqual(1);
+    expect(reported.revenue).toBeGreaterThanOrEqual(64.38);
+
+    // 9. Close the shift so later specs start from the closed baseline.
     await page.goto("/Registers");
     await page.locator('[data-testid^="close-shift-"]').first().click();
     await page.getByTestId("shift-closing-input").fill("564.38");

@@ -54,30 +54,29 @@ describe("weekWindow (V4/M2)", () => {
   });
 });
 
-describe("chart label thinning (V3)", () => {
+describe("chart label thinning (V3 → V10/F8)", () => {
   it("keeps every label when they already fit", () => {
     expect(thinLabelIndices(7)).toEqual([0, 1, 2, 3, 4, 5, 6]);
     expect(thinLabelIndices(8)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
     expect(thinLabelIndices(0)).toEqual([]);
   });
 
-  it("thins a 30-day window to 8 evenly spaced labels, first and last kept", () => {
+  it("thins a 30-day window the reference's way: 4-day steps from the start (V10/F8)", () => {
     const indices = thinLabelIndices(30);
-    expect(indices).toHaveLength(8);
-    expect(indices[0]).toBe(0);
-    expect(indices[indices.length - 1]).toBe(29);
-    // evenly spaced-ish: every gap within 1 of (29/7)
-    for (let i = 1; i < indices.length; i += 1) {
-      const gap = indices[i] - indices[i - 1];
-      expect(gap).toBeGreaterThanOrEqual(4);
-      expect(gap).toBeLessThanOrEqual(5);
-    }
+    // Live-measured on the reference (27 sep, 1, 5, 9, 13, 17, 21, 25 oct):
+    // 8 labels at EXACT 4-day steps beginning at the window start; the
+    // trailing days are NOT labeled (the last label is day 28, not 29 —
+    // the v3-era "first and last kept" pin was an inference, retired).
+    expect(indices).toEqual([0, 4, 8, 12, 16, 20, 24, 28]);
   });
 
-  it("thins 9 to 8 (the boundary)", () => {
-    expect(thinLabelIndices(9)).toHaveLength(8);
+  it("thins 9 to all 9 (the reference labels every day up to 14)", () => {
+    // V10/F8: the ref's 14-day window labels every single day — the
+    // v3-era 8-label boundary pin is retired (the reference was measured
+    // rendering 14 ticks on its 14-day window).
+    expect(thinLabelIndices(9)).toHaveLength(9);
     expect(thinLabelIndices(9)[0]).toBe(0);
-    expect(thinLabelIndices(9)[7]).toBe(8);
+    expect(thinLabelIndices(9)[8]).toBe(8);
   });
 });
 

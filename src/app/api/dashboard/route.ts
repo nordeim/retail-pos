@@ -36,7 +36,11 @@ export async function buildDashboard(userId: string, now: Date) {
       db.category.findMany({
         where: { userId },
         include: { _count: { select: { products: true } } },
-        orderBy: { createdAt: "asc" },
+        // V10/F1h: createdAt ties (categories seeded in one tight loop)
+        // made SQLite's order arbitrary — the id tiebreaker pins the
+        // category order so the donut's palette mapping is deterministic
+        // (the reference's own donut order is creation order).
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       }),
     ]);
 

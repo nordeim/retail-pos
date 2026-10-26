@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import * as React from "react";
-import { Store, Palette, ReceiptText, CreditCard, Tags, Plus, Upload, X } from "lucide-react";
+import { Store, Palette, FileText, CreditCard, Tag, Plus, Upload, X } from "lucide-react";
 
 import { PageHeading, SectionCard } from "@/components/pos/shared";
 import { Button } from "@/components/ui/button";
@@ -125,7 +125,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
       <div className="max-w-4xl space-y-6">
         <SectionCard
           title="Información del Negocio"
-          icon={<Store className="h-4.5 w-4.5 text-violet-400" />}
+          icon={<Store className="h-5 w-5 text-indigo-500" />}
           testId="settings-business-card"
         >
           <div className="space-y-4">
@@ -270,7 +270,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
 
         <SectionCard
           title="Personalización"
-          icon={<Palette className="h-4.5 w-4.5 text-violet-400" />}
+          icon={<Palette className="h-5 w-5 text-purple-500" />}
         >
           {/* V8/F4: the reference's Personalización grid (grid-cols-1 →
               md:grid-cols-2) with each color as a swatch PAIRED with an
@@ -326,7 +326,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
 
         <SectionCard
           title="Ticket / Recibo"
-          icon={<ReceiptText className="h-4.5 w-4.5 text-violet-400" />}
+          icon={<FileText className="h-5 w-5 text-green-500" />}
         >
           <div>
             <Label htmlFor="settings-footer" className="text-slate-200">Pie del ticket</Label>
@@ -343,7 +343,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
 
         <SectionCard
           title="Proveedor de Pagos con Tarjeta"
-          icon={<CreditCard className="h-4.5 w-4.5 text-violet-400" />}
+          icon={<CreditCard className="h-5 w-5 text-blue-500" />}
         >
           <div>
             <Label className="text-slate-200">Proveedor</Label>
@@ -364,7 +364,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
 
         <SectionCard
           title="Categorías de Producto"
-          icon={<Tags className="h-4.5 w-4.5 text-violet-400" />}
+          icon={<Tag className="h-5 w-5 text-amber-500" />}
           testId="settings-categories-card"
         >
           <div className="mb-4 flex gap-2">

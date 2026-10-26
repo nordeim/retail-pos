@@ -1,9 +1,16 @@
 // ---------------------------------------------------------------------------
-// VeloxPOS seed — the reference-verified dataset (docs/reference-investigation.md):
-// the 6 categories, the 12 products (11 rows read live + the count-pinned
-// 12th), 2 registers, the 2 completed sales + their closed Cesar Martínez
-// shifts. The owner account comes from the environment (SEED_OWNER_EMAIL /
-// SEED_OWNER_PASSWORD) — credentials never live in source.
+// VeloxPOS seed — the reference-verified dataset (docs/reference-investigation.md
+// + the V10 live re-measurement, docs/remediation-plan-v10.md §0): the 6
+// categories (creation order = the reference's donut order), the 12 products
+// (every row now read live — the reference renders all 12 — in ITS page
+// order), 2 registers (Caja 2 first — the reference's page order), and the
+// 2 completed sales + their closed Cesar Martínez shifts at the reference's
+// EXACT datetimes (V10/SD-34: the old relativized daysAgo seeding drifted
+// the visible dates on every reseed; the reference's own state is fixed
+// historical dates — its dashboard chart and reports render empty, and the
+// clone now mirrors that). The owner account comes from the environment
+// (SEED_OWNER_EMAIL / SEED_OWNER_PASSWORD) — credentials never live in
+// source.
 //
 //   DATABASE_URL="file:../db/custom.db" bun prisma/seed.ts
 // ---------------------------------------------------------------------------
@@ -26,12 +33,12 @@ const OWNER_EMAIL = (process.env.SEED_OWNER_EMAIL || "owner@veloxpos.local").toL
 const OWNER_PASSWORD = process.env.SEED_OWNER_PASSWORD || "$Abcd1234";
 const OWNER_NAME = process.env.SEED_OWNER_NAME || "Cesar Martínez";
 
-function daysAgo(n: number, hour = 12, minute = 0): Date {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  d.setHours(hour, minute, 0, 0);
-  return d;
-}
+/** V10/SD-34: a fixed, staggered base for the invisible ordering timestamps
+ *  (categories/products) — createdAt ties made SQLite's order arbitrary;
+ *  one minute per row keeps every list deterministic without any visible
+ *  date surface (no view renders these). */
+const ROW_BASE = Date.UTC(2026, 0, 1, 0, 0, 0);
+const rowAt = (i: number) => new Date(ROW_BASE + i * 60_000);
 
 async function main() {
   const owner = await db.user.upsert({
@@ -63,37 +70,41 @@ async function main() {
     update: {},
   });
 
+  // V10/F1: the creation order IS the reference's donut order (Lácteos →
+  // Bebidas — measured live: its donut maps the palette by this sequence).
+  // Staggered createdAt keeps the ordering deterministic against ties.
   const categoryNames = ["Lácteos", "Limpieza", "Higiene Personal", "Alimentos", "Snacks", "Bebidas"];
   const categories = new Map<string, { id: string }>();
-  for (const name of categoryNames) {
+  for (const [i, name] of categoryNames.entries()) {
     const row = await db.category.upsert({
       where: { userId_name: { userId: owner.id, name } },
-      create: { userId: owner.id, name },
+      create: { userId: owner.id, name, createdAt: rowAt(i) },
       update: {},
     });
     categories.set(name, row);
   }
 
-  // (name, barcode, price pesos, stock, category, iva%)
+  // (name, barcode, price pesos, stock, category, iva%) — V10/F5: the
+  // reference's PAGE order (every row read live on 2026-10-27; the 12th
+  // row's dossier-era ASSUMED values are retired — its real name/barcode/
+  // stock are "Jabón Zote 400g" / 7501025403010 / 19).
   const products: [string, string, number, number, string, number][] = [
-    ["Yogurt Danone Natural 900g", "7501005102148", 38.5, 10, "Lácteos", 16],
-    ["Frijoles La Costeña 560g", "7501017006113", 22.5, 30, "Alimentos", 16],
-    ["Leche Lala Entera 1L", "7501055301114", 26.5, 24, "Lácteos", 16],
     ["Shampoo Pantene 400ml", "7501001165599", 89.0, 12, "Higiene Personal", 16],
-    ["Cloro Cloralex 1L", "7501025400117", 24.0, 22, "Limpieza", 16],
-    ["Papel Higiénico Pétalo 4 rollos", "7501019600012", 35.0, 17, "Higiene Personal", 16],
-    ["Sabritas Original 45g", "7501011115019", 16.0, 35, "Snacks", 16],
     ["Agua Bonafont 1L", "7501013100018", 12.0, 60, "Bebidas", 16],
     ["Coca-Cola 600ml", "7501055300120", 18.5, 47, "Bebidas", 16],
+    ["Papel Higiénico Pétalo 4 rollos", "7501019600012", 35.0, 17, "Higiene Personal", 16],
+    ["Yogurt Danone Natural 900g", "7501005102148", 38.5, 10, "Lácteos", 16],
+    ["Frijoles La Costeña 560g", "7501017006113", 22.5, 30, "Alimentos", 16],
+    ["Cloro Cloralex 1L", "7501025400117", 24.0, 22, "Limpieza", 16],
+    ["Leche Lala Entera 1L", "7501055301114", 26.5, 24, "Lácteos", 16],
+    ["Sabritas Original 45g", "7501011115019", 16.0, 35, "Snacks", 16],
     ["Atún Dolores 295g", "7501024520148", 32.0, 3, "Alimentos", 16],
+    ["Jabón Zote 400g", "7501025403010", 18.0, 19, "Limpieza", 16],
     ["Pan Bimbo Blanco", "7441029500103", 52.0, 15, "Alimentos", 16],
-    // The 12th row: below the fold on the reference — count-pinned (12),
-    // values Assumed (dossier §8).
-    ["Jabón Zote Barra 400g", "7501234567890", 18.0, 20, "Limpieza", 16],
   ];
 
   const productRows = new Map<string, { id: string; name: string; price: number; ivaRate: number }>();
-  for (const [name, barcode, price, stock, category, ivaRate] of products) {
+  for (const [i, [name, barcode, price, stock, category, ivaRate]] of products.entries()) {
     const row = await db.product.upsert({
       where: { userId_name: { userId: owner.id, name } },
       create: {
@@ -108,6 +119,7 @@ async function main() {
         ivaRate,
         unit: "Pieza",
         active: true,
+        createdAt: rowAt(100 + i),
       },
       update: {},
     });
@@ -117,11 +129,14 @@ async function main() {
   const existingRegisters = await db.register.findMany({ where: { userId: owner.id } });
   const registers = new Map<string, string>();
   if (existingRegisters.length === 0) {
-    const caja1 = await db.register.create({
-      data: { userId: owner.id, name: "Caja 1", location: "Entrada principal", status: "closed" },
-    });
+    // V10/F4: Caja 2 is created FIRST — the reference's Cajas page renders
+    // Caja 2 above Caja 1 (its ordering rule is backend-internal; creation
+    // order reproduces the observable page order).
     const caja2 = await db.register.create({
-      data: { userId: owner.id, name: "Caja 2", location: "Área de abarrotes", status: "closed" },
+      data: { userId: owner.id, name: "Caja 2", location: "Área de abarrotes", status: "closed", createdAt: rowAt(200) },
+    });
+    const caja1 = await db.register.create({
+      data: { userId: owner.id, name: "Caja 1", location: "Entrada principal", status: "closed", createdAt: rowAt(201) },
     });
     registers.set("Caja 1", caja1.id);
     registers.set("Caja 2", caja2.id);
@@ -140,23 +155,27 @@ async function main() {
   if (existingSales === 0 && registers.has("Caja 1")) {
     const cashier = await db.cashier.findFirst({ where: { userId: owner.id } });
     if (cashier) {
-      // The two verified historical sales + their closed shifts.
+      // The two verified historical sales + their closed shifts — V10/F6+F7:
+      // the reference's EXACT datetimes (measured live in its Ventas table,
+      // ticket modals, and Turnos table) and the second sale's REAL items
+      // (1x Jabón Zote + 1x Papel Higiénico — the line math lands on the
+      // same verified $61.48 totals the old assumed items happened to hit).
       const salesSpec = [
         {
           ticketNo: "V-MO6BJT7G",
-          openedAt: daysAgo(7, 1, 39),
-          closedAt: daysAgo(1, 22, 16),
-          saleAt: daysAgo(1, 22, 9),
+          openedAt: new Date("2026-04-09T01:39:00Z"),
+          closedAt: new Date("2026-04-19T22:16:00Z"),
+          saleAt: new Date("2026-04-19T22:09:00Z"),
           items: [{ name: "Coca-Cola 600ml", qty: 1 }],
         },
         {
           ticketNo: "V-MMPNY55Z",
-          openedAt: daysAgo(45, 1, 36),
-          closedAt: daysAgo(42, 3, 30),
-          saleAt: daysAgo(43, 1, 45),
+          openedAt: new Date("2026-03-14T01:36:00Z"),
+          closedAt: new Date("2026-03-20T03:30:00Z"),
+          saleAt: new Date("2026-03-14T01:45:00Z"),
           items: [
-            { name: "Coca-Cola 600ml", qty: 2 },
-            { name: "Sabritas Original 45g", qty: 1 },
+            { name: "Jabón Zote 400g", qty: 1 },
+            { name: "Papel Higiénico Pétalo 4 rollos", qty: 1 },
           ],
         },
       ];

@@ -29,7 +29,7 @@ import { NotFoundError, type EntityDelegate } from "./http";
 type OwnedModel = {
   findMany(args: {
     where: { userId: string };
-    orderBy?: { createdAt: "asc" | "desc" };
+    orderBy?: { createdAt?: "asc" | "desc"; id?: "asc" | "desc" }[];
   }): Promise<unknown[]>;
   findFirst(args: { where: Record<string, unknown> }): Promise<unknown>;
   create(args: { data: unknown }): Promise<unknown>;
@@ -71,9 +71,14 @@ function makeOwnedDelegate(config: OwnedConfig): EntityDelegate {
     list: (userId) =>
       config.model.findMany({
         where: { userId },
-        orderBy: config.orderBy
-          ? { createdAt: config.orderBy }
-          : { createdAt: "asc" },
+        // V10/F1h: createdAt ties (rows seeded in one tight loop) made
+        // SQLite's order arbitrary — the id tiebreaker keeps every list
+        // deterministic (the visible orders are pinned against the
+        // reference's own pages).
+        orderBy: [
+          { createdAt: config.orderBy ?? "asc" },
+          { id: "asc" },
+        ],
       }),
     create: async (userId, input) => {
       const parsed = config.createSchema.parse(input) as Row;
@@ -155,7 +160,10 @@ export const productDelegate = {
   list: async (userId: string) => {
     const rows = (await db.product.findMany({
       where: { userId },
-      orderBy: { createdAt: "asc" },
+      // V10/F1h: the id tiebreaker keeps the inventory order deterministic
+      // against createdAt ties (the reference's page order is the seed's
+      // insertion order — pinned by the v10 e2e).
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       include: { category: { select: { name: true } } },
     })) as unknown as ProductRow[];
     return rows.map(productToBoundary);

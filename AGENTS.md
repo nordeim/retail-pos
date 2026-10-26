@@ -271,6 +271,44 @@ rules:
     w2, gradient top 0.35) — one component, two skins; the dashboard has
     NO footer credit line (the ref's dashboard ends at the low-stock rows).
 
+23. The donut + the seeded data (v10, live-measured): the category donut
+    is the reference's recharts rendering — filled sector PATHS
+    (`sectorPath()` in `shared.tsx`), ring innerR 50 / outerR 80 centered
+    at (166.5, 100) in a `0 0 333 200` viewBox, sectors COUNTERCLOCKWISE
+    from 3 o'clock with a TRAILING 4° gap per slice (each sector starts
+    exactly at its boundary), `stroke="#fff" strokeWidth={1}` on every
+    sector, and the palette `DONUT_COLORS = ["#6366f1", "#8b5cf6",
+    "#a78bfa", "#c4b5fd", "#ddd6fe", "#22c55e"]` mapped by ORIGINAL data
+    index. The legend renders the FIRST 5 rows only (`slice(0, 5)` — the
+    ref renders 6 sectors but 5 legend rows; its internal rule is
+    unobservable) stacked BELOW the chart (`space-y-2 mt-2`, swatch
+    `w-3 h-3 rounded-full`, name `text-slate-600`, count
+    `font-semibold text-slate-700`). The low-stock card's header gap is
+    the ref's `mb-3` (`SectionCard titleClassName`); every other card
+    header stays mb-4. The Ajustes section headers carry per-section
+    icons at `w-5 h-5`: Store/text-indigo-500, Palette/text-purple-500,
+    **FileText**/text-green-500, CreditCard/text-blue-500,
+    **Tag**/text-amber-500 (never receipt-text/tags/violet-400 — v10
+    retired those). The SEED mirrors the reference account's observable
+    state exactly: the products in the ref's page order (Shampoo → Pan
+    Bimbo; the 12th row is the measured "Jabón Zote 400g" /
+    7501025403010 / stock 19 — the dossier-era "Barra" values are
+    retired), Caja 2 created before Caja 1 (the ref's page order), and
+    the two sales at the ref's EXACT datetimes (19/04/2026 22:09 and
+    14/03/2026 01:45 with the second's real items: 1x Jabón Zote +
+    1x Papel Higiénico = $61.48) — the relativized daysAgo seeding is
+    GONE, so the clone's dashboard chart renders flat and its reports
+    render "Sin datos en este período" exactly like the reference.
+    Ordering is deterministic everywhere: `[{ createdAt: "asc" }, { id:
+    "asc" }]` (the delegates, the product list, and the dashboard's
+    byCategory) plus staggered seed createdAt — a rewrite-listed or
+    seeded list must never depend on SQLite's tie order again. The
+    reports X-ticks follow the ref's rule (`thinLabelIndices`): windows
+    ≤14 days label EVERY day; longer windows step by
+    `ceil((count-1)/9)` from the window start (30 → every 4th day ending
+    day 28, 90 → every 10th ending day 80) — the last day is NOT
+    force-labeled.
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content

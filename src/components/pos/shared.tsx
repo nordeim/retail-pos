@@ -160,6 +160,7 @@ export function SectionCard({
   icon,
   children,
   className,
+  titleClassName,
   testId,
   variant = "card",
 }: {
@@ -167,6 +168,9 @@ export function SectionCard({
   icon?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  /** V10/F2: the ref's card headers are mb-4 EXCEPT the low-stock card
+   *  (its H3 carries mb-3 — the 12px header→list gap, measured live). */
+  titleClassName?: string;
   testId?: string;
   /** V1: "card" = the dashboard/ajustes heading (h3, title-case, 16px/700,
    *  slate-700 — measured live); "kicker" = the reports heading (h2,
@@ -176,7 +180,7 @@ export function SectionCard({
   return (
     <div data-testid={testId} className={cn("vx-card p-5", className)}>
       {title ? (
-        <div className="mb-4 flex items-center gap-2">
+        <div className={cn("mb-4 flex items-center gap-2", titleClassName)}>
           {icon}
           {variant === "kicker" ? (
             <h2 className="text-sm font-bold uppercase tracking-[0.7px] text-white/60">
@@ -256,19 +260,25 @@ export function BanknoteIcon({ className }: { className?: string }) {
 
 // ---- charts -------------------------------------------------------------------------
 
-/** V3: evenly spaced label indices for a series too dense to label fully —
- *  ALWAYS keeps the first and the last, at most `maxLabels` of them. */
-export function thinLabelIndices(count: number, maxLabels = 8): number[] {
+/** Thin the X labels the reference's way (V10/F8 — its recharts
+ *  preserveStart behavior, live-measured on all four report windows):
+ *  windows of 14 days or fewer label EVERY day; longer windows step by
+ *  ceil((count - 1) / 9) days FROM THE WINDOW START (30 days → every 4th,
+ *  8 labels ending day 28; 90 → every 10th, 9 labels ending day 80) and
+ *  the trailing remainder is dropped — the last day is NOT force-labeled
+ *  (the reference's 30-day window labels end at day 28, its 90-day at
+ *  day 80). The dashboard chart (7 points) labels every day on both apps. */
+export function thinLabelIndices(count: number, _maxLabels = 8): number[] {
   if (count <= 0) return [];
-  if (count <= maxLabels) {
+  if (count <= 14) {
     return Array.from({ length: count }, (_, i) => i);
   }
-  const step = (count - 1) / (maxLabels - 1);
-  const seen = new Set<number>();
-  for (let i = 0; i < maxLabels; i += 1) {
-    seen.add(Math.round(i * step));
+  const step = Math.ceil((count - 1) / 9);
+  const indices: number[] = [];
+  for (let i = 0; i < count; i += step) {
+    indices.push(i);
   }
-  return [...seen].sort((a, b) => a - b);
+  return indices;
 }
 
 /** V9/SD-27: the reference renders TWO chart skins — measured live on
@@ -398,92 +408,136 @@ export function SalesAreaChart({
   );
 }
 
-const DONUT_COLORS = ["#8b5cf6", "#7c3aed", "#a78bfa", "#c4b5fd", "#22c55e", "#e2e8f0", "#6366f1", "#f59e0b"];
+/** V10/SD-29: the reference's donut palette, live-measured (the classic
+ *  recharts ramp): indigo-500 → violet-500 → violet-400 → violet-300 →
+ *  violet-200, green-500 in the sixth slot. */
+export const DONUT_COLORS = ["#6366f1", "#8b5cf6", "#a78bfa", "#c4b5fd", "#ddd6fe", "#22c55e"];
 
-/** The category donut + legend with counts. */
+/** One donut sector as a filled path: outer arc → radial edge → inner arc
+ *  back → close (V10/SD-29 — the reference's recharts sectors, measured
+ *  live). Angles are math-style degrees COUNTERCLOCKWISE from 3 o'clock
+ *  (the reference's own start and direction). The reference's padding is
+ *  TRAILING-ONLY: every sector starts EXACTLY at its slice boundary and
+ *  ends `gapDeg` short of the next one (measured: [0,56], [60,116],
+ *  [120,176], [300,356] — uniform 4° gaps between neighbors). */
+export function sectorPath(
+  cx: number,
+  cy: number,
+  innerR: number,
+  outerR: number,
+  a0: number,
+  a1: number,
+  gapDeg = 4,
+): string {
+  const pt = (r: number, deg: number) => {
+    const rad = (deg * Math.PI) / 180;
+    // Screen y grows downward — a rising math angle renders counterclockwise.
+    const x = Math.round((cx + r * Math.cos(rad)) * 100) / 100;
+    const y = Math.round((cy - r * Math.sin(rad)) * 100) / 100;
+    return `${x},${y}`;
+  };
+  const start = a0;
+  const end = a1 - gapDeg;
+  const span = end - start;
+  if (span <= 0) return "";
+  const largeArc = span > 180 ? 1 : 0;
+  return [
+    `M ${pt(outerR, start)}`,
+    `A ${outerR},${outerR},0 ${largeArc},0 ${pt(outerR, end)}`,
+    `L ${pt(innerR, end)}`,
+    `A ${innerR},${innerR},0 ${largeArc},1 ${pt(innerR, start)}`,
+    "Z",
+  ].join(" ");
+}
+
+/** The category donut + legend — the reference's measured rendering
+ *  (V10/SD-29/30): filled sector PATHS (not stroked circles) on the ring
+ *  innerR 50 / outerR 80 centered at (166.5, 100) inside the 333×200 box,
+ *  sectors counterclockwise from 3 o'clock with 2°-per-side padding, a
+ *  #fff 1px stroke on every sector, and the legend — capped at the FIRST
+ *  5 rows (the reference renders 6 sectors but 5 legend rows — its
+ *  internal rule is unobservable; slice(0, 5) reproduces the measured
+ *  behavior) — stacked BELOW the chart with slate-600 names, semibold
+ *  slate-700 counts, and 12px round swatches. */
 export function DonutChart({
   data,
 }: {
   data: { name: string; count: number }[];
 }) {
   const total = data.reduce((sum, d) => sum + d.count, 0);
-  const size = 190;
-  const r = 70;
-  const cx = size / 2;
-  const cy = size / 2;
-  const circumference = 2 * Math.PI * r;
-  const visible = data.filter((d) => d.count > 0);
+  const cx = 166.5;
+  const cy = 100;
+  const innerR = 50;
+  const outerR = 80;
+  const gapDeg = 4;
 
-  // L5: ONE color assignment over the ORIGINAL array feeds BOTH the arcs
-  // and the legend swatches — indexing the filtered list for arcs while the
-  // swatches indexed the unfiltered one mismatched colors whenever a
-  // zero-count category preceded a non-zero one.
+  // L5 (standing): ONE color assignment over the ORIGINAL array feeds BOTH
+  // the sectors and the legend swatches — indexing the filtered list for
+  // sectors while the swatches indexed the unfiltered one mismatched
+  // colors whenever a zero-count category preceded a non-zero one.
   const colorByName = new Map(
     data.map((d, i) => [d.name, DONUT_COLORS[i % DONUT_COLORS.length]]),
   );
 
-  const fractions = visible.map((d) => (total > 0 ? d.count / total : 0));
+  const visible = data.filter((d) => d.count > 0);
+  const spans = visible.map((d) => (total > 0 ? (d.count / total) * 360 : 0));
   const starts: number[] = [];
-  let running = 0;
-  for (const fraction of fractions) {
-    starts.push(running);
-    running += fraction;
+  let angle = 0;
+  for (const span of spans) {
+    starts.push(angle);
+    angle += span;
   }
-  const arcs = visible.map((d, i) => {
-    const fraction = fractions[i];
-    return {
-      ...d,
-      color: colorByName.get(d.name) ?? DONUT_COLORS[0],
-      dash: fraction * circumference,
-      offset: starts[i] * circumference,
-      gap: total > 0 && visible.length > 1 ? 2 : 0,
-    };
-  });
+  const sectors = visible.map((d, i) => ({
+    ...d,
+    path: sectorPath(
+      cx,
+      cy,
+      innerR,
+      outerR,
+      starts[i],
+      starts[i] + spans[i],
+      visible.length > 1 ? gapDeg : 0,
+    ),
+  }));
 
   return (
-    <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:gap-6">
-      <svg
-        width={size}
-        height={size}
-        viewBox={`0 0 ${size} ${size}`}
-        role="img"
-        aria-label="Productos por categoría"
-        className="shrink-0"
-      >
-        {arcs.length === 0 ? (
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1e2235" strokeWidth="26" />
-        ) : (
-          arcs.map((arc) => (
-            <circle
-              key={arc.name}
-              cx={cx}
-              cy={cy}
-              r={r}
-              fill="none"
-              stroke={arc.color}
-              strokeWidth="26"
-              strokeDasharray={`${Math.max(0, arc.dash - arc.gap)} ${circumference}`}
-              strokeDashoffset={-arc.offset}
-              transform={`rotate(-90 ${cx} ${cy})`}
-            />
-          ))
-        )}
-      </svg>
-      <ul className="w-full space-y-2">
-        {data.map((d) => (
-          <li key={d.name} className="flex items-center justify-between gap-3 text-sm">
-            <span className="flex min-w-0 items-center gap-2 text-slate-300">
-              <span
-                aria-hidden
-                className="h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: colorByName.get(d.name) ?? DONUT_COLORS[0] }}
+    <div>
+      <div className="mx-auto h-[200px] w-full max-w-[333px]">
+        <svg
+          viewBox="0 0 333 200"
+          className="h-full w-full"
+          role="img"
+          aria-label="Productos por categoría"
+        >
+          {sectors.length === 0 ? (
+            <circle cx={cx} cy={cy} r={65} fill="none" stroke="#1e2235" strokeWidth={30} />
+          ) : (
+            sectors.map((d) => (
+              <path
+                key={d.name}
+                d={d.path}
+                fill={colorByName.get(d.name) ?? DONUT_COLORS[0]}
+                stroke="#fff"
+                strokeWidth={1}
               />
-              <span className="truncate">{d.name}</span>
-            </span>
-            <span className="font-semibold text-slate-400">{d.count}</span>
-          </li>
+            ))
+          )}
+        </svg>
+      </div>
+      <div className="space-y-2 mt-2">
+        {data.slice(0, 5).map((d) => (
+          <div key={d.name} className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ background: colorByName.get(d.name) ?? DONUT_COLORS[0] }}
+              />
+              <span className="text-slate-600">{d.name}</span>
+            </div>
+            <span className="font-semibold text-slate-700">{d.count}</span>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

@@ -583,3 +583,91 @@ Stage Summary:
   (SD-23 superset); the Detalle-por-método table unobservable; donut
   palette standing. Standing v8 disclosures unchanged (SD-18/19/20,
   SD-14, aspect-true preview, in-memory limiter, terminal grid).
+
+---
+Task ID: V10
+Agent: general-purpose (remediation executor, session V10 2026-10-27)
+Task: The v10 cycle — audit the surfaces the reference finally renders
+with data (the donut, the full tables), write remediation-plan-v10,
+execute it TDD, and ship.
+
+Work Log:
+- Baseline re-verified after a fresh clone of main @ ba55cdb (the v9
+  close + session_12 transcript): lint 0 · tsc 0 · build ✓ · 363/363
+  unit · 115/115 e2e; workspace rebuilt (.env, deps, db push + seed).
+- v9 source diff audited in full — every v9 contract holds in code.
+- Live audit (agent-browser, BOTH apps): the reference's category DONUT
+  rendered with full data for the first time and measured completely —
+  filled sector paths (recharts), ring innerR 50 / outerR 80 at
+  (166.5,100) in a 333×200 box, CCW from 3 o'clock, trailing-only 4°
+  gaps, #fff 1px strokes, palette #6366f1→#ddd6fe + #22c55e, legend =
+  FIRST 5 rows stacked below with slate-600/700 rows and 12px swatches
+  (F1 — the v5 "unobservable donut" disclosure closes); the low-stock
+  header gap 12px vs the clone's 16px (F2); the Ajustes per-section
+  header icons at w-5 h-5 vs the clone's uniform violet-400 18px (F3);
+  the registers page order Caja 2 first (F4); the seeded products in a
+  different order with the 12th row's ASSUMED values vs the now-measured
+  "Jabón Zote 400g"/7501025403010/stock 19 (F5); the sales' relativized
+  dates vs the ref's fixed 19/04/26 22:09 + 14/03/26 01:45 (F6); the
+  second sale's items WRONG at the same total (2x Coca + Sabritas vs 1x
+  Jabón Zote + 1x Papel Higiénico = $61.48, F7); the reports X-ticks by
+  even index vs the ref's day-step rule (30 → every 4th day ending day
+  28; 90 → every 10th; 14 → every day; last day not forced, F8).
+- Pinned-surface re-checks: the mobile drawer contract fully green live;
+  the ref's mobile unchanged (220px squeeze, no burger); toasts silent
+  both; chips/COBRAR/Terminal/Turnos headers identical; two VLM misreads
+  (the "semi-circular gauge" donut claim, the "N avatar") settled by
+  pixel probes; Tailwind v4's compiled palette documented as genuinely
+  different from v3 hex (indigo-500 → #625fff) — class-based pins stay
+  the idiom.
+- Wrote docs/remediation-plan-v10.md (18-item ledger, SD-29..SD-36,
+  B1-B6 batches).
+- TDD execution, all pins red first (16 unit + 12 e2e):
+  - B1: sectorPath() + the DonutChart rewrite (measured geometry,
+    palette, white strokes, stacked layout, 5-row legend) + the
+    byCategory [{createdAt asc},{id asc}] tiebreaker (SQLite tie order
+    had flipped Higiene/Alimentos live).
+  - B2: SectionCard titleClassName + the low-stock mb-3.
+  - B3: the five measured Ajustes icon+color pairs (FileText/Tag replace
+    receipt-text/tags).
+  - B4: the seed rewritten to the ref's exact observable state (product
+    page order, the real 12th row, Caja 2 before Caja 1, the exact
+    April/March datetimes, the second sale's real items, staggered
+    createdAt) + id tiebreakers on the delegates/product list.
+  - B5: thinLabelIndices on the ref's rule; 2 visual-parity pins + 2
+    reports data pins realigned (the empty-window parity state); the
+    terminal-sales spec gained the LIVE post-sale reports assertion
+    (order-robust numerics).
+- Legacy-pin alignment: SEEDED_PRODUCTS to the ref's order; the hygiene
+  L5 pin held verbatim (both donut consumers still read colorByName).
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 379/379 · e2e 127/127.
+- Evidence: all 18 screenshots regenerated from the production build
+  (the first run captured 8 identical login pages — the db password
+  didn't match the capture script's hardcoded login; reseeded with the
+  default contract and re-ran clean); VLM + pixel-verified (both donuts
+  full rings, the dashboard chart flat 0-4, the low-stock card 1172px
+  both, the KPIs identical).
+- Docs lockstep: AGENTS.md contract 23; CLAUDE.md counts + the v10
+  block; README badge (379+127); PAD v1.8.0 + ADR-020 + §8; SKILL v1.5.0
+  (counts + the v10 block); session_13.md; this entry.
+
+Stage Summary:
+- v10 closed the reference's donut completely (the last "unobservable"
+  chart surface), aligned the seeded data to the reference account's
+  exact observable state (order, values, datetimes, items — the clone's
+  dashboard chart now renders flat and its reports empty like the
+  reference), made every list ordering deterministic against SQLite tie
+  order, and adopted the reference's reports X-tick rule.
+- Probe lessons recorded: VLM shape claims need pixel settlement;
+  computed-color pins must stay class-based (v4's compiled palette
+  differs from v3 hex); e2e evaluates need data-loaded waits (the
+  placeholder state is indistinguishable from loaded-empty); e2e
+  test-order pollution is real (order-robust ≥ assertions); a running
+  dev server holds the deleted SQLite inode (restart after a db reset);
+  the capture script's hardcoded login is a reseed contract.
+- Known-open (disclosed): the ref's "Demo Cashier" shift (platform
+  activity, not mirrored); the ref's "0 usuarios" cashiers state (the
+  documented superset); the legend's slice(0,5) cap is an inference; the
+  ref's register ordering rule (seed order reproduces the observable);
+  the donut tooltip; the S4/S5 2° recharts float anomaly. Standing v8/v9
+  disclosures unchanged.

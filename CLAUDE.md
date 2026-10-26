@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (363 tests / 25 files)
-bun run test:e2e       # playwright e2e layer (115 specs, boots standalone :3100)
+bun run test           # vitest unit layer (379 tests / 26 files)
+bun run test:e2e       # playwright e2e layer (127 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -120,13 +120,16 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   h3 title-case slate-700 16px) vs `variant="kicker"` (reports h2
   uppercase white/60 14px) — measured live; the H1 is 24px FIXED at every
   width (Reports is the reference's only BRIGHT H1 — `tone="bright"`
-  white/90). Chart X labels thin to ≤8 (first+last kept) via
-  `thinLabelIndices`; Y labels are integers ($ on Reports). The TAB TITLE
+  white/90). The TAB TITLE
   is per-route and PATH-driven (v9: `documentTitleForPath()` — exact-case
   canonical match, slug-case everything else, e.g. "/SALES" → "SALES |
   VeloxPOS"; the 404 slug title rides the guarded observer in
   `src/app/not-found-title.tsx`; the Spanish aliases resolve to their
-  views via `SPANISH_ALIASES`).
+  views via `SPANISH_ALIASES`). Chart X labels thin the REFERENCE's way
+  (v10: ≤14-day windows label every day; longer windows step
+  `ceil((count-1)/9)` from the window start — 30 → every 4th, 90 → every
+  10th; the last day is NOT force-labeled); Y labels are integers ($ on
+  Reports).
 - The auth round-trip (v8): a logged-out app route bounces to
   `/login?from_url=…` and login RETURNS there through
   `safeReturnTo(raw, origin)` (`src/lib/router.ts` — same-origin only,
@@ -142,6 +145,20 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   (`variant="dashboard"` vs `"reports"` — gridlines/labels/line/gradient
   all differ); the dashboard has NO footer credit (the ref ends at the
   low-stock rows).
+- The v10 contracts: the category donut is the ref's recharts rendering
+  (`sectorPath()` filled paths, ring 50/80 at (166.5,100) in 333×200,
+  CCW from 3 o'clock, trailing 4° gap, #fff 1px strokes, the
+  #6366f1→#22c55e palette by original index, legend = FIRST 5 rows
+  stacked below with slate-600/700 rows); the low-stock header gap is
+  mb-3; the Ajustes headers carry per-section icons (Store/indigo,
+  Palette/purple, FileText/green, CreditCard/blue, Tag/amber at w-5
+  h-5); the SEED mirrors the ref's observable data exactly (product
+  page order + the real 12th row "Jabón Zote 400g"/7501025403010/19,
+  Caja 2 before Caja 1, sales at 19/04/26 22:09 + 14/03/26 01:45 with
+  the second's real items → the dashboard chart renders FLAT and the
+  reports render "Sin datos en este período" like the ref); every
+  list orders `[{createdAt asc},{id asc}]` (deterministic against
+  SQLite tie order).
 - Table contract (v5, live-measured): headers `text-xs font-semibold
   text-slate-500 uppercase` per-column-aligned; rows ride
   `border-b border-slate-50` + `hover:bg-white/40`; body cells `text-sm

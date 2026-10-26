@@ -8,8 +8,8 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.4.0
-last_updated: "2026-10-26"
+version: 1.5.0
+last_updated: "2026-10-27"
 tags:
   - pos
   - retail
@@ -25,8 +25,8 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v8 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 363/363 unit · 115/115 e2e**. Evidence labels:
+> template), validated against the codebase at the v10 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 379/379 unit · 127/127 e2e**. Evidence labels:
 > **Verified** (executed here), **Reasoned** (inference), **Assumed**
 > (decision).
 
@@ -68,8 +68,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 363 tests / 25 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 115 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 379 tests / 26 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 127 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -99,8 +99,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 363/363
-bun run test:e2e           # playwright: 115/115 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 379/379
+bun run test:e2e           # playwright: 127/127 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -268,6 +268,41 @@ The v9 contract additions (AGENTS.md 21-22, all live-measured):
 - Screenshot methodology: capture from the PRODUCTION standalone build
   (`scripts/capture-screenshots-prod.sh`, :3100) — the dev server leaks
   the Next.js dev-tools badge into captures.
+
+The v10 contract additions (AGENTS.md 23, all live-measured):
+- The category donut is the reference's recharts rendering, fully measured
+  for the first time (the v5 "donut palette unobservable" disclosure
+  closes): `sectorPath()` in `pos/shared.tsx` emits filled sector paths on
+  the ring innerR 50 / outerR 80 centered at (166.5, 100) inside the
+  `0 0 333 200` viewBox, sectors COUNTERCLOCKWISE from 3 o'clock with a
+  TRAILING 4° gap (each sector starts exactly at its boundary), every
+  sector stroked `#fff` 1px, and `DONUT_COLORS = ["#6366f1", "#8b5cf6",
+  "#a78bfa", "#c4b5fd", "#ddd6fe", "#22c55e"]` mapped by ORIGINAL data
+  index. The legend renders the FIRST 5 rows ONLY (the ref renders 6
+  sectors but 5 legend rows) stacked BELOW the chart with slate-600
+  names, semibold slate-700 counts, and 12px swatches.
+- The low-stock card's header gap is the ref's 12px (mb-3 via
+  `SectionCard titleClassName`); every OTHER card header stays mb-4.
+- The Ajustes headers carry per-section icons at w-5 h-5: Store/
+  text-indigo-500, Palette/text-purple-500, FileText/text-green-500,
+  CreditCard/text-blue-500, Tag/text-amber-500 (the uniform violet-400
+  18px set was clone-invented — retired).
+- The SEED mirrors the reference account's observable state exactly: the
+  ref's product page order (Shampoo → Pan Bimbo, the 12th row the
+  MEASURED "Jabón Zote 400g"/7501025403010/stock 19), Caja 2 before
+  Caja 1, and the two sales at the ref's EXACT datetimes (19/04/2026
+  22:09, 14/03/2026 01:45) with the second's real items (1x Jabón Zote
+  + 1x Papel Higiénico). The relativized daysAgo seeding is RETIRED —
+  the clone's dashboard chart renders flat and its reports render "Sin
+  datos en este período" exactly like the reference. Seeded dates are
+  now FIXED, so reseeding never drifts the visible data.
+- List ordering is deterministic everywhere: `[{createdAt asc}, {id
+  asc}]` on the delegates, the product list, and the dashboard's
+  byCategory (SQLite's tie order is arbitrary — never rely on it).
+- The reports X-ticks follow the ref's rule (`thinLabelIndices`): ≤14-day
+  windows label every day; longer windows step `ceil((count-1)/9)` from
+  the window start (30 → every 4th day ending day 28; 90 → every 10th
+  ending day 80); the last day is NOT force-labeled.
 
 ## §5 Component Architecture & Patterns
 
@@ -444,8 +479,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 363/363 vitest
-bun run test:e2e      # 115/115 playwright (production posture)
+bun run test          # 379/379 vitest
+bun run test:e2e      # 127/127 playwright (production posture)
 ```
 
 Verification beyond the gates:

@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.7.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.8.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -73,6 +73,29 @@
 > swatch with an editable hex input; and every dialog measured to the
 > reference's `#0f121a`/`#e7e9ef` chrome with dropdown panels at
 > `#161922`; ADR-018 added.
+
+> v1.8.0 (2026-10-27): the remediation-plan-v10 execution — the donut
+> family + the seeded-data parity sweep: the category donut is rebuilt to
+> the reference's fully-measured recharts rendering (`sectorPath()` filled
+> sector paths, ring innerR 50 / outerR 80 at (166.5, 100) in the 333×200
+> viewBox, sectors counterclockwise from 3 o'clock with a trailing 4°
+> gap, #fff 1px strokes, the measured #6366f1→#ddd6fe + #22c55e palette,
+> and the legend capped at the FIRST 5 rows stacked below the chart with
+> slate-600/slate-700 rows and 12px swatches — the v5-era "donut palette
+> unobservable" disclosure closes); the low-stock header gap is the
+> ref's 12px (mb-3); the Ajustes section headers adopt the ref's
+> per-section icons (Store/indigo, Palette/purple, FileText/green,
+> CreditCard/blue, Tag/amber at w-5 h-5); the SEED mirrors the reference
+> account's observable state exactly (the ref's product page order with
+> the real 12th row "Jabón Zote 400g"/7501025403010/stock 19, Caja 2
+> before Caja 1, the two sales at the ref's exact datetimes 19/04/2026
+> 22:09 + 14/03/2026 01:45 with the second's real items 1x Jabón Zote +
+> 1x Papel Higiénico → the dashboard chart renders flat and the reports
+> render "Sin datos en este período" like the reference); every list
+> orders `[{createdAt asc},{id asc}]` (deterministic against SQLite tie
+> order); and the reports X-ticks adopt the ref's measured rule (≤14-day
+> windows label every day; longer windows step ceil((count-1)/9) from
+> the window start, last day not force-labeled); ADR-020 added.
 
 > v1.7.0 (2026-10-26): the remediation-plan-v9 execution — the route
 > alias + table/chart measurement sweep: the Spanish route names
@@ -149,6 +172,7 @@ lowest-risk path. **Verified.**
 | ADR-017 | The v7 per-route title + data-lifecycle contract set: the document title is per-route (the reference's exact strings — root "VeloxPOS", "<View> | VeloxPOS" elsewhere, "Store Settings | VeloxPOS" for Ajustes, "Signup | VeloxPOS", and the title-cased route slug on 404s) via `DOCUMENT_TITLES`/`documentTitleForPath()` + the shell's post-ready effect + the signup server layout + the guarded MutationObserver on 404s (Next's client metadata manager re-applies the root title once after mount — the observer wins the last write); "Quitar" clears the stored image with `imageUrl: null` (schema `.nullable()`; an undefined key is dropped by JSON.stringify and skipped by `sentKeysPatch` — the v6 clear was a silent server no-op); a failed pick or picker-cancel never touches the stored value; the product-dialog numeric fields are `type="number"` with steps (the reference's own control type — spinners, role=spinbutton, native filtering); the Ajustes logo block renders the 56px pending/stored preview + a Quitar that PATCHes null | Accepted — Verified (324 unit + 98 e2e, live probe parity) |
 | ADR-018 | The v8 auth round-trip + measured dialog contract set: a logged-out hit on any app route bounces to `/login?from_url=<encoded current path>` and a successful login returns the user to that route through `safeReturnTo(raw, origin)` (same-origin absolute URLs and site-relative paths pass; foreign origins, protocol-relative URLs, and javascript:/data: fail closed to "/"; "/login" maps to "/" — the param is an open-redirect vector if trusted blindly; the reference's own gates on 404s and /signup are base44 platform artifacts, NOT replicated, SD-20); the Ventas ticket modal is the reference's measured layout (a `grid grid-cols-2 gap-3 text-sm` meta block of stacked `text-slate-500`/`font-medium` cells, `{qty}x {name}` item lines with `font-medium` prices over `border-slate-100`, totals over `border-slate-200` with `text-slate-500` rows and a `text-lg font-bold` Total, the `Receipt` `text-indigo-500` title icon, no footer Close button — the reference's own slate-800 Total color is an unreadable contrast bug, a readable tone ships, SD-18); the mail action prompts `window.prompt("Enviar ticket a:")` first (cancel = no-op) and the entered address rides `buildTicketMailto(sale, to)` (no SMTP channel — the mail client opens pre-addressed, SD-19); the Ajustes colors pair each swatch with an editable hex Input (the `hexColor` schema regex is the server gate); every `DialogContent` rides the measured `bg-[#0f121a] text-[#e7e9ef]` chrome and every `SelectContent` panel `bg-[#161922]` | Accepted — Verified (342 unit + 105 e2e, live probe parity) |
 | ADR-019 | The v9 route-alias + typography/chart contract set: the Spanish route names the rewrites accept are a deliberate SUPERSET (the reference 404s every one — live-measured on all six) and `SPANISH_ALIASES` in `src/lib/router.ts` maps them to their views (`/Ventas`→ventas, `/Inventario`→inventario, `/Cajas`→cajas, `/Cajeros`→cajeros, `/Reportes`→reportes, `/Ajustes`→ajustes, `/Terminal`→terminal) — before v9 they fell to the terminal fallback and silently rendered the WRONG view; the document title is PATH-driven like the reference (`documentTitleForPath()`: exact-case match against the canonical PascalCase path → that route's canonical title, everything else slug-cases — "/SALES" → "SALES | VeloxPOS", "/storesettings" → "Storesettings", "/Ventas" → "Ventas" — the shell reads the pathname, not `DOCUMENT_TITLES[view]`); tables are BARE (`<table class="w-full">` — the ref's 16px base; cells carry their own sizes; a table-level `text-sm` had shrunk the Ventas Total to 14px); the shadcn foreground family is the ref's measured `#e7e9ef` (231 233 239 — body/card/popover); `SalesAreaChart` carries TWO measured skins — "dashboard" (gridlines `#e2e8f0` "3 3", labels `#94a3b8` 12px, line `#6366f1` w2.5, `salesGrad` gradient top 0.3) and "reports" (gridlines `rgba(255,255,255,0.04)`, labels `rgba(255,255,255,0.3)` 11px, line w2, gradient top 0.35); the dashboard carries NO footer credit (the ref ends at the low-stock rows) | Accepted — Verified (363 unit + 115 e2e, live probe parity) |
+| ADR-020 | The v10 donut + seeded-data contract set: the category donut is the reference's recharts rendering, fully measured for the first time (the v5 "unobservable donut" disclosure closes) — `sectorPath()` in `src/components/pos/shared.tsx` emits filled sector paths on the ring innerR 50 / outerR 80 centered at (166.5, 100) inside the `0 0 333 200` viewBox, sectors COUNTERCLOCKWISE from 3 o'clock with a TRAILING 4° gap (each sector starts exactly at its slice boundary — measured [0,56]/[60,116]/[120,176]/[300,356]), every sector carries `stroke="#fff" strokeWidth={1}`, and `DONUT_COLORS = ["#6366f1", "#8b5cf6", "#a78bfa", "#c4b5fd", "#ddd6fe", "#22c55e"]` maps by ORIGINAL data index; the legend renders the FIRST 5 rows only (`slice(0, 5)` — the ref renders 6 sectors but 5 legend rows; its internal rule is unobservable, the cap is the measured behavior) stacked BELOW the chart with slate-600 names / semibold slate-700 counts / 12px round swatches; the low-stock card header's gap is the ref's 12px (`SectionCard titleClassName="mb-3"` — every other card header stays mb-4); the Ajustes section headers carry the ref's per-section icons at w-5 h-5 (Store/text-indigo-500, Palette/text-purple-500, FileText/text-green-500, CreditCard/text-blue-500, Tag/text-amber-500); the SEED mirrors the reference account's observable state exactly — products in the ref's page order (Shampoo → Pan Bimbo; the 12th row is the measured "Jabón Zote 400g" / 7501025403010 / stock 19, retiring the dossier-era ASSUMED "Barra" values), Caja 2 created before Caja 1 (the ref's page order), and the two historical sales at the ref's EXACT datetimes (19/04/2026 22:09 and 14/03/2026 01:45) with the second's REAL items (1x Jabón Zote + 1x Papel Higiénico = $61.48) — the relativized daysAgo seeding is RETIRED, so the clone's dashboard chart renders flat and its reports render "Sin datos en este período" exactly like the reference; every owned list orders `[{createdAt asc},{id asc}]` (deterministic against SQLite tie order — the delegates, the product list, and the dashboard's byCategory); and the reports X-ticks follow the ref's measured rule (`thinLabelIndices`: windows ≤14 days label every day; longer windows step `ceil((count-1)/9)` from the window start — 30 days → 8 labels at 4-day steps ending day 28, 90 → 9 labels at 10-day steps ending day 80; the last day is NOT force-labeled) | Accepted — Verified (379 unit + 127 e2e, live probe + pixel parity) |
 
 ---
 
@@ -337,8 +361,8 @@ Two layers, two runners, disjoint file globs:
 
 | Layer | Runner | Scope | Count |
 |---|---|---|---|
-| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 363 tests / 25 files — Verified |
-| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 115 specs — Verified |
+| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 379 tests / 26 files — Verified |
+| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 127 specs — Verified |
 
 - **Unit seams**: money (the verified ticket math), ticket (V-ID shape),
   router (8-view map + aliases), date (es-MX formatters), validation

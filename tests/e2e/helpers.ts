@@ -26,17 +26,20 @@ export const ROUTES = [
 ] as const;
 
 /** The seeded product names the inventory asserts can rely on. */
+// V10/F5: the reference's own PAGE order (live-measured 2026-10-27 — the
+// seed mirrors it), with the 12th row's real name (the dossier-era
+// "Jabón Zote Barra 400g" assumption is retired).
 export const SEEDED_PRODUCTS = [
-  "Yogurt Danone Natural 900g",
-  "Frijoles La Costeña 560g",
-  "Leche Lala Entera 1L",
   "Shampoo Pantene 400ml",
-  "Cloro Cloralex 1L",
-  "Papel Higiénico Pétalo 4 rollos",
-  "Sabritas Original 45g",
   "Agua Bonafont 1L",
   "Coca-Cola 600ml",
+  "Papel Higiénico Pétalo 4 rollos",
+  "Yogurt Danone Natural 900g",
+  "Frijoles La Costeña 560g",
+  "Cloro Cloralex 1L",
+  "Leche Lala Entera 1L",
+  "Sabritas Original 45g",
   "Atún Dolores 295g",
+  "Jabón Zote 400g",
   "Pan Bimbo Blanco",
-  "Jabón Zote Barra 400g",
 ] as const;

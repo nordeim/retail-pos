@@ -119,6 +119,7 @@ export function DashboardView() {
         className="mt-6"
         testId="low-stock-card"
         icon={<TriangleAlert className="h-5 w-5 text-amber-500" />}
+        titleClassName="mb-3"
       >
         {!loaded ? (
           <p className="text-sm text-slate-500">Cargando…</p>
