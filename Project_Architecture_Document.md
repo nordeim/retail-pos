@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.2.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.3.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -19,6 +19,20 @@
 > pill, StatCard blob anatomy + row-layout reports cards, official social
 > brand marks + hosted logo PNG on the auth surface, the `/Inventory` route
 > alignment, and the reference's own lucide nav icons; ADR-014 added.
+>
+> v1.3.0 (2026-10-26): the remediation-plan-v5 execution — the
+> view-internals parity sweep (24-item live probe ledger): the flush shell
+> gutter (ml-[220px]/[68px]; H1 at x=244), the full-bleed Terminal (two-pane
+> h-screen layout with the border-l ticket RAIL, the transient emerald
+> "Agregado" banner, the 12px uppercase Ticket header, ShoppingBag COBRAR,
+> the muted empty-state card), the reference table system (slate-50
+> hairlines + white/40 hover + slate-600 body + mono indigo ticket cells),
+> the two-shape StatusPill (6px soft table badges vs the register-card
+> round pill), 12px transparent form controls, the reference's neutral
+> `--secondary` token, tinted (non-gradient) reports chips, the Reports
+> bright H1, the reference dashboard grids, settings parity (max-w-4xl,
+> 54px Guardar, glass category chips), and the button.tsx study-remnant
+> purge; ADR-015 added.
 
 ## Table of Contents
 
@@ -71,6 +85,7 @@ lowest-risk path. **Verified.**
 | ADR-012 | Sessions carry a `tokenVersion`; reset-password bumps it transactionally — pre-reset cookies are revoked on their next request | Accepted — Verified (security.spec.ts) |
 | ADR-013 | The remediation contract set: guarded in-transaction stock decrement + server-side cash gate (422), duplicate-open 409 via ConflictError, raw ZodError → 400, 413/415 body gates, OTP 6-strike lockout, proxy-hop-aware client IP, drawer focus contract (latched rAF + Tab wrap + focus return) | Accepted — Verified (213 unit + 70 e2e) |
 | ADR-014 | The v4 visual-parity contract set: native Tailwind radius scale (shadcn `--radius` remap removed — the reference's own shadcn runs native), the reference card system on `vx-card` (translucent `rgba(16,18,32,.9)` + white-alpha hairline + elevation shadow), the `glass-button-primary/success/warning` gradient action system (135° ramps + colored hairline + glow + hover lift, CSS extracted live), the translucent-violet active nav pill on a RING (never a border — layout-neutral), StatCard blob anatomy, the icon-left reports summary cards, and the official social brand marks + hosted logo PNG on the auth surface | Accepted — Verified (238 unit + 74 e2e, live probe parity) |
+| ADR-015 | The v5 view-internals contract set: the flush shell gutter (`lg:ml-[220px]`/`[68px]` — the view's own padding provides the 24px gutter, H1 at x=244); the Terminal as the ONE full-bleed view (`lg:h-screen` two-pane, ticket panel as the `rounded-none border-l bg-[#0d0f1a]` RAIL with the transient "Agregado" banner and ShoppingBag COBRAR); the reference table system (slate-50 hairlines, `hover:bg-white/40`, `text-slate-600` body, mono indigo ticket cells, per-column header alignment, the dense cajeros shifts variant); the two-shape StatusPill (6px soft table badges `green-100/green-700` + `slate-100/slate-500`, vs the register-card `rounded-full` pill); 12px-radius transparent form controls; the reference's neutral `--secondary` token (`33 37 49`); tinted reports chips (15%/30%/400-tone, NOT gradient) + the Reports-only bright H1 (`tone="bright"`) | Accepted — Verified (277 unit + 83 e2e, live probe parity) |
 
 ---
 

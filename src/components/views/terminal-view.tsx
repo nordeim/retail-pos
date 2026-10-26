@@ -21,6 +21,8 @@ import {
   Minus,
   Plus,
   ShoppingCart,
+  ShoppingBag,
+  CircleCheck,
   Trash2,
   Banknote,
   CreditCard,
@@ -44,7 +46,7 @@ import {
   lineTotalCents,
   parseMoneyToCents,
 } from "@/lib/money";
-import { computeTicketTotals, useAppStore, usePosStore } from "@/lib/store";
+import { computeTicketTotals, useAppStore, usePosStore, type Product } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function TerminalView() {
@@ -63,6 +65,11 @@ export function TerminalView() {
   const [query, setQuery] = React.useState("");
   const [category, setCategory] = React.useState<string>("Todos");
   const [payOpen, setPayOpen] = React.useState(false);
+  // V5/T4: the reference's transient "Agregado" banner — the product name
+  // of the last line added, shown for ~1.6s then collapsed away (the
+  // reference keeps it in the DOM hidden behind max-h-0/opacity-0).
+  const [addedName, setAddedName] = React.useState<string | null>(null);
+  const addedTimer = React.useRef<number | null>(null);
 
   const totals = computeTicketTotals(ticket);
 
@@ -76,6 +83,17 @@ export function TerminalView() {
 
   const sellable = Boolean(activeShift);
 
+  const onAdd = (product: Product) => {
+    ticketAdd(product);
+    setAddedName(product.name);
+    if (addedTimer.current !== null) window.clearTimeout(addedTimer.current);
+    addedTimer.current = window.setTimeout(() => setAddedName(null), 1600);
+  };
+
+  React.useEffect(() => () => {
+    if (addedTimer.current !== null) window.clearTimeout(addedTimer.current);
+  }, []);
+
   const onSaleCreated = React.useCallback(() => {
     void loadCollections(["products", "sales", "shifts"]).then(() => {
       const shifts = usePosStore.getState().shifts;
@@ -84,38 +102,48 @@ export function TerminalView() {
   }, [loadCollections, setActiveShiftFrom]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+    // V5/T7: the reference's terminal skeleton — a full-height two-pane
+    // layout (flex h-screen at lg; main is full-bleed there). Below lg the
+    // panes stack in normal page flow (the clone's mobile superset keeps
+    // the app bar + drawer + page scroll).
+    <div className="flex h-full flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
       {/* LEFT: scan/grid area */}
-      <div>
+      <div className="flex flex-1 flex-col gap-4 p-4 lg:min-w-0 lg:overflow-y-auto vx-scroll">
         {!sellable ? (
-          <div className="vx-card flex min-h-[320px] flex-col items-center justify-center gap-3 p-10 text-center">
-            <Monitor className="h-12 w-12 text-violet-400" strokeWidth={1.6} />
-            <h2 className="text-xl font-bold text-slate-100">No hay turno activo</h2>
-            <p className="max-w-sm text-sm text-slate-400">
-              Ve a{" "}
-              <button
-                type="button"
-                data-testid="go-to-registers"
-                onClick={() => navigate("cajas")}
-                className="font-bold text-slate-100 underline decoration-slate-500 underline-offset-2"
-              >
-                Cajas
-              </button>{" "}
-              para abrir un turno antes de realizar ventas.
-            </p>
+          <div className="flex flex-1 items-center justify-center">
+            {/* V5/T8: the reference's muted empty card — 64px violet-400/30
+                monitor, white/70 heading, white/35 copy with a white/60
+                Cajas mention (ours keeps navigation — a superset affordance
+                styled as their strong). */}
+            <div className="vx-card max-w-md p-8 text-center">
+              <Monitor className="mx-auto mb-4 h-16 w-16 text-violet-400/30" strokeWidth={1.6} />
+              <h2 className="mb-2 text-xl font-bold text-white/70">No hay turno activo</h2>
+              <p className="text-sm text-white/35">
+                Ve a{" "}
+                <button
+                  type="button"
+                  data-testid="go-to-registers"
+                  onClick={() => navigate("cajas")}
+                  className="font-bold text-white/60"
+                >
+                  Cajas
+                </button>{" "}
+                para abrir un turno antes de realizar ventas.
+              </p>
+            </div>
           </div>
         ) : (
           <>
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <div className="relative min-w-0 flex-1">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Buscar producto o escanear código..."
                   aria-label="Buscar producto"
                   data-testid="terminal-search"
-                  className="bg-[#12141f] pl-9"
+                  className="pl-9"
                 />
               </div>
               <div className="flex flex-wrap gap-2" data-testid="terminal-categories">
@@ -151,7 +179,7 @@ export function TerminalView() {
                     <button
                       type="button"
                       disabled={product.stock <= 0}
-                      onClick={() => ticketAdd(product)}
+                      onClick={() => onAdd(product)}
                       data-testid={`terminal-product-${product.id}`}
                       className={cn(
                         "vx-card vx-focus flex h-full w-full flex-col items-start gap-1 p-3 text-left transition-colors",
@@ -181,23 +209,46 @@ export function TerminalView() {
         )}
       </div>
 
-      {/* RIGHT: the TICKET panel */}
+      {/* RIGHT: the TICKET rail — the reference's flat full-height panel
+          (border-l, solid #0d0f1a, no card chrome). */}
       <aside
-        className="vx-card flex h-fit flex-col p-4 lg:sticky lg:top-8"
+        className="flex w-full flex-col rounded-none border-l border-[#1e2235] bg-[#0d0f1a] p-4 md:w-[380px] lg:min-h-0"
         data-testid="ticket-panel"
       >
-        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-          Agregado
-        </p>
-        <h2 className="mb-3 text-lg font-bold text-slate-100">TICKET</h2>
+        {/* V5/T4: the transient "Agregado" feedback banner (always mounted,
+            collapsed to max-h-0/opacity-0 when idle — the reference's own
+            markup verbatim). */}
+        <div
+          className={cn(
+            "transition-all duration-300 overflow-hidden",
+            addedName ? "max-h-24 opacity-100 mb-3" : "max-h-0 opacity-0",
+          )}
+          aria-live="polite"
+        >
+          <div className="bg-gradient-to-r from-emerald-600/80 to-teal-600/70 rounded-2xl px-4 py-3 flex items-center gap-3 border border-emerald-500/30">
+            <CircleCheck className="h-6 w-6 shrink-0 text-emerald-300" />
+            <div className="min-w-0">
+              <p className="text-emerald-300/70 text-[10px] font-bold uppercase tracking-widest">
+                Agregado
+              </p>
+              <p className="text-white text-lg font-black leading-tight truncate">
+                {addedName}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-3 flex flex-shrink-0 items-center justify-between">
+          <h2 className="text-xs font-bold text-white/80 tracking-wide uppercase">Ticket</h2>
+        </div>
 
         {ticket.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-12 text-center">
-            <ShoppingCart className="h-12 w-12 text-slate-600" strokeWidth={1.5} />
-            <p className="text-sm text-slate-400">Escanea o selecciona productos</p>
+          <div className="vx-scroll flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto py-8 text-white/20">
+            <ShoppingCart className="h-16 w-16" strokeWidth={1.5} />
+            <p className="mt-3 text-sm text-white/25">Escanea o selecciona productos</p>
           </div>
         ) : (
-          <ul className="vx-scroll mb-4 max-h-[46vh] space-y-3 overflow-y-auto pr-1" data-testid="ticket-lines">
+          <ul className="vx-scroll mb-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1" data-testid="ticket-lines">
             {ticket.map((line) => (
               <li key={line.product.id} className="rounded-xl bg-[#12141f] p-3">
                 <div className="flex items-start justify-between gap-2">
@@ -250,40 +301,47 @@ export function TerminalView() {
           </ul>
         )}
 
-        <div className="mb-3 space-y-1 border-t border-[#1e2235] pt-3 text-sm">
-          <div className="flex justify-between text-slate-400">
-            <span>Subtotal</span>
-            <span>{formatMoney(totals.subtotal)}</span>
-          </div>
-          <div className="flex justify-between text-slate-400">
-            <span>IVA</span>
-            <span>{formatMoney(totals.tax)}</span>
-          </div>
-          <div className="flex justify-between text-base font-bold text-slate-100">
-            <span>Total</span>
-            <span data-testid="ticket-total">{formatMoney(totals.total)}</span>
-          </div>
-        </div>
+        {/* V5/T5: the footer keeps the reference's white/5 hairline and
+            mt-auto pinning; the totals rows only exist when there are lines
+            (the reference's empty footer is the COBRAR button alone). */}
+        <div className="mt-auto flex-shrink-0 space-y-3 border-t border-white/5 pt-4">
+          {ticket.length > 0 ? (
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between text-slate-400">
+                <span>Subtotal</span>
+                <span>{formatMoney(totals.subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>IVA</span>
+                <span>{formatMoney(totals.tax)}</span>
+              </div>
+              <div className="flex justify-between text-base font-bold text-slate-100">
+                <span>Total</span>
+                <span data-testid="ticket-total">{formatMoney(totals.total)}</span>
+              </div>
+            </div>
+          ) : null}
 
-        {ticket.length > 0 ? (
-          <Button
-            data-testid="cobrar-button"
-            className="glass-button-success h-auto w-full rounded-2xl px-8 py-5 text-xl font-black"
-            onClick={() => setPayOpen(true)}
-          >
-            <Banknote className="h-5 w-5" />
-            COBRAR {formatMoney(totals.total)}
-          </Button>
-        ) : (
-          <Button
-            disabled
-            data-testid="cobrar-button"
-            className="glass-button-success pointer-events-none h-auto w-full rounded-2xl px-8 py-5 text-xl font-black opacity-50"
-          >
-            <Banknote className="h-5 w-5" />
-            COBRAR {formatMoney(0)}
-          </Button>
-        )}
+          {ticket.length > 0 ? (
+            <Button
+              data-testid="cobrar-button"
+              className="glass-button-success h-auto w-full rounded-2xl px-8 py-5 text-xl font-black"
+              onClick={() => setPayOpen(true)}
+            >
+              <ShoppingBag className="h-6 w-6" />
+              COBRAR {formatMoney(totals.total)}
+            </Button>
+          ) : (
+            <Button
+              disabled
+              data-testid="cobrar-button"
+              className="glass-button-success pointer-events-none h-auto w-full rounded-2xl px-8 py-5 text-xl font-black opacity-50"
+            >
+              <ShoppingBag className="h-6 w-6" />
+              COBRAR {formatMoney(0)}
+            </Button>
+          )}
+        </div>
       </aside>
 
       {payOpen ? (
@@ -427,7 +485,6 @@ function PaymentDialog({
                 onChange={(event) => setCashInput(event.target.value)}
                 placeholder="0.00"
                 data-testid="pay-cash"
-                className="bg-[#0d0f1a]"
               />
               {cashShort ? (
                 <p className="mt-1 text-xs text-red-400">El efectivo no cubre el total.</p>
@@ -450,7 +507,6 @@ function PaymentDialog({
               value={clientName}
               onChange={(event) => setClientName(event.target.value)}
               placeholder="Nombre del cliente"
-              className="bg-[#0d0f1a]"
             />
           </div>
 

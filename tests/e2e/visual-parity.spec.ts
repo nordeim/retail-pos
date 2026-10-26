@@ -347,3 +347,223 @@ test.describe("visual parity (v4)", () => {
     expect(googlePaths).toEqual(["#4285F4", "#34A853", "#FBBC05", "#EA4335"]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// v5 computed-style pins (remediation-plan-v5 §3), measured live on the
+// reference during session V5 (2026-10-26). Same probe-identity discipline
+// as R3/v4: Tailwind v4 resolves through OKLCH, so color assertions compare
+// against a same-utility probe element in the same page.
+// ---------------------------------------------------------------------------
+
+test.describe("visual parity (v5)", () => {
+  test("G1: the shell gutter is flush — the H1 lands at x=244", async ({
+    page,
+  }) => {
+    await page.goto("/Dashboard");
+    await expect(
+      page.getByRole("heading", { name: "Dashboard" }),
+    ).toBeVisible();
+    const x = await page.evaluate(() => {
+      const h1 = document.querySelector("main h1");
+      if (!h1) throw new Error("missing h1");
+      return Math.round(h1.getBoundingClientRect().left);
+    });
+    // sidebar 220 + the view's own 24px padding = 244 (the reference's H1 x)
+    expect(x).toBe(244);
+  });
+
+  test("T1: sales table headers are 12px/600/uppercase on the slate-50 hairline grid", async ({
+    page,
+  }) => {
+    await page.goto("/Sales");
+    await expect(page.getByTestId("sales-table")).toBeVisible();
+    const header = await computedStyles(page, "thead th", [
+      "font-size",
+      "font-weight",
+      "text-transform",
+    ]);
+    expect(header["font-size"]).toBe("12px");
+    expect(header["font-weight"]).toBe("600");
+    expect(header["text-transform"]).toBe("uppercase");
+    // the row hairline is the reference's slate-50 (border-color probe identity)
+    await expect(page.locator('[data-testid="sales-table"] tbody tr').first()).toBeVisible();
+    const rowBorder = await page
+      .locator('[data-testid="sales-table"] tbody tr')
+      .first()
+      .evaluate((el) => getComputedStyle(el).borderBottomColor);
+    const borderProbe = await page.evaluate(() => {
+      const el = document.createElement("div");
+      el.className = "border-b border-slate-50";
+      el.style.display = "none";
+      document.body.appendChild(el);
+      const out = getComputedStyle(el).borderBottomColor;
+      el.remove();
+      return out;
+    });
+    expect(rowBorder).toBe(borderProbe);
+    // the ticket cell is the reference's mono indigo
+    const ticket = await page
+      .locator('[data-testid="sales-table"] tbody tr td')
+      .first()
+      .evaluate((el) => ({
+        family: getComputedStyle(el).fontFamily,
+        color: getComputedStyle(el).color,
+      }));
+    const ticketProbe = await page.evaluate(() => {
+      const el = document.createElement("span");
+      el.className = "text-indigo-600";
+      el.style.display = "none";
+      document.body.appendChild(el);
+      const out = getComputedStyle(el).color;
+      el.remove();
+      return out;
+    });
+    expect(ticket.family).toContain("mono");
+    expect(ticket.color).toBe(ticketProbe);
+  });
+
+  test("T2: the Completada badge is the 6px soft green table badge", async ({
+    page,
+  }) => {
+    await page.goto("/Sales");
+    const badgeLoc = page.locator("span", { hasText: "Completada" }).first();
+    await expect(badgeLoc).toBeVisible();
+    const badge = await badgeLoc.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { radius: cs.borderRadius, bg: cs.backgroundColor, color: cs.color };
+    });
+    expect(badge.radius).toBe("6px");
+    // soft ramp identity: green-100 fill + green-700 text (probe comparison
+    // below; v4 serializes opaque colors as bare lab() without an alpha)
+    const probe = await page.evaluate(() => {
+      const el = document.createElement("span");
+      el.className = "bg-green-100 text-green-700";
+      el.style.display = "none";
+      document.body.appendChild(el);
+      const out = { bg: getComputedStyle(el).backgroundColor, color: getComputedStyle(el).color };
+      el.remove();
+      return out;
+    });
+    expect(badge.bg).toBe(probe.bg);
+    expect(badge.color).toBe(probe.color);
+  });
+
+  test("T7: the ticket panel is the reference's full-height border-l rail", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const rail = await page.getByTestId("ticket-panel").evaluate((el) => {
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return {
+        h: Math.round(r.height),
+        top: Math.round(r.top),
+        borderLeft: cs.borderLeftWidth + " " + cs.borderLeftStyle,
+        bg: cs.backgroundColor,
+        radius: cs.borderRadius,
+        shadow: cs.boxShadow,
+        right: Math.round(r.right),
+      };
+    });
+    // full-bleed: the rail spans the viewport height, flush to its top and
+    // right edges, with no card radius and no elevation shadow
+    expect(rail.h).toBe(720);
+    expect(rail.top).toBe(0);
+    expect(rail.right).toBe(1280);
+    expect(rail.borderLeft).toBe("1px solid");
+    expect(rail.bg).toBe("rgb(13, 15, 26)");
+    expect(rail.radius).toBe("0px");
+    expect(rail.shadow).toBe("none");
+  });
+
+  test("T5: the Ticket header is the 12px uppercase tracked label", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.getByTestId("ticket-panel")).toBeVisible();
+    const h2 = await page.evaluate(() => {
+      const el = [...document.querySelectorAll("h2")].find((h) =>
+        /^ticket$/i.test(h.textContent.trim()),
+      );
+      if (!el) throw new Error("missing Ticket h2");
+      const cs = getComputedStyle(el);
+      return {
+        text: el.textContent.trim(),
+        size: cs.fontSize,
+        transform: cs.textTransform,
+        spacing: cs.letterSpacing,
+      };
+    });
+    expect(h2.text).toBe("Ticket");
+    expect(h2.size).toBe("12px");
+    expect(h2.transform).toBe("uppercase");
+    expect(h2.spacing).toBe("0.3px");
+  });
+
+  test("T4: the idle Agregado banner is collapsed; the permanent label is gone", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.getByTestId("ticket-panel")).toBeVisible();
+    const banner = await page.evaluate(() => {
+      const el = document.querySelector('[aria-live="polite"]');
+      if (!el) throw new Error("missing banner");
+      const cs = getComputedStyle(el);
+      return { maxHeight: cs.maxHeight, opacity: cs.opacity, overflow: cs.overflow };
+    });
+    expect(banner.maxHeight).toBe("0px");
+    expect(banner.opacity).toBe("0");
+    expect(banner.overflow).toBe("hidden");
+    // the old permanent label is gone
+    const label = await page.evaluate(() =>
+      [...document.querySelectorAll("p")].some(
+        (p) => p.textContent.trim() === "Agregado" && p.closest('[data-testid="ticket-panel"]') && !p.closest('[aria-live="polite"]'),
+      ),
+    );
+    expect(label).toBe(false);
+  });
+
+  test("T3: form controls carry the 12px radius with a transparent fill", async ({
+    page,
+  }) => {
+    await page.goto("/Sales");
+    const input = await page.getByTestId("sales-search").evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { radius: cs.borderRadius, bg: cs.backgroundColor };
+    });
+    expect(input.radius).toBe("12px");
+    expect(input.bg).toBe("rgba(0, 0, 0, 0)");
+  });
+
+  test("F1+F2: Reports is the bright H1 with tinted (not gradient) chips", async ({
+    page,
+  }) => {
+    await page.goto("/Reports");
+    await expect(page.getByRole("heading", { name: "Reportes" })).toBeVisible();
+    const h1 = await computedStyles(page, "main h1", ["color"], "text-white/90");
+    const h1Color = await computedStyles(page, "main h1", ["color"]);
+    expect(h1Color.color).toBe(h1.probeColor);
+    // the first summary chip: 15% indigo tint + 30% indigo hairline
+    const chip = await page.getByTestId("report-revenue").evaluate((el) => {
+      const chipEl = el.querySelector("span");
+      if (!chipEl) throw new Error("missing chip");
+      const cs = getComputedStyle(chipEl);
+      return { bg: cs.backgroundColor, border: cs.borderTopColor, image: cs.backgroundImage };
+    });
+    expect(chip.bg).toContain("0.15");
+    expect(chip.border).toContain("0.3");
+    expect(chip.image).toBe("none");
+  });
+
+  test("S1: the Guardar Cambios CTA is the reference's 54px text-base button", async ({
+    page,
+  }) => {
+    await page.goto("/StoreSettings");
+    const btn = await page.getByTestId("settings-save").evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { h: Math.round(el.getBoundingClientRect().height), size: cs.fontSize };
+    });
+    expect(btn.size).toBe("16px");
+    expect([52, 53, 54]).toContain(btn.h);
+  });
+});

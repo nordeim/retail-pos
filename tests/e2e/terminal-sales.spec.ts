@@ -10,7 +10,9 @@ test.describe("terminal sales", () => {
     // The seed leaves every register closed.
     await expect(page.getByRole("heading", { name: "No hay turno activo" })).toBeVisible();
     await expect(page.getByText("Ve a", { exact: false })).toBeVisible();
-    await expect(page.getByTestId("ticket-panel")).toContainText("TICKET");
+    // V5/T5: the header reads "Ticket" in the DOM; CSS uppercases it
+    // (the reference renders it the same way — text-transform, not caps text).
+    await expect(page.getByTestId("ticket-panel")).toContainText("Ticket");
     await expect(page.getByTestId("ticket-panel")).toContainText("Escanea o selecciona productos");
     await expect(page.getByTestId("cobrar-button")).toBeDisabled();
     await expect(page.getByTestId("cobrar-button")).toContainText("COBRAR $0.00");

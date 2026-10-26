@@ -61,15 +61,15 @@ export function SalesView() {
         subtitle={`${sales.length} ventas registradas`}
       />
 
-      <div className="relative mb-5 sm:max-w-md">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+      <div className="relative mb-5 max-w-md">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Buscar por ticket, cliente o cajero..."
           aria-label="Buscar ventas"
           data-testid="sales-search"
-          className="bg-[#12141f] pl-9"
+          className="pl-9"
         />
       </div>
 
@@ -77,14 +77,16 @@ export function SalesView() {
         <div className="vx-scroll overflow-x-auto">
           <table className="w-full min-w-[820px] text-sm" data-testid="sales-table">
             <thead>
-              <tr className="border-b border-[#1e2235] text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                <th className="px-5 py-3.5">Ticket</th>
-                <th className="px-4 py-3.5">Fecha</th>
-                <th className="px-4 py-3.5">Cajero</th>
-                <th className="px-4 py-3.5">Método</th>
-                <th className="px-4 py-3.5">Total</th>
-                <th className="px-4 py-3.5">Estado</th>
-                <th className="px-4 py-3.5 text-right">Acciones</th>
+              {/* V5/T1: the reference's headers — text-xs font-semibold
+                  slate-500 UPPERCASE, per-column alignment, px-5 py-3. */}
+              <tr className="border-b border-[#1e2235]">
+                <th className="text-left text-xs font-semibold text-slate-500 uppercase px-5 py-3">Ticket</th>
+                <th className="text-left text-xs font-semibold text-slate-500 uppercase px-5 py-3">Fecha</th>
+                <th className="text-left text-xs font-semibold text-slate-500 uppercase px-5 py-3">Cajero</th>
+                <th className="text-center text-xs font-semibold text-slate-500 uppercase px-5 py-3">Método</th>
+                <th className="text-right text-xs font-semibold text-slate-500 uppercase px-5 py-3">Total</th>
+                <th className="text-center text-xs font-semibold text-slate-500 uppercase px-5 py-3">Estado</th>
+                <th className="text-right text-xs font-semibold text-slate-500 uppercase px-5 py-3">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -99,44 +101,44 @@ export function SalesView() {
                 visible.map((sale) => (
                   <tr
                     key={sale.id}
-                    className="border-b border-[#1e2235] transition-colors last:border-0 hover:bg-white/[0.02]"
+                    className="border-b border-slate-50 transition-colors last:border-0 hover:bg-white/40"
                     data-testid={`sale-row-${sale.ticketNo}`}
                   >
-                    <td className="px-5 py-3 font-semibold text-violet-400">
+                    <td className="px-5 py-3 font-mono text-sm font-semibold text-indigo-600">
                       {sale.ticketNo}
                     </td>
-                    <td className="px-4 py-3 text-slate-400">
+                    <td className="px-5 py-3 text-sm text-slate-600">
                       {formatSlashShort(new Date(sale.createdAt))}
                     </td>
-                    <td className="px-4 py-3 text-slate-400">{sale.cashierName}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3 text-sm text-slate-600">{sale.cashierName}</td>
+                    <td className="px-5 py-3 text-center">
                       <MethodPill method={sale.method} />
                     </td>
-                    <td className="px-4 py-3 font-semibold text-slate-500">
+                    <td className="px-5 py-3 text-right font-bold text-slate-800">
                       {formatMoney(sale.total)}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3 text-center">
                       {sale.status === "completada" ? (
                         <StatusPill tone="success">Completada</StatusPill>
                       ) : (
                         <StatusPill tone="neutral">{sale.status}</StatusPill>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
                           aria-label={`Ver ticket ${sale.ticketNo}`}
                           data-testid={`view-sale-${sale.ticketNo}`}
                           onClick={() => void openDetail(sale)}
-                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-violet-300"
+                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
                         >
                           <Eye className="h-4 w-4" />
                         </button>
                         <button
                           type="button"
                           aria-label={`Enviar ticket ${sale.ticketNo} por correo`}
-                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-violet-300"
+                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
                         >
                           <Mail className="h-4 w-4" />
                         </button>

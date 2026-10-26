@@ -68,7 +68,10 @@ export function DashboardView() {
     <div>
       <PageHeading title="Dashboard" subtitle={formatLongSpanish(today)} />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="dashboard-stats">
+      {/* V5/F3: the reference's grids — stats grid-cols-2 lg:grid-cols-4
+          gap-4; chart row lg:grid-cols-3 gap-6 with the weekly chart
+          spanning two columns. */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4" data-testid="dashboard-stats">
         <StatCard
           label="Ventas hoy"
           value={formatMoney(data.salesToday)}
@@ -99,8 +102,8 @@ export function DashboardView() {
         />
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-        <SectionCard title="Ventas — Últimos 7 días" testId="weekly-chart-card">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <SectionCard title="Ventas — Últimos 7 días" testId="weekly-chart-card" className="lg:col-span-2">
           <SalesAreaChart
             points={(data.weekly ?? []).map((d) => ({ label: d.label, value: d.total / 100 }))}
             formatY={(v) => String(Math.round(v))}
@@ -138,7 +141,7 @@ export function DashboardView() {
                   aria-hidden
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600"
                 >
-                  <Package className="h-4.5 w-4.5" />
+                  <Package className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-slate-700">{product.name}</p>

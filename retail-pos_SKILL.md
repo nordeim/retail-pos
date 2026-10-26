@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.0.0
+version: 1.1.0
 last_updated: "2026-10-26"
 tags:
   - pos
@@ -25,8 +25,8 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v4 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 238/238 unit · 74/74 e2e**. Evidence labels:
+> template), validated against the codebase at the v5 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 277/277 unit · 83/83 e2e**. Evidence labels:
 > **Verified** (executed here), **Reasoned** (inference), **Assumed**
 > (decision).
 
@@ -140,6 +140,13 @@ parity evidence against `docs/reference-evidence/ref-*.png`):
 | `vx-focus` | focus-visible box-shadow ring | shared focus ring |
 | `vx-auth-page` | `to right bottom #f8fafc→#f1f5f9` | login/signup/reset (dark tokens never leak there) |
 | radius scale | NATIVE v4 (`--radius-xl: 0.75rem`) | the shadcn remap was REMOVED (v4 V1) — re-adding it drifts every control +4px |
+| shell gutter | `lg:ml-[220px]` / `lg:ml-[68px]` | main is FLUSH to the sidebar; the view padding provides the 24px gutter (H1 at x=244) — never re-add `ml-[244px]` (v5 G1) |
+| terminal rail | `rounded-none border-l border-[#1e2235] bg-[#0d0f1a] md:w-[380px]` | the ticket panel is a full-height RAIL inside the ONE full-bleed view (`lg:h-screen` main) — not a card (v5 T7) |
+| table system | headers `text-xs font-semibold text-slate-500 uppercase` per-column-aligned; rows `border-b border-slate-50 hover:bg-white/40`; body `text-sm text-slate-600`; ticket cells `font-mono text-indigo-600` | all list tables; cajeros shifts = the dense px-4/py-2.5 variant, no hover (v5 T1) |
+| StatusPill shapes | `variant="table"`: 6px soft badges (green-100/green-700, slate-100/slate-500) · `variant="card"`: rounded-full px-2.5 py-1 | two DIFFERENT badge systems on the reference — do not unify them (v5 T2) |
+| `--secondary` token | `33 37 49` (neutral #212531) | the shadcn secondary badge (categoría) — the reference's own value, NOT the brand violet (v5 follow-up caught by VLM) |
+| form controls | Input base `rounded-xl` (12px) + `bg-transparent` | never fill an input with a solid surface (v5 T3) |
+| reports accents | H1 `tone="bright"` white/90; summary chips TINTED (15% bg + 30% border + 400 icon) | Reports is the reference's only bright H1; its chips are NOT the dashboard's gradients (v5 F1/F2) |
 
 The five Tailwind v3→v4 traps (each has a source pin in
 `tests/tailwind-traps.test.ts` — read before touching layout CSS):
@@ -421,6 +428,27 @@ if (decremented.count < 1) throw new BusinessRuleError(INSUFFICIENT_STOCK);
 
 // Chart label thinning (V3) — first + last always kept, ≤ maxLabels.
 thinLabelIndices(points.length, 8)
+
+// Transient feedback banner (v5 T4) — always mounted, collapsed when idle;
+// NEVER a permanent label, and the hide timer lives in the handler (not an
+// effect) so the set-state-in-effect lint rule never fires.
+const [addedName, setAddedName] = React.useState<string | null>(null);
+const timer = React.useRef<number | null>(null);
+const onAdd = (product: Product) => {
+  ticketAdd(product);
+  setAddedName(product.name);
+  if (timer.current !== null) window.clearTimeout(timer.current);
+  timer.current = window.setTimeout(() => setAddedName(null), 1600);
+};
+React.useEffect(() => () => {
+  if (timer.current !== null) window.clearTimeout(timer.current);
+}, []);
+
+// View-conditional shell geometry (v5 G2) — ONE view opts out of the padded
+// main; every other view keeps the p-6 rhythm.
+view === "terminal"
+  ? "lg:h-screen lg:overflow-hidden lg:p-0"
+  : "lg:px-6 lg:pb-6 lg:pt-6"
 
 // Latched focus entry (L11) — retries only while focus never landed inside.
 if (panel.contains(document.activeElement) || document.activeElement === panel) {

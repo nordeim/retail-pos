@@ -79,18 +79,18 @@ export function CashiersView() {
           <div className="vx-scroll overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm" data-testid="cashiers-table">
               <thead>
-                <tr className="border-b border-[#1e2235] text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  <th className="px-5 py-3.5">Cajero</th>
-                  <th className="px-4 py-3.5">Email</th>
-                  <th className="px-4 py-3.5">Estado</th>
-                  <th className="px-4 py-3.5 text-right">Acciones</th>
+                <tr className="border-b border-[#1e2235]">
+                  <th className="text-left text-xs font-semibold text-slate-500 uppercase px-5 py-3">Cajero</th>
+                  <th className="text-left text-xs font-semibold text-slate-500 uppercase px-5 py-3">Email</th>
+                  <th className="text-center text-xs font-semibold text-slate-500 uppercase px-5 py-3">Estado</th>
+                  <th className="text-right text-xs font-semibold text-slate-500 uppercase px-5 py-3">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {cashiers.map((cashier) => (
                   <tr
                     key={cashier.id}
-                    className="border-b border-[#1e2235] transition-colors last:border-0 hover:bg-white/[0.02]"
+                    className="border-b border-slate-50 transition-colors last:border-0 hover:bg-white/40"
                     data-testid={`cashier-row-${cashier.id}`}
                   >
                     <td className="px-5 py-3">
@@ -98,25 +98,25 @@ export function CashiersView() {
                         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/15 text-violet-300">
                           <UserRound className="h-4.5 w-4.5" />
                         </span>
-                        <span className="font-medium text-slate-200">{cashier.name}</span>
+                        <span className="font-semibold text-sm text-slate-800">{cashier.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-slate-400">{cashier.email || "—"}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3 text-sm text-slate-600">{cashier.email || "—"}</td>
+                    <td className="px-5 py-3 text-center">
                       {cashier.active ? (
                         <StatusPill tone="success">Activo</StatusPill>
                       ) : (
                         <StatusPill tone="neutral">Inactivo</StatusPill>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
                           aria-label={`Editar ${cashier.name}`}
                           data-testid={`edit-cashier-${cashier.id}`}
                           onClick={() => setEditing(cashier)}
-                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-violet-300"
+                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
@@ -125,7 +125,7 @@ export function CashiersView() {
                           aria-label={`Eliminar ${cashier.name}`}
                           data-testid={`delete-cashier-${cashier.id}`}
                           onClick={() => setDeleting(cashier)}
-                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-red-400"
+                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -139,20 +139,25 @@ export function CashiersView() {
         </div>
       )}
 
-      <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-violet-400">
+      {/* V5/C1: the reference's heading — 16px title-case slate-700 (not a
+          violet uppercase kicker). */}
+      <h3 className="mb-4 font-bold text-slate-700">
         Turnos Recientes
       </h3>
       <div className="vx-card overflow-hidden">
         <div className="vx-scroll overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm" data-testid="recent-shifts-table">
             <thead>
-              <tr className="border-b border-[#1e2235] text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                <th className="px-5 py-3.5">Cajero</th>
-                <th className="px-4 py-3.5">Caja</th>
-                <th className="px-4 py-3.5">Inicio</th>
-                <th className="px-4 py-3.5">Fin</th>
-                <th className="px-4 py-3.5">Ventas</th>
-                <th className="px-4 py-3.5">Estado</th>
+              {/* V5/C1: the reference's dense shifts table — px-4 py-2 headers
+                  with per-column alignment, px-4 py-2.5 cells, slate-50
+                  hairlines, no row hover. */}
+              <tr className="border-b border-[#1e2235]">
+                <th className="text-left text-xs font-semibold text-slate-500 uppercase px-4 py-2">Cajero</th>
+                <th className="text-left text-xs font-semibold text-slate-500 uppercase px-4 py-2">Caja</th>
+                <th className="text-left text-xs font-semibold text-slate-500 uppercase px-4 py-2">Inicio</th>
+                <th className="text-left text-xs font-semibold text-slate-500 uppercase px-4 py-2">Fin</th>
+                <th className="text-right text-xs font-semibold text-slate-500 uppercase px-4 py-2">Ventas</th>
+                <th className="text-center text-xs font-semibold text-slate-500 uppercase px-4 py-2">Estado</th>
               </tr>
             </thead>
             <tbody>
@@ -166,18 +171,18 @@ export function CashiersView() {
                 shifts.map((shift) => (
                   <tr
                     key={shift.id}
-                    className="border-b border-[#1e2235] transition-colors last:border-0 hover:bg-white/[0.02]"
+                    className="border-b border-slate-50 last:border-0"
                   >
-                    <td className="px-5 py-3 text-slate-200">{shift.cashierName}</td>
-                    <td className="px-4 py-3 text-slate-400">{shift.registerName}</td>
-                    <td className="px-4 py-3 text-slate-400">
+                    <td className="px-4 py-2.5 text-sm font-medium text-slate-700">{shift.cashierName}</td>
+                    <td className="px-4 py-2.5 text-sm text-slate-500">{shift.registerName}</td>
+                    <td className="px-4 py-2.5 text-sm text-slate-500">
                       {formatShiftStamp(new Date(shift.openedAt))}
                     </td>
-                    <td className="px-4 py-3 text-slate-400">
+                    <td className="px-4 py-2.5 text-sm text-slate-500">
                       {shift.closedAt ? formatShiftStamp(new Date(shift.closedAt)) : "—"}
                     </td>
-                    <td className="px-4 py-3 text-slate-300">{formatMoney(shift.salesTotal)}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-2.5 text-sm font-bold text-slate-800 text-right">{formatMoney(shift.salesTotal)}</td>
+                    <td className="px-4 py-2.5 text-center">
                       {shift.status === "open" ? (
                         <StatusPill tone="success">Abierto</StatusPill>
                       ) : (

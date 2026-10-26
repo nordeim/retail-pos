@@ -133,6 +133,33 @@ rules:
 10. The auth surface ships the OFFICIAL social brand marks (SVG paths
     extracted from the reference DOM) and the hosted logo PNG
     (`public/veloxpos-logo.png`) — no substitute glyphs.
+11. The shell gutter is FLUSH: `main` sits at `lg:ml-[220px]` /
+    `lg:ml-[68px]` (sidebar 220/68) and the view's own padding provides the
+    24px gutter — the H1 lands at x=244 like the reference. Never re-add the
+    old `ml-[244px]` (it double-padded the gutter; v5 G1). The TERMINAL is
+    the one full-bleed view: main drops its padding and locks `lg:h-screen`
+    there; the ticket panel is the reference's RAIL (`rounded-none border-l
+    border-[#1e2235] bg-[#0d0f1a] md:w-[380px]`), not a card — the footer
+    hairline is `border-white/5`, totals render only with lines, and the
+    COBRAR icon is ShoppingBag. "Agregado" is the transient emerald banner
+    (max-h-0/opacity-0 idle), never a permanent label (v5 T4-T7).
+12. Tables (v5, live-measured): headers `text-xs font-semibold
+    text-slate-500 uppercase` + per-column alignment; rows
+    `border-b border-slate-50` + `hover:bg-white/40`; body cells
+    `text-sm text-slate-600`; the ventas ticket cell is `font-mono
+    text-indigo-600`; totals `font-bold text-slate-800` right-aligned. The
+    cajeros shifts table is the DENSE variant (px-4 py-2 headers, py-2.5
+    cells, no hover). StatusPill has TWO shapes: `variant="table"` (6px
+    soft badges — green-100/green-700, slate-100/slate-500) vs
+    `variant="card"` (the register-card rounded-full pill). The shadcn
+    `--secondary` token is the reference's neutral `33 37 49` (NOT violet —
+    the categoría badge depends on it).
+13. Form controls are 12px-radius (`rounded-xl` on the Input base — the
+    reference's remapped control radius) with TRANSPARENT backgrounds —
+    never fill an input with a solid surface. Reports is the reference's
+    only bright H1 (`PageHeading tone="bright"` → white/90); its summary
+    chips are TINTED (15% bg + 30% border + 400-tone icon), while the
+    dashboard KPI chips stay gradient (different element families).
 
 ## The mobile drawer contract
 

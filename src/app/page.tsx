@@ -185,8 +185,18 @@ export default function Home() {
         id="main-content"
         tabIndex={-1}
         className={cn(
-          "vx-scroll min-h-dvh px-4 pb-10 pt-20 outline-none transition-[margin] lg:px-6 lg:pb-8 lg:pt-6",
-          sidebarCollapsed ? "lg:ml-[92px]" : "lg:ml-[244px]",
+          "vx-scroll min-h-dvh px-4 pb-10 pt-20 outline-none transition-[margin]",
+          // V5/G1: the reference's main is flush against the sidebar's right
+          // edge (220px/68px) — its own p-6 wrapper provides the 24px gutter,
+          // so the H1 lands at x=244 exactly like the reference. The old
+          // ml-[244px]/ml-[92px] doubled the gutter by the padding again.
+          sidebarCollapsed ? "lg:ml-[68px]" : "lg:ml-[220px]",
+          // V5/G2: every non-terminal view keeps the p-6 rhythm (24px all
+          // sides); the terminal is the reference's ONE full-bleed view
+          // (flex h-screen, zero padding, panes scroll internally).
+          view === "terminal"
+            ? "lg:h-screen lg:overflow-hidden lg:p-0"
+            : "lg:px-6 lg:pb-6 lg:pt-6",
         )}
         data-testid="main-content"
       >

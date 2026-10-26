@@ -66,6 +66,7 @@ export function ReportsView() {
       <PageHeading
         title="Reportes"
         subtitle="Análisis de ventas e ingresos"
+        tone="bright"
         actions={
           <div
             className="flex gap-2 p-1 rounded-2xl border border-white/[0.07] bg-[#1c1f34]/85"

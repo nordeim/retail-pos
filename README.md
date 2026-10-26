@@ -1,6 +1,6 @@
 # VeloxPOS — Punto de venta, your store
 
-![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-238%20%2B%2074%20green-22c55e)
+![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-277%20%2B%2083%20green-22c55e)
 
 **VeloxPOS** is a production-ready, self-hosted clone (functional superset) of
 the [`veloxposretail.base44.app`](https://veloxposretail.base44.app/) point-of-sale
@@ -69,7 +69,7 @@ flowchart TB
 | API | Next route handlers + Zod 4 | Strip-mode validation, typed error mapper |
 | DB | Prisma 6 + SQLite | Zero-ops persistence at `<repo>/db/custom.db` |
 | Charts | Hand-rolled SVG | Zero dependencies, deterministic, pixel-controlled |
-| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (238 + 74 green) |
+| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (277 + 83 green) |
 | Runtime | Bun 1.3 | Scripts, seed, and the standalone server |
 
 ## Quick start
@@ -78,8 +78,8 @@ Requirements: **Bun ≥ 1.3** (`curl -fsSL https://bun.sh/install | bash`), and 
 Chromium install for e2e (`bunx playwright install chromium`).
 
 ```bash
-git clone git@github.com:nordeim/web-retail-pos.git
-cd web-retail-pos
+git clone git@github.com:nordeim/retail-pos.git
+cd retail-pos
 bun install
 cp .env.example .env          # DATABASE_URL + AUTH_SECRET (dev default ok)
 bun run db:push               # create <repo>/db/custom.db
@@ -177,7 +177,7 @@ The store's **Color primario/secundario** settings write `--vx-primary` /
 - `docs/Tailwind-V4-Validation-Report.md` — the v3→v4 trap log this build
   guards against
 - `docs/reference-evidence/` — live reference captures · `docs/screenshots/`
-  — this app's own evidence set (`scripts/capture-screenshots.sh`)
+  — this app's own evidence set (`bun scripts/capture-screenshots.ts`)
 - `AGENTS.md` / `CLAUDE.md` — agent working contracts ·
   `Project_Architecture_Document.md` — the full PAD · `worklog.md` — the
   session journal

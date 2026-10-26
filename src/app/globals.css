@@ -56,8 +56,11 @@
   --popover-foreground: 248 250 252;
   --primary: 99 102 241;
   --primary-foreground: 255 255 255;
-  --secondary: 139 92 246;
-  --secondary-foreground: 255 255 255;
+  /* V5/T1b: the reference's secondary badge colors, measured live on its
+     categoría badges (rgb(33,37,49) fill + rgb(182,188,201) text) — the
+     old violet remnant made every bg-secondary badge glow purple. */
+  --secondary: 33 37 49;
+  --secondary-foreground: 182 188 201;
   --muted: 30 34 53;
   --muted-foreground: 148 163 184;
   --accent: 30 34 53;

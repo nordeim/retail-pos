@@ -91,14 +91,14 @@ export function InventoryView() {
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div className="relative sm:max-w-xs sm:flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Buscar por nombre o código..."
             aria-label="Buscar productos"
             data-testid="inventory-search"
-            className="bg-[#12141f] pl-9"
+            className="pl-9"
           />
         </div>
         <div className="flex flex-wrap gap-2" data-testid="inventory-chips">
@@ -124,14 +124,19 @@ export function InventoryView() {
         <div className="vx-scroll overflow-x-auto">
           <table className="w-full min-w-[860px] text-sm" data-testid="inventory-table">
             <thead>
-              <tr className="border-b border-[#1e2235] text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                <th className="px-5 py-3.5">Producto</th>
-                <th className="px-4 py-3.5">Código</th>
-                <th className="px-4 py-3.5">Precio</th>
-                <th className="px-4 py-3.5">Stock</th>
-                <th className="px-4 py-3.5">Categoría</th>
-                <th className="px-4 py-3.5">Estado</th>
-                <th className="px-4 py-3.5 text-right">Acciones</th>
+              {/* V5/T1b: the reference's header + cell contract (live-probed):
+                  headers text-xs/600/slate-500 uppercase px-5 py-3; producto
+                  chip w-10 h-10 indigo-50 + indigo-300 package; código mono
+                  slate-500; precio bold slate-800 right; stock bold slate-700;
+                  categoría = the shadcn secondary badge. */}
+              <tr className="border-b border-[#1e2235]">
+                <th className="text-left text-xs font-semibold text-slate-500 uppercase px-5 py-3">Producto</th>
+                <th className="text-left text-xs font-semibold text-slate-500 uppercase px-5 py-3">Código</th>
+                <th className="text-right text-xs font-semibold text-slate-500 uppercase px-5 py-3">Precio</th>
+                <th className="text-right text-xs font-semibold text-slate-500 uppercase px-5 py-3">Stock</th>
+                <th className="text-center text-xs font-semibold text-slate-500 uppercase px-5 py-3">Categoría</th>
+                <th className="text-center text-xs font-semibold text-slate-500 uppercase px-5 py-3">Estado</th>
+                <th className="text-right text-xs font-semibold text-slate-500 uppercase px-5 py-3">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -146,33 +151,35 @@ export function InventoryView() {
                 visible.map((product) => (
                   <tr
                     key={product.id}
-                    className="border-b border-[#1e2235] transition-colors last:border-0 hover:bg-white/[0.02]"
+                    className="border-b border-slate-50 transition-colors last:border-0 hover:bg-white/40"
                     data-testid={`product-row-${product.id}`}
                   >
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-700">
-                          <Package className="h-4.5 w-4.5" strokeWidth={2} />
+                        <span className="flex w-10 h-10 rounded-lg bg-indigo-50 shrink-0 items-center justify-center text-indigo-300">
+                          <Package className="w-5 h-5" strokeWidth={2} />
                         </span>
-                        <span className="font-medium text-slate-400">{product.name}</span>
+                        <span className="font-semibold text-sm text-slate-800">{product.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-slate-300">{product.barcode}</td>
-                    <td className="px-4 py-3 text-slate-300">{formatMoney(product.price)}</td>
-                    <td className="px-4 py-3 text-slate-300">{product.stock}</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex rounded-lg border border-[#262a36] bg-[#12141f] px-2.5 py-1 text-xs text-slate-200">
+                    <td className="px-5 py-3 text-sm text-slate-500 font-mono">{product.barcode}</td>
+                    <td className="px-5 py-3 text-sm font-bold text-slate-800 text-right">{formatMoney(product.price)}</td>
+                    <td className="px-5 py-3 text-right">
+                      <span className="text-sm font-bold text-slate-700">{product.stock}</span>
+                    </td>
+                    <td className="px-5 py-3 text-center">
+                      <span className="inline-flex items-center rounded-md bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground">
                         {product.categoryName ?? "—"}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3 text-center">
                       {product.active ? (
                         <StatusPill tone="success">Activo</StatusPill>
                       ) : (
                         <StatusPill tone="neutral">Inactivo</StatusPill>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"

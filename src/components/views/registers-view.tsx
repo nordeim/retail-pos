@@ -90,21 +90,27 @@ export function RegistersView() {
               className="vx-card relative overflow-hidden p-5"
               data-testid={`register-card-${register.id}`}
             >
-              <div aria-hidden className="absolute inset-x-0 top-0 h-1.5 bg-slate-100/90" />
+              {/* V5/R1: the reference's closed strip is a 4px slate-200 bar;
+                  the open state (unobservable there — its shift flow is a
+                  dead end) extends it with the emerald accent. */}
+              <div
+                aria-hidden
+                className={register.status === "open" ? "absolute inset-x-0 top-0 h-1 bg-emerald-500" : "absolute inset-x-0 top-0 h-1 bg-slate-200"}
+              />
               <div className="mb-4 flex items-start justify-between gap-3 pt-1">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 text-slate-700">
-                    <Monitor className="h-5 w-5" strokeWidth={2} />
+                  <span className="flex w-12 h-12 rounded-xl bg-slate-50 items-center justify-center text-slate-400">
+                    <Monitor className="h-6 w-6" strokeWidth={2} />
                   </span>
                   <div>
-                    <h3 className="font-bold text-slate-400">{register.name}</h3>
-                    <p className="text-sm text-slate-500">{register.location || "—"}</p>
+                    <h3 className="font-bold text-slate-800">{register.name}</h3>
+                    <p className="text-xs text-slate-500">{register.location || "—"}</p>
                   </div>
                 </div>
                 {register.status === "open" ? (
-                  <StatusPill tone="success">Abierta</StatusPill>
+                  <StatusPill tone="success" variant="card">Abierta</StatusPill>
                 ) : (
-                  <StatusPill tone="neutral">Cerrada</StatusPill>
+                  <StatusPill tone="neutral" variant="card">Cerrada</StatusPill>
                 )}
               </div>
 
@@ -143,7 +149,7 @@ export function RegistersView() {
                   aria-label={`Eliminar ${register.name}`}
                   data-testid={`delete-register-${register.id}`}
                   onClick={() => setDeleting(register)}
-                  className="vx-focus rounded-lg p-2.5 text-slate-500 hover:bg-red-50 hover:text-red-500"
+                  className="vx-focus rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

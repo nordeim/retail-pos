@@ -178,3 +178,82 @@ Stage Summary:
   README/PAD v1.2.0/retail-pos_SKILL.md.
 - Known-open (unchanged from v3): in-memory limiter single-instance;
   no SMTP channel; image upload storage URL-based.
+
+---
+Task ID: V5-A..E
+Agent: general-purpose (view-internals parity auditor + remediation
+  executor, session V5 2026-10-26)
+Task: Audit the v4-executed codebase for view-internals drift against the
+  live reference (the systems v4 fixed vs the views they compose into),
+  then execute remediation-plan-v5 TDD-first, ship screenshots/docs, and
+  push.
+
+Work Log:
+- Baseline re-verified at `main @ 7ddacdb`: lint 0 · tsc 0 · unit
+  239/239 · dev server healthy (docs said 238 — count drift noted).
+- Audit method: agent-browser logged into BOTH apps (reference auth state
+  reused); full-DOM dumps + computed-style probes of every view's
+  internals + fresh 8-view screenshot sets on both sides; VLM pair
+  comparisons used for discovery, every candidate then re-verified with
+  live probes. 24-item ledger written into docs/remediation-plan-v5.md.
+- Findings (hard evidence): G1 the shell gutter was DOUBLE-padded
+  (ml-[244px] + px-6 → H1 at 268 vs the reference's 244); G2 the
+  reference's Terminal is the ONE full-bleed view (flex h-screen, ticket
+  as a border-l RAIL) while every other view is p-6; T1/T1b the table
+  system (headers 11px-bold vs the reference's 12px/600, dark #1e2235
+  hairlines vs slate-50, 2%-white hover vs 40%-white, violet ticket cells
+  vs mono indigo-600, slate-400 body vs slate-600, misaligned paddings);
+  T2 the reference ships TWO badge systems (6px soft table badges vs the
+  register-card round pill) — the clone had one rounded-full emerald pill;
+  T3 inputs were 6px-radius with solid fills (reference: 12px,
+  transparent); T4 "Agregado" was misread as a permanent label — it is
+  the reference's transient emerald success banner; T5 Ticket header is
+  12px uppercase white/80 (not 18px slate-100); T6 COBRAR's icon is
+  ShoppingBag (not Banknote); T7/T8 the terminal layout + muted
+  empty-state card; R1 register-card anatomy (h-1 strip, 48px chip,
+  slate-800 name); C1 the dense cajeros shifts table + title-case
+  heading; F1 Reports is the reference's ONLY bright H1; F2 its chips are
+  TINTED (15%/30%), not gradient (v4 had probed the wrong element
+  family); F3/F4 dashboard grids + icon size; S1 settings (max-w-4xl,
+  54px Guardar, square swatches, glass Agregar + glass category chips);
+  H1 button.tsx carried dead study-app variants referencing sf-* classes
+  that never existed in globals.css.
+- B1-B9 executed TDD (37 unit pins + 9 e2e computed-style pins, all red
+  first): flush gutter + terminal full-bleed (page.tsx); the reference
+  table system across ventas/inventario/cajeros + the two-shape
+  StatusPill + outline MethodPill + the neutral --secondary token
+  (33 37 49 — a violet remnant the VLM caught post-fix, corrected +
+  pinned); 12px transparent inputs (Input base + call-site sweep); the
+  terminal rail restructure (transient Agregado banner with a handler
+  timer — no set-state-in-effect, 12px Ticket header, 64px white/20
+  empty state, totals only with lines, ShoppingBag COBRAR, muted
+  empty-state card); register cards; cajeros; reports tone + tinted
+  chips; dashboard grids; settings; button.tsx purged to real tokens.
+- e2e pin lessons: locator-wait before every raw evaluate (three pins
+  queried pre-hydration); border-color probes need their own
+  borderBottomColor probe element (the shared helper reads .color); v4
+  serializes opaque colors as bare lab() — no trailing alpha to assert.
+- Final gates: lint 0 · tsc 0 · build ✓ · unit 277/277 · e2e 83/83.
+- Ship: 18 screenshots regenerated; VLM spot-checks PASS (terminal
+  rail/banner, inventory badges neutral-grey confirmed equivalent,
+  remaining diffs = disclosed data/superset deltas only); docs lockstep
+  (AGENTS.md contracts 11-13, CLAUDE.md counts + table contract, README
+  badge/repo-name/capture-script, PAD v1.3.0 + ADR-015,
+  retail-pos_SKILL.md §4 + §15 + v1.1.0, .env.example re-verified — no
+  change).
+
+Stage Summary:
+- The v5 sweep closed every view-internals gap the live probe ledger
+  surfaced; the clone remains the functional superset (drawer + focus
+  lifecycle, cashier CRUD, ticket detail, Cerrar Turno, Agregado banner
+  on real adds) at the reference's own muted design language.
+- Reusable patterns: view-conditional shell geometry (one full-bleed
+  view), transient banner with handler-owned timer (lint-safe), probe
+  discipline for border-color vs color, the two-shape badge split.
+- Deliverables: docs/remediation-plan-v5.md, tests/visual-parity-v5
+  .test.ts (+38), visual-parity.spec.ts v5 block (+9), 18 refreshed
+  screenshots, updated AGENTS/CLAUDE/README/PAD v1.3.0/SKILL v1.1.0.
+- Known-open (unchanged): in-memory limiter single-instance; no SMTP
+  channel; image upload storage URL-based; donut palette + populated
+  legend design unobservable (reference renders empty); terminal product
+  grid card design = superset decision (unobservable).

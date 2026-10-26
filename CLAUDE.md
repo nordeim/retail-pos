@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (238 tests / 20 files)
-bun run test:e2e       # playwright e2e layer (74 specs, boots standalone :3100)
+bun run test           # vitest unit layer (277 tests / 21 files)
+bun run test:e2e       # playwright e2e layer (83 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -119,8 +119,17 @@ docs/               investigation dossier, plan, v4 trap report, evidence
 - Visual contract: `SectionCard` has `variant="card"` (dashboard/ajustes
   h3 title-case slate-700 16px) vs `variant="kicker"` (reports h2
   uppercase white/60 14px) — measured live; the H1 is 24px FIXED at every
-  width. Chart X labels thin to ≤8 (first+last kept) via
+  width (Reports is the reference's only BRIGHT H1 — `tone="bright"`
+  white/90). Chart X labels thin to ≤8 (first+last kept) via
   `thinLabelIndices`; Y labels are integers ($ on Reports).
+- Table contract (v5, live-measured): headers `text-xs font-semibold
+  text-slate-500 uppercase` per-column-aligned; rows ride
+  `border-b border-slate-50` + `hover:bg-white/40`; body cells `text-sm
+  text-slate-600` px-5 py-3; the ticket cell is `font-mono text-indigo-600`;
+  StatusPill has TWO shapes — `variant="table"` (6px soft badges:
+  green-100/green-700, slate-100/slate-500) vs `variant="card"` (the
+  register-card rounded-full pill); the categoría badge rides the shadcn
+  `bg-secondary` token (the reference's neutral #212531, NOT violet).
 
 ## Framework-specific checklist (Next.js 16)
 

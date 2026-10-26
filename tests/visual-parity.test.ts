@@ -92,7 +92,11 @@ describe("SectionCard variants (V1)", () => {
 
   it("PageHeading is 24px fixed (no sm: size bump)", () => {
     const source = readSource("components", "pos", "shared.tsx");
-    expect(source).toContain("text-2xl font-bold tracking-tight text-slate-800");
+    // v5 refresh: the size/weight contract is unchanged; the color is now
+    // tone-conditional (default slate-800, bright white/90 for Reports —
+    // the reference's only bright H1, measured live in session V5).
+    expect(source).toContain('"text-2xl font-bold tracking-tight"');
+    expect(source).toContain('tone === "bright" ? "text-white/90" : "text-slate-800"');
     expect(source).not.toContain("sm:text-3xl");
   });
 

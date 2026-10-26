@@ -111,7 +111,8 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
     <div>
       <PageHeading title="Ajustes de la Tienda" subtitle="Personaliza tu negocio" />
 
-      <div className="max-w-3xl space-y-6">
+      {/* V5/S1: the reference's wrapper — max-w-4xl (896px). */}
+      <div className="max-w-4xl space-y-6">
         <SectionCard
           title="Información del Negocio"
           icon={<Store className="h-4.5 w-4.5 text-violet-400" />}
@@ -125,7 +126,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
                 value={form.name}
                 onChange={(event) => set("name", event.target.value)}
                 data-testid="settings-name-input"
-                className="mt-1.5 bg-[#0d0f1a]"
+                className="mt-1.5"
               />
             </div>
             <div>
@@ -161,7 +162,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
                 id="settings-address"
                 value={form.address}
                 onChange={(event) => set("address", event.target.value)}
-                className="mt-1.5 bg-[#0d0f1a]"
+                className="mt-1.5"
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -171,7 +172,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
                   id="settings-phone"
                   value={form.phone}
                   onChange={(event) => set("phone", event.target.value)}
-                  className="mt-1.5 bg-[#0d0f1a]"
+                  className="mt-1.5"
                 />
               </div>
               <div>
@@ -181,7 +182,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
                   type="email"
                   value={form.email}
                   onChange={(event) => set("email", event.target.value)}
-                  className="mt-1.5 bg-[#0d0f1a]"
+                  className="mt-1.5"
                 />
               </div>
             </div>
@@ -192,13 +193,13 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
                   id="settings-fiscal"
                   value={form.fiscalId}
                   onChange={(event) => set("fiscalId", event.target.value)}
-                  className="mt-1.5 bg-[#0d0f1a]"
+                  className="mt-1.5"
                 />
               </div>
               <div>
                 <Label className="text-slate-200">Moneda</Label>
                 <Select value={form.currency} onValueChange={(value) => set("currency", value)}>
-                  <SelectTrigger className="mt-1.5 w-full bg-[#0d0f1a]" data-testid="settings-currency">
+                  <SelectTrigger className="mt-1.5 w-full" data-testid="settings-currency">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
@@ -228,7 +229,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
                   value={form.primaryColor}
                   onChange={(event) => set("primaryColor", event.target.value)}
                   data-testid="settings-primary-color"
-                  className="h-10 w-14 cursor-pointer rounded-lg border border-[#262a36] bg-transparent"
+                  className="h-10 w-10 cursor-pointer rounded-lg"
                 />
                 <span className="text-sm text-slate-400">{form.primaryColor}</span>
               </div>
@@ -242,7 +243,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
                   value={form.secondaryColor}
                   onChange={(event) => set("secondaryColor", event.target.value)}
                   data-testid="settings-secondary-color"
-                  className="h-10 w-14 cursor-pointer rounded-lg border border-[#262a36] bg-transparent"
+                  className="h-10 w-10 cursor-pointer rounded-lg"
                 />
                 <span className="text-sm text-slate-400">{form.secondaryColor}</span>
               </div>
@@ -264,7 +265,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
               value={form.ticketFooter}
               onChange={(event) => set("ticketFooter", event.target.value)}
               rows={3}
-              className="mt-1.5 w-full rounded-xl border border-[#262a36] bg-[#0d0f1a] px-3 py-2.5 text-sm text-slate-100 outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/45"
+              className="mt-1.5 w-full rounded-xl border border-input bg-transparent px-3 py-2.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/45"
               placeholder="¡Gracias por su compra!"
             />
           </div>
@@ -277,7 +278,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
           <div>
             <Label className="text-slate-200">Proveedor</Label>
             <Select value={form.cardProvider} onValueChange={(value) => set("cardProvider", value)}>
-              <SelectTrigger className="mt-1.5 w-full max-w-xs bg-[#0d0f1a]" data-testid="settings-card-provider">
+              <SelectTrigger className="mt-1.5 w-full max-w-xs" data-testid="settings-card-provider">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
@@ -308,30 +309,32 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
               }}
               placeholder="Nueva categoría"
               data-testid="settings-new-category"
-              className="max-w-xs bg-[#0d0f1a]"
+              className="max-w-xs"
             />
             <Button
               variant="outline"
               onClick={() => void addCategory()}
               disabled={newCategory.trim().length === 0}
               data-testid="settings-add-category"
-              className="border-[#262a36] bg-transparent text-slate-200 hover:bg-white/5 hover:text-white"
+              className="glass-button rounded-lg border-0 px-3 py-1.5 text-sm font-medium text-slate-700"
             >
               <Plus className="h-4 w-4" /> Agregar
             </Button>
           </div>
           <ul className="flex flex-wrap gap-2" data-testid="settings-category-chips">
+            {/* V5/S1: the reference's chips are glass-button controls
+                (rounded-xl px-3 py-2 text-sm) with the red-hover X. */}
             {categories.map((category) => (
               <li
                 key={category.id}
-                className="flex items-center gap-1.5 rounded-full border border-[#262a36] bg-[#12141f] px-3 py-1.5 text-xs font-semibold text-slate-200"
+                className="glass-button flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-700"
               >
                 {category.name}
                 <button
                   type="button"
                   aria-label={`Eliminar categoría ${category.name}`}
                   onClick={() => void removeCategory(category.id)}
-                  className="vx-focus rounded-full p-0.5 text-slate-500 hover:text-red-400"
+                  className="vx-focus text-slate-400 transition-colors hover:text-red-500"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -351,7 +354,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
             data-testid="settings-save"
             disabled={form.name.trim().length === 0 || status === "saving"}
             onClick={() => void save()}
-            className="glass-button-primary rounded-xl px-6 py-2.5 text-sm font-medium"
+            className="glass-button-primary h-auto rounded-xl px-6 py-3.5 text-base font-medium"
           >
             {status === "saving" ? "Guardando…" : "Guardar Cambios"}
           </Button>
