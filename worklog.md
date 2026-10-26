@@ -2974,3 +2974,97 @@ study zombie, the ~27 hue consumers, I2's text token.
 **Docs chain**: README (badge 1410, counts 936/474, the Session-100 row with pipe parity verified), AGENTS (the 936 count + the S100 lessons — three lessons incl. the register-note doctrine, the clean-audit-is-the-deliverable doctrine, and the instrument-scope lesson), CLAUDE (the 936 count + the S100 seam tail re-anchor), the vitest.config.ts header (28 files / 936, the S100 re-anchor note), the remediation-plan header (AZ → BA, 936/474) + the Cycle-50 plan + this execution record, the PAD v1.3.8 revision block, this worklog, `docs/session_69.md`.
 
 **Stage summary.** Batch BA DONE: the census-count register note (the AZ2 record now carries the final-tree counts and the growth mechanism — the next audit's re-derivation has a scoped expectation), the s100 evidence-frame rotation onto two never-covered surfaces (both already e2e-pinned), and the honest-zero-cycle acknowledgment (no manufactured headline — the verified plateau IS the deliverable). Baselines unchanged: unit **936/936**, e2e **474/474**, the standing suite **35/35 first-pass**. Standing debt after BA: **ZERO**. The natural next cycle (Session-101) remains the standing rhythm: audit the BA diff, ride the riders, re-certify cold (anchor it on `docs/session_69.md`).
+
+---
+
+## Session V1 (VeloxPOS) — the retail pivot: a full-domain clone of veloxposretail.base44.app
+
+**Context.** The workspace is the `web-retail-pos` scaffold (the StudyFlow /
+omni-study1 build, 100+ sessions). The new charter: clone the Spanish POS
+reference `veloxposretail.base44.app` (operator-provided account) as a
+production-grade functional superset at visual parity, on this repo, without
+`init-fullstack.sh`. Single branch (`main`); pushes via the SSH wrapper.
+
+**Work log.**
+
+1. **Reference investigation (agent-browser 0.39.0).** Logged in with the
+   operator's account and walked every surface: login (light card, 4 social
+   buttons), the 8-view app (/, /Dashboard, /Inventario, /Sales, /Registers,
+   /Cashiers, /Reports, /StoreSettings), the Nuevo Producto / Nueva Caja /
+   Abrir Turno dialogs, the ticket-detail dialog (verified money model:
+   prices IVA-exclusive; 1 × Coca-Cola $18.50 → subtotal 18.50 + IVA 2.96 =
+   21.46), Reports periods, Settings colors (#6366f1 / #8b5cf6), the Spanish
+   404, and the 390×844 mobile view — where the reference ships NO working
+   menu (its 220px sidebar squeezes content; overflow everywhere). 17
+   evidence screenshots → `docs/reference-evidence/`. Two dead ends
+   documented: the reference has ZERO cashiers and no create path, so its
+   own "Abrir Turno" dropdown is empty and its Terminal can never sell.
+   Dossier: `docs/reference-investigation.md` (evidence-labeled).
+2. **Plan.** `docs/implementation-plan.md` — stack decisions (keep the
+   scaffold's Next 16/React 19/Tailwind v4/Prisma-SQLite pipeline; hand-rolled
+   SVG charts; integer-cents money), the v4 trap build rules, the superset
+   gaps (mobile drawer, cashier CRUD, shift lifecycle, live selling), the
+   test plan, and the delivery bar.
+3. **Foundations.** `.env` with `DATABASE_URL="file:../db/custom.db"` +
+   `db/` at the repo root (the documented contract). New Prisma schema: User
+   (+ auth tokens) / StoreSetting / Category / Product / Register / Cashier /
+   Shift / Sale / SaleItem — integer cents, cascade-on-owner, SetNull history,
+   `@@unique([userId, name])` for the seed upserts. Seed mirrors the
+   reference dataset (12 products, 6 categories, 2 cajas, 2 historical
+   Cesar Martínez sales + closed shifts).
+4. **The db-path hardening (the session's best find).** Next dev (Turbopack)
+   pre-resolves the relative `file:` URL one level OFF
+   (`<project>/../db/custom.db`) and next dev CREATES that stray file on
+   boot — the runtime's existsSync fallback then prefers the stray EMPTY db
+   and login silently 401s forever. `src/lib/db-path.ts` v3: an absolute
+   target shaped like the mangled default (`<elsewhere>/db/custom.db`) loses
+   to the repo that owns `prisma/schema.prisma`. Three new db-path.test.ts
+   pins (stray-exists, production pass-through, missing-target fallback).
+5. **App build.** globals.css rewritten as the measured dark design system
+   (`vx-*` utilities, pinned shadow-sm, explicit gradients, light auth
+   surface). Chrome: dark sidebar (220/68, bottom toggle), app bar + w-72
+   drawer (flex gap — never space-y with margin children; the trap that
+   broke the reference's own mobile menu). Eight views + payment/shift/
+   product/cashier dialogs. APIs: products, categories, registers (delete
+   guard), cashiers (delete guard), shifts (open 409 + transactional
+   register flip; close stamps the count), sales (open-shift gate, server-
+   side price recompute, transactional stock decrement, P2002 ticket retry),
+   settings upsert, dashboard + reports aggregations, health (`veloxpos`).
+   Auth pages: login (reference card + honest social notice), signup
+   (register→verify), reset-password; Spanish 404.
+6. **Tests.** Old study suites archived to `scripts/archive-study-sweep/`
+   (excluded from tsconfig). New unit layer (14 files / 147 tests): money,
+   ticket, router, date (es-MX), validation, schema + .env contract,
+   tailwind-traps source pins, plus the retained auth/api/db-path/site/
+   env-check/dev-preflight. New e2e layer (49 specs): navigation (8 routes +
+   404 + 220/68 collapse), mobile-navigation (the drawer contract incl. the
+   TRAP-4 uniform-gap guard and the zero-overflow sweep), auth, inventory
+   CRUD, terminal-sales (gate → shift → sell → receipt → stock → close),
+   registers, cashiers, settings, reports, a11y smoke. Configs modified:
+   vitest include unchanged; playwright gains the fresh global-setup reset.
+   Lint clean under the react-hooks/set-state-in-effect rule (dialogs reset
+   by key-remount; deferred URL reads).
+7. **Verification.** lint ✓ · tsc ✓ · build ✓ (standalone) · unit 147/147 ✓
+   · e2e 49/49 ✓. Live agent-browser sweep of the dev server: all 8 views +
+   404 + login parity vs the reference captures; drawer geometry 288px /
+   8 links / uniform 44px gaps / zero overflow; a real sale end-to-end
+   ($85.84 = 4 × $21.46) with stock decrement (47→44) and receipt in
+   /Sales. Screenshot set → `docs/screenshots/` (desktop 8 + live terminal
+   + ticket + COBRAR dialog + mobile dashboard/terminal/ventas/drawer).
+8. **Docs.** AGENTS.md / CLAUDE.md / README.md /
+   Project_Architecture_Document.md regenerated per the repo's doc skills;
+   this worklog appended; worklog + docs in the same push.
+
+**Stage summary.**
+
+- Gates: lint ✓ tsc ✓ build ✓ unit 147 ✓ e2e 49 ✓ — all on `main`, no
+  branches.
+- Artifacts: the full POS codebase (src, prisma, tests, scripts),
+  docs/reference-investigation.md, docs/implementation-plan.md,
+  docs/reference-evidence/ (17 live captures), docs/screenshots/ (16).
+- Standing guards added: the db-path v3 stray-db pin, the trap-4 source
+  pins, the drawer geometry contract, the verified money-model pins, and
+  the e2e force-reset (idempotent suite).
+- Deferred (disclosed, not silently dropped): product image uploads,
+  receipt email action, Dockerfile prose refresh, in-memory limiter for
+  multi-instance deploys.
