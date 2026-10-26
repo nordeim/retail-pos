@@ -123,11 +123,14 @@ describe("Ajustes logo button (V5)", () => {
   });
 });
 
-describe("low-stock rows (V6)", () => {
-  it("the row leads with an amber chip, bold name, and the amber sub-line", () => {
+describe("low-stock rows (V6, re-probed v4)", () => {
+  it("the row is the reference's light-amber tint with the amber-600 sub-line", () => {
     const source = readSource("components", "views", "dashboard-view.tsx");
-    expect(source).toContain("bg-amber-400/20");
-    expect(source).toContain("font-bold text-slate-100");
+    expect(source).toContain("bg-amber-50/50");
+    expect(source).toContain("border-amber-100");
+    expect(source).toContain("bg-amber-100");
+    expect(source).toContain("font-semibold text-slate-700");
+    expect(source).toContain("text-amber-600");
     expect(source).toContain("en stock (mín.");
   });
 });

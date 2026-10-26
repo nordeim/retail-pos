@@ -7,7 +7,7 @@ import { SEEDED_PRODUCTS } from "./helpers";
 
 test.describe("inventario", () => {
   test("lists the 12 seeded products with the reference columns", async ({ page }) => {
-    await page.goto("/Inventario");
+    await page.goto("/Inventory");
     await expect(page.locator("main h1")).toHaveText("Inventario");
     await expect(page.getByText("12 productos registrados")).toBeVisible();
 
@@ -22,7 +22,7 @@ test.describe("inventario", () => {
   });
 
   test("search filters by name and code", async ({ page }) => {
-    await page.goto("/Inventario");
+    await page.goto("/Inventory");
     await page.getByTestId("inventory-search").fill("Coca");
     await expect(page.getByTestId("inventory-table")).toContainText("Coca-Cola 600ml");
     await expect(page.getByTestId("inventory-table")).not.toContainText("Yogurt Danone");
@@ -32,7 +32,7 @@ test.describe("inventario", () => {
   });
 
   test("category chips filter the table", async ({ page }) => {
-    await page.goto("/Inventario");
+    await page.goto("/Inventory");
     await page.getByTestId("inventory-chips").getByRole("button", { name: "Bebidas" }).click();
     await expect(page.getByTestId("inventory-table")).toContainText("Coca-Cola 600ml");
     await expect(page.getByTestId("inventory-table")).not.toContainText("Yogurt Danone");
@@ -42,7 +42,7 @@ test.describe("inventario", () => {
   });
 
   test("create → verify → edit → delete a product (full CRUD)", async ({ page }) => {
-    await page.goto("/Inventario");
+    await page.goto("/Inventory");
 
     // CREATE
     await page.getByTestId("new-product-button").click();
@@ -71,7 +71,7 @@ test.describe("inventario", () => {
   });
 
   test("the Nuevo Producto dialog carries the reference defaults", async ({ page }) => {
-    await page.goto("/Inventario");
+    await page.goto("/Inventory");
     await page.getByTestId("new-product-button").click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toContainText("Stock actual");

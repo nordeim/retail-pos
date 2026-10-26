@@ -33,7 +33,7 @@ export type NavItem = { id: ViewId; label: string; path: string };
 export const NAV_ITEMS: NavItem[] = [
   { id: "terminal", label: "Terminal", path: "/" },
   { id: "dashboard", label: "Dashboard", path: "/Dashboard" },
-  { id: "inventario", label: "Inventario", path: "/Inventario" },
+  { id: "inventario", label: "Inventario", path: "/Inventory" },
   { id: "ventas", label: "Ventas", path: "/Sales" },
   { id: "cajas", label: "Cajas", path: "/Registers" },
   { id: "cajeros", label: "Cajeros", path: "/Cashiers" },

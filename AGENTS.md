@@ -109,6 +109,30 @@ rules:
 5. The measured design tokens (`--color-vx-canvas: #080a14`, surface
    `#0d0f1a`, border `#1e2235`) are reference evidence — changing them breaks
    visual parity with `docs/reference-evidence/ref-*.png`.
+6. The radius scale is NATIVE Tailwind v4 (`--radius-xl: 0.75rem`,
+   `--radius-lg: 0.5rem`, ...) — the shadcn `calc(var(--radius) ...)` remap
+   was removed in v4 because the reference's own shadcn runs native
+   (`rounded-xl` = 12px there). Re-adding any remap drifts every control
+   +4px (v4 finding V1; pinned by tests/visual-parity-v4.test.ts).
+7. Cards ride `vx-card` — the reference's card system: translucent
+   `rgba(16,18,32,.9)` fill + `rgba(255,255,255,.07)` hairline +
+   `0 8px 32px rgba(0,0,0,.5)` elevation. The SIDEBAR stays solid
+   `#0d0f1a` (a different surface, verified live).
+8. Action buttons use the `glass-button-primary` / `-success` /
+   `-warning` utilities (CSS extracted from the reference's own
+   `.glass-button*` classes: 135° ramps, colored hairline, glow, hover
+   lift, active press). Sizing rides call-site utilities
+   (`px-4 py-2.5 text-sm rounded-xl` for page CTAs, `px-3 py-1.5 text-sm
+   rounded-lg` for card actions, `px-8 py-5 rounded-2xl text-xl font-black`
+   for COBRAR).
+9. The ACTIVE nav item is the translucent violet pill
+   (`bg-violet-600/20 text-violet-300 shadow-sm shadow-violet-500/10`)
+   with its 1px violet edge on a RING (`ring-1 ring-violet-500/30`),
+   NEVER a `border` — a border inflates the active row 2px and breaks the
+   drawer's uniform 44px pitch (mobile-navigation TRAP-4 guard).
+10. The auth surface ships the OFFICIAL social brand marks (SVG paths
+    extracted from the reference DOM) and the hosted logo PNG
+    (`public/veloxpos-logo.png`) — no substitute glyphs.
 
 ## The mobile drawer contract
 

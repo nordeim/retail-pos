@@ -128,10 +128,10 @@ export function MobileChrome() {
           >
             <Menu className="h-6 w-6" strokeWidth={2} />
           </button>
-          <span className="vx-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white">
-            <Zap className="h-4.5 w-4.5" strokeWidth={2.5} />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow">
+            <Zap className="h-4 w-4" strokeWidth={2.5} />
           </span>
-          <p className="truncate text-base font-bold text-white">{storeName}</p>
+          <p className="truncate text-sm font-bold tracking-wide text-white/90">{storeName}</p>
         </div>
       </header>
 
@@ -166,10 +166,10 @@ export function MobileChrome() {
           >
             <div className="flex shrink-0 items-center justify-between border-b p-4" style={{ borderColor: "#1e2235" }}>
               <div className="flex items-center gap-3">
-                <span className="vx-gradient flex h-10 w-10 items-center justify-center rounded-xl text-white">
-                  <Zap className="h-5 w-5" strokeWidth={2.5} />
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow">
+                  <Zap className="h-4 w-4" strokeWidth={2.5} />
                 </span>
-                <p className="truncate text-base font-bold text-white">{storeName}</p>
+                <p className="truncate text-sm font-bold tracking-wide text-white/90">{storeName}</p>
               </div>
               <button
                 type="button"

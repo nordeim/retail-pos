@@ -68,7 +68,7 @@ export function ReportsView() {
         subtitle="Análisis de ventas e ingresos"
         actions={
           <div
-            className="flex gap-1 rounded-full border border-[#262a36] bg-[#12141f] p-1"
+            className="flex gap-2 p-1 rounded-2xl border border-white/[0.07] bg-[#1c1f34]/85"
             role="tablist"
             aria-label="Período del reporte"
             data-testid="report-periods"
@@ -81,10 +81,10 @@ export function ReportsView() {
                 aria-selected={days === period.days}
                 onClick={() => setDays(period.days)}
                 className={cn(
-                  "vx-focus rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors",
+                  "vx-focus rounded-xl px-4 py-2 text-xs font-bold transition-all",
                   days === period.days
-                    ? "vx-gradient text-white"
-                    : "text-slate-400 hover:text-slate-200",
+                    ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30"
+                    : "text-white/40 hover:text-white/70",
                 )}
               >
                 {period.label}
@@ -99,6 +99,7 @@ export function ReportsView() {
           label="Ingresos totales"
           value={formatMoney(data.totalRevenue)}
           color="primary"
+          layout="row"
           testId="report-revenue"
           icon={<TrendingUp className="h-6 w-6" strokeWidth={2.2} />}
         />
@@ -106,6 +107,7 @@ export function ReportsView() {
           label="Transacciones"
           value={data.transactions}
           color="success"
+          layout="row"
           testId="report-transactions"
           icon={<CalendarDays className="h-6 w-6" strokeWidth={2.2} />}
         />
@@ -113,6 +115,7 @@ export function ReportsView() {
           label="Ticket promedio"
           value={formatMoney(data.averageTicket)}
           color="info"
+          layout="row"
           testId="report-average"
           icon={<CreditCard className="h-6 w-6" strokeWidth={2.2} />}
         />

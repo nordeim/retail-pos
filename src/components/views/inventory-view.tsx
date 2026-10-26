@@ -81,7 +81,7 @@ export function InventoryView() {
         actions={
           <Button
             data-testid="new-product-button"
-            className="vx-gradient border-0 text-white"
+            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
             onClick={() => setEditing("new")}
           >
             <Plus className="h-4 w-4" /> Nuevo Producto
@@ -102,16 +102,16 @@ export function InventoryView() {
           />
         </div>
         <div className="flex flex-wrap gap-2" data-testid="inventory-chips">
-          {["Todos", ...categories.map((c) => c.name)].map((name) => (
+          {[("Todos" as const), ...categories.map((c) => c.name)].map((name) => (
             <button
               key={name}
               type="button"
               onClick={() => setCategory(name)}
               className={cn(
-                "vx-focus rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors",
+                "vx-focus rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap",
                 category === name
-                  ? "vx-gradient text-white"
-                  : "border border-[#262a36] bg-[#12141f] text-slate-300 hover:bg-white/5",
+                  ? "glass-button-primary"
+                  : "glass-button",
               )}
             >
               {name}
@@ -179,7 +179,7 @@ export function InventoryView() {
                           aria-label={`Editar ${product.name}`}
                           data-testid={`edit-product-${product.id}`}
                           onClick={() => setEditing(product)}
-                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-violet-300"
+                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
@@ -188,7 +188,7 @@ export function InventoryView() {
                           aria-label={`Eliminar ${product.name}`}
                           data-testid={`delete-product-${product.id}`}
                           onClick={() => setDeleting(product)}
-                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-red-400"
+                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -227,7 +227,7 @@ export function InventoryView() {
             <Button
               variant="outline"
               onClick={() => setDeleting(null)}
-              className="border-[#262a36] bg-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+              className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
             >
               Cancelar
             </Button>
@@ -461,7 +461,7 @@ function ProductDialog({
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-[#262a36] bg-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+            className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
           >
             Cancelar
           </Button>
@@ -469,7 +469,7 @@ function ProductDialog({
             data-testid="product-submit"
             disabled={!valid || saving}
             onClick={() => void submit()}
-            className="vx-gradient border-0 text-white"
+            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
           >
             <Upload className="mr-1 hidden" />
             {product ? "Guardar" : "Crear"}

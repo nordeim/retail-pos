@@ -115,7 +115,7 @@ export function DashboardView() {
         title="Productos con stock bajo"
         className="mt-6"
         testId="low-stock-card"
-        icon={<TriangleAlert className="h-4.5 w-4.5 text-amber-400" />}
+        icon={<TriangleAlert className="h-5 w-5 text-amber-500" />}
       >
         {!loaded ? (
           <p className="text-sm text-slate-500">Cargando…</p>
@@ -129,20 +129,21 @@ export function DashboardView() {
               <li
                 key={product.id}
                 data-testid="low-stock-row"
-                className="flex items-center gap-3 rounded-xl bg-amber-400/10 px-4 py-3"
+                className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50/50 p-3"
               >
-                {/* V6: the reference's amber chip-left row — icon chip, bold
-                    name, amber stock sub-line on the second row. */}
+                {/* V6 (v4 re-probe): the reference's row is a light amber
+                    tint — amber-50/50 fill, amber-100 hairline, amber-100
+                    chip, slate-700 semibold name, amber-600 count. */}
                 <span
                   aria-hidden
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/20 text-amber-400"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600"
                 >
                   <Package className="h-4.5 w-4.5" />
                 </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-slate-100">{product.name}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-slate-700">{product.name}</p>
                   <p
-                    className="text-xs font-medium text-amber-400"
+                    className="text-xs font-medium text-amber-600"
                     data-testid="low-stock-detail"
                   >
                     {product.stock} en stock (mín. {product.minStock})

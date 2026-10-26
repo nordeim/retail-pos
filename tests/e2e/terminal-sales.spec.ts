@@ -55,7 +55,7 @@ test.describe("terminal sales", () => {
 
     // 6. The ticket cleared; the stock dropped (47 − 3 = 44).
     await expect(page.getByTestId("ticket-panel")).toContainText("Escanea o selecciona productos");
-    await page.goto("/Inventario");
+    await page.goto("/Inventory");
     await expect(page.getByTestId("inventory-table").locator("tr", { hasText: "Coca-Cola 600ml" })).toContainText("44");
 
     // 7. The sale is in the history with the verified ticket math.

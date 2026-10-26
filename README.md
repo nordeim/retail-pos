@@ -1,6 +1,6 @@
 # VeloxPOS — Punto de venta, your store
 
-![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-213%20%2B%2070%20green-22c55e)
+![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-238%20%2B%2074%20green-22c55e)
 
 **VeloxPOS** is a production-ready, self-hosted clone (functional superset) of
 the [`veloxposretail.base44.app`](https://veloxposretail.base44.app/) point-of-sale
@@ -69,7 +69,7 @@ flowchart TB
 | API | Next route handlers + Zod 4 | Strip-mode validation, typed error mapper |
 | DB | Prisma 6 + SQLite | Zero-ops persistence at `<repo>/db/custom.db` |
 | Charts | Hand-rolled SVG | Zero dependencies, deterministic, pixel-controlled |
-| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (213 + 70 green) |
+| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (238 + 74 green) |
 | Runtime | Bun 1.3 | Scripts, seed, and the standalone server |
 
 ## Quick start
@@ -160,10 +160,10 @@ conflict · 422 business rule.
 |---|---|---|
 | Canvas | `#080a14` | App background |
 | Surface / border | `#0d0f1a` / `#1e2235` | Cards, sidebar, tables |
-| Primary gradient | violet → deep violet (`--vx-secondary` → `--vx-primary-deep`) | Brand chip, active nav, primary CTAs |
+| Primary gradient | violet → deep violet (`--vx-secondary` → `--vx-primary-deep`) | Brand chip, the login logo glow; CTAs use the 135° `glass-button-primary` ramp |
 | Success / warning | emerald / amber | Abrir Turno, Activo/Completada pills, stock-bajo |
-| Radius | 12px controls, 16px cards | rounded-xl / rounded-2xl |
-| Auth surface | light (`#eef2f7` → `#e2e8f0`) | login/signup/reset only |
+| Radius | native Tailwind scale (12px `rounded-xl`, 8px `rounded-lg`, 16px cards) | controls / cards — the shadcn `--radius` remap was removed (v4 parity fix) |
+| Auth surface | light (`#f8fafc` → `#f1f5f9`, to bottom right) | login/signup/reset only |
 
 The store's **Color primario/secundario** settings write `--vx-primary` /
 `--vx-secondary` at runtime — Personalización is live theming.

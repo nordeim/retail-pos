@@ -61,7 +61,7 @@ export function CashiersView() {
         actions={
           <Button
             data-testid="new-cashier-button"
-            className="vx-gradient border-0 text-white"
+            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
             onClick={() => setEditing("new")}
           >
             <Plus className="h-4 w-4" /> Nuevo Cajero
@@ -217,7 +217,7 @@ export function CashiersView() {
             <Button
               variant="outline"
               onClick={() => setDeleting(null)}
-              className="border-[#262a36] bg-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+              className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
             >
               Cancelar
             </Button>
@@ -310,7 +310,7 @@ function CashierDialog({
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-[#262a36] bg-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+            className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
           >
             Cancelar
           </Button>
@@ -318,7 +318,7 @@ function CashierDialog({
             data-testid="cashier-submit"
             disabled={name.trim().length === 0 || saving}
             onClick={() => void submit()}
-            className="vx-gradient border-0 text-white"
+            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
           >
             {cashier ? "Guardar" : "Crear"}
           </Button>

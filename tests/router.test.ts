@@ -33,7 +33,7 @@ describe("the 8-view map", () => {
     expect(paths).toEqual({
       terminal: "/",
       dashboard: "/Dashboard",
-      inventario: "/Inventario",
+      inventario: "/Inventory",
       ventas: "/Sales",
       cajas: "/Registers",
       cajeros: "/Cashiers",

@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (213 tests / 19 files)
-bun run test:e2e       # playwright e2e layer (70 specs, boots standalone :3100)
+bun run test           # vitest unit layer (238 tests / 20 files)
+bun run test:e2e       # playwright e2e layer (74 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```

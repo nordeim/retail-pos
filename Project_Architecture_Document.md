@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.1.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.2.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -11,6 +11,14 @@
 > v1.1.0 (2026-10-26): the remediation-plan-v3 execution — security
 > hardening (R1), data integrity (R2), visual parity (R3), hygiene (R4);
 > ADR-011..013 added; §6 controls extended.
+>
+> v1.2.0 (2026-10-26): the remediation-plan-v4 execution — the deep
+> visual-parity sweep (computed-style probes against the live reference):
+> native Tailwind radius scale, the reference card system (vx-card), the
+> glass-button gradient action system, the translucent-violet active nav
+> pill, StatCard blob anatomy + row-layout reports cards, official social
+> brand marks + hosted logo PNG on the auth surface, the `/Inventory` route
+> alignment, and the reference's own lucide nav icons; ADR-014 added.
 
 ## Table of Contents
 
@@ -49,7 +57,7 @@ lowest-risk path. **Verified.**
 
 | ADR | Decision | Status |
 |---|---|---|
-| ADR-001 | Single Next.js page + `rewrites()` SPA at reference PascalCase paths (`/`, `/Dashboard`, `/Inventario`, `/Sales`, `/Registers`, `/Cashiers`, `/Reports`, `/StoreSettings`) | Accepted — Verified (routes render via e2e) |
+| ADR-001 | Single Next.js page + `rewrites()` SPA at reference PascalCase paths (`/`, `/Dashboard`, `/Inventory`, `/Sales`, `/Registers`, `/Cashiers`, `/Reports`, `/StoreSettings`) | Accepted — Verified (routes render via e2e; `/Inventario` kept as an alias rewrite) |
 | ADR-002 | Prisma + SQLite at `<repo>/db/custom.db` via `DATABASE_URL="file:../db/custom.db"` (schema-anchored + runtime-anchored resolution) | Accepted — Verified (db exists; contract unit-pinned) |
 | ADR-003 | Money as integer cents; prices IVA-exclusive; per-product `ivaRate` (default 16) | Accepted — Verified against the reference ticket ($18.50 → $21.46) |
 | ADR-004 | Tailwind v4 CSS-first (`@theme`/`@utility`), the five trap rules enforced by source pins | Accepted — Verified (tests/tailwind-traps.test.ts) |
@@ -62,6 +70,7 @@ lowest-risk path. **Verified.**
 | ADR-011 | Reset delivery is ENVIRONMENT-GATED: the forgot-password response carries the one-shot reset link only outside production or with `RESET_INAPP_DELIVERY=1` (a production response is `{ok:true}` only) | Accepted — Verified (security.spec.ts, production posture) |
 | ADR-012 | Sessions carry a `tokenVersion`; reset-password bumps it transactionally — pre-reset cookies are revoked on their next request | Accepted — Verified (security.spec.ts) |
 | ADR-013 | The remediation contract set: guarded in-transaction stock decrement + server-side cash gate (422), duplicate-open 409 via ConflictError, raw ZodError → 400, 413/415 body gates, OTP 6-strike lockout, proxy-hop-aware client IP, drawer focus contract (latched rAF + Tab wrap + focus return) | Accepted — Verified (213 unit + 70 e2e) |
+| ADR-014 | The v4 visual-parity contract set: native Tailwind radius scale (shadcn `--radius` remap removed — the reference's own shadcn runs native), the reference card system on `vx-card` (translucent `rgba(16,18,32,.9)` + white-alpha hairline + elevation shadow), the `glass-button-primary/success/warning` gradient action system (135° ramps + colored hairline + glow + hover lift, CSS extracted live), the translucent-violet active nav pill on a RING (never a border — layout-neutral), StatCard blob anatomy, the icon-left reports summary cards, and the official social brand marks + hosted logo PNG on the auth surface | Accepted — Verified (238 unit + 74 e2e, live probe parity) |
 
 ---
 

@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
   // docs/Tailwind-V4-Validation-Report.md, session-12 methodology note).
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   // Path-based SPA routing: the reference app's views live at real paths
-  // (/Dashboard, /Inventario, /Sales, ... — PascalCase, measured live). We
+  // (/Dashboard, /Inventory, /Sales, ... — PascalCase, measured live). We
   // keep ONE page (src/app/page.tsx) and rewrite those paths onto it; the
   // client store syncs view state with location.pathname (see
   // src/lib/router.ts).
@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/Terminal", destination: "/" },
       { source: "/Dashboard", destination: "/" },
+      { source: "/Inventory", destination: "/" },
       { source: "/Inventario", destination: "/" },
       { source: "/Ventas", destination: "/" },
       { source: "/Sales", destination: "/" },

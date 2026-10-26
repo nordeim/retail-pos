@@ -136,7 +136,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
               <label
                 htmlFor="settings-logo"
                 data-testid="settings-logo-button"
-                className="glass-button vx-focus mt-1.5 inline-flex max-w-xs cursor-pointer items-center gap-2"
+                className="glass-button vx-focus mt-1.5 inline-flex max-w-xs cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium"
               >
                 <Upload className="h-4 w-4 shrink-0" />
                 <span>Subir logo</span>
@@ -351,7 +351,7 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
             data-testid="settings-save"
             disabled={form.name.trim().length === 0 || status === "saving"}
             onClick={() => void save()}
-            className="vx-gradient border-0 px-6 text-white"
+            className="glass-button-primary rounded-xl px-6 py-2.5 text-sm font-medium"
           >
             {status === "saving" ? "Guardando…" : "Guardar Cambios"}
           </Button>

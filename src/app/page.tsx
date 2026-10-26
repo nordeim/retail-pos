@@ -2,7 +2,7 @@
 
 // ---------------------------------------------------------------------------
 // The WHOLE app: one page — auth gate → shell → view switcher. The 8 routes
-// (/, /Dashboard, /Inventario, /Sales, /Registers, /Cashiers, /Reports,
+// (/, /Dashboard, /Inventory, /Sales, /Registers, /Cashiers, /Reports,
 // /StoreSettings) are rewritten onto / by next.config.ts; the store syncs
 // the view with the pathname (hydrate()).
 //

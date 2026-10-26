@@ -1,10 +1,12 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// The auth surface — the reference-measured LIGHT page: white card on a soft
-// gray-blue gradient, dark circular logo, "Welcome to VeloxPOS", the four
-// social buttons, the OR divider, Email/Password, Sign in, Forgot password?,
-// and "Need an account? Sign up".
+// The auth surface — the reference-measured LIGHT page (v4 re-probe): a
+// bg-white/95 backdrop-blur card with shadow-2xl on a to-bottom-right
+// slate-50→slate-100 gradient, the VeloxPOS logo PNG in a ring-4 white
+// circle, "Welcome to VeloxPOS", the four social buttons (official brand
+// marks), the OR divider, Email/Password, Sign in, Forgot password?, and
+// "Need an account? Sign up".
 //
 // The social buttons are the reference's hosted-OAuth affordances; this
 // self-hosted build has no OAuth apps configured, so they explain themselves
@@ -120,7 +122,7 @@ export function LoginSurface() {
           <Button
             type="submit"
             disabled={busy}
-            className="w-full bg-indigo-600 text-white hover:bg-indigo-600/90"
+            className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
           >
             {busy ? "Enviando…" : "Enviar enlace"}
           </Button>
@@ -164,7 +166,7 @@ export function LoginSurface() {
           <Button
             type="submit"
             disabled={busy}
-            className="w-full bg-indigo-600 text-white hover:bg-indigo-600/90"
+            className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
           >
             {busy ? "Guardando…" : "Actualizar contraseña"}
           </Button>
@@ -195,34 +197,34 @@ export function LoginSurface() {
 
   return (
     <AuthShell>
-      {/* The reference's dark circular logo badge (a violet cube glyph). */}
-      <span
-        aria-hidden
-        className="mb-5 flex h-24 w-24 items-center justify-center rounded-full shadow-[0_10px_30px_rgba(30,27,75,0.25)]"
-        style={{ background: "#221f45" }}
-      >
-        <svg viewBox="0 0 24 24" className="h-11 w-11" fill="none" stroke="url(#vx-cube)" strokeWidth="1.6" strokeLinejoin="round">
-          <defs>
-            <linearGradient id="vx-cube" x1="0" y1="0" x2="24" y2="24">
-              <stop offset="0%" stopColor="#a78bfa" />
-              <stop offset="100%" stopColor="#22d3ee" />
-            </linearGradient>
-          </defs>
-          <path d="M12 2.5 21 7v10l-9 4.5L3 17V7l9-4.5Z" />
-          <path d="M3 7l9 4.5L21 7M12 11.5V21.5" />
-          <path d="M7.5 4.75 16.5 9.25" />
-        </svg>
-      </span>
+      {/* The reference's logo mark (v4 re-probe): the hosted PNG in a
+          ring-4 white circle over a soft slate glow — the DOM ships an
+          <img> inside a `group relative` wrapper. */}
+      <div className="group relative mb-5">
+        <div
+          aria-hidden
+          className="absolute inset-0 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 opacity-30 blur-xl transition-opacity duration-300 group-hover:opacity-40"
+        />
+        <div className="relative flex h-20 w-20 shrink-0 overflow-hidden rounded-full shadow-lg ring-4 ring-white/50 transition-all duration-300 group-hover:shadow-xl sm:h-24 sm:w-24">
+          <img
+            src="/veloxpos-logo.png"
+            alt="VeloxPOS"
+            width={96}
+            height={96}
+            className="aspect-square h-full w-full object-cover"
+          />
+        </div>
+      </div>
       <h1 className="text-center text-3xl font-bold tracking-tight text-slate-900">
         Welcome to VeloxPOS
       </h1>
       <p className="mt-2 text-center text-slate-500">Sign in to continue</p>
 
       <div className="mt-6 w-full space-y-3">
-        <SocialButton provider="Google" glyph="G" onUse={social} />
-        <SocialButton provider="Microsoft" glyph="M" onUse={social} />
-        <SocialButton provider="Facebook" glyph="f" onUse={social} />
-        <SocialButton provider="Apple" glyph="" onUse={social} />
+        <SocialButton provider="Google" onUse={social} />
+        <SocialButton provider="Microsoft" onUse={social} />
+        <SocialButton provider="Facebook" onUse={social} />
+        <SocialButton provider="Apple" onUse={social} />
       </div>
 
       <div className="my-6 flex w-full items-center gap-4" aria-hidden>
@@ -268,7 +270,7 @@ export function LoginSurface() {
           type="submit"
           disabled={busy}
           data-testid="login-submit"
-          className="w-full bg-indigo-600 text-white hover:bg-indigo-600/90"
+          className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
         >
           {busy ? "Signing in…" : "Sign in"}
         </Button>
@@ -304,44 +306,77 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
       className="vx-auth-page flex min-h-dvh items-center justify-center p-4"
       data-testid="auth-page"
     >
-      <div className="w-full max-w-md rounded-3xl border border-slate-200/70 bg-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-10">
+      <div className="relative w-full max-w-md rounded-2xl border-0 bg-white/95 p-8 shadow-2xl backdrop-blur-sm sm:p-10">
         <div className="flex flex-col items-center">{children}</div>
       </div>
     </main>
   );
 }
 
+// The official brand marks, extracted from the reference's live DOM (v4) —
+// same viewBox, same paths, same fills.
+function SocialGlyph({ provider }: { provider: string }) {
+  const common = {
+    className: "h-5 w-5 shrink-0",
+    viewBox: "0 0 24 24",
+    xmlns: "http://www.w3.org/2000/svg",
+    "aria-hidden": true as const,
+  };
+  if (provider === "Google") {
+    return (
+      <svg {...common}>
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+      </svg>
+    );
+  }
+  if (provider === "Microsoft") {
+    return (
+      <svg {...common}>
+        <path fill="#F25022" d="M1 1h10v10H1z" />
+        <path fill="#00A4EF" d="M13 1h10v10H13z" />
+        <path fill="#7FBA00" d="M1 13h10v10H1z" />
+        <path fill="#FFB900" d="M13 13h10v10H13z" />
+      </svg>
+    );
+  }
+  if (provider === "Facebook") {
+    return (
+      <svg {...common}>
+        <path
+          fill="#1877F2"
+          d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <path
+        fill="#000000"
+        d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"
+      />
+    </svg>
+  );
+}
+
 function SocialButton({
   provider,
-  glyph,
   onUse,
 }: {
   provider: string;
-  glyph: string;
   onUse: (provider: string) => void;
 }) {
-  const color =
-    provider === "Google"
-      ? "#4285F4"
-      : provider === "Microsoft"
-        ? "#00A4EF"
-        : provider === "Facebook"
-          ? "#1877F2"
-          : "#111111";
   return (
     <button
       type="button"
       onClick={() => onUse(provider)}
       data-testid={`social-${provider.toLowerCase()}`}
-      className="vx-focus flex w-full items-center justify-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+      className="vx-focus flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-medium text-slate-700 transition-all hover:border-slate-300 hover:shadow"
     >
-      <span
-        aria-hidden
-        className="inline-flex h-5 w-5 items-center justify-center rounded-full text-sm font-bold text-white"
-        style={{ background: color }}
-      >
-        {glyph}
-      </span>
+      <SocialGlyph provider={provider} />
       Continue with {provider}
     </button>
   );
@@ -372,7 +407,7 @@ function AuthInput({
         <Input
           id={id}
           {...props}
-          className="h-11 rounded-xl border-slate-300 bg-white pl-9 text-slate-900 placeholder:text-slate-400"
+          className="h-12 rounded-xl border-slate-200 bg-slate-50/50 pl-9 text-base text-slate-900 placeholder:text-slate-400"
         />
       </div>
     </div>

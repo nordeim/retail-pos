@@ -10,6 +10,7 @@
 import * as React from "react";
 import { Lock, Mail, User } from "lucide-react";
 
+import { AuthShell } from "@/components/auth/login-surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiSend, ApiError } from "@/lib/api";
@@ -55,13 +56,8 @@ export function SignupSurface() {
   };
 
   return (
-    <main
-      className="vx-auth-page flex min-h-dvh items-center justify-center p-4"
-      data-testid="signup-page"
-    >
-      <div className="w-full max-w-md rounded-3xl border border-slate-200/70 bg-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-10">
-        <div className="flex flex-col items-center">
-          {stage === "form" ? (
+    <AuthShell>
+      {stage === "form" ? (
             <>
               <h1 className="text-center text-2xl font-bold tracking-tight text-slate-900">
                 Create your account
@@ -109,7 +105,7 @@ export function SignupSurface() {
                 <Button
                   type="submit"
                   disabled={busy}
-                  className="w-full bg-indigo-600 text-white hover:bg-indigo-600/90"
+                  className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
                 >
                   {busy ? "Creating…" : "Sign up"}
                 </Button>
@@ -151,16 +147,14 @@ export function SignupSurface() {
                 <Button
                   type="submit"
                   disabled={busy}
-                  className="w-full bg-indigo-600 text-white hover:bg-indigo-600/90"
+                  className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
                 >
                   {busy ? "Verifying…" : "Verify and sign in"}
                 </Button>
               </form>
             </>
           )}
-        </div>
-      </div>
-    </main>
+    </AuthShell>
   );
 }
 
@@ -186,7 +180,7 @@ function TextField({
         <Input
           id={id}
           {...props}
-          className="h-11 rounded-xl border-slate-300 bg-white pl-9 text-slate-900 placeholder:text-slate-400"
+          className="h-12 rounded-xl border-slate-200 bg-slate-50/50 pl-9 text-base text-slate-900 placeholder:text-slate-400"
         />
       </div>
     </div>

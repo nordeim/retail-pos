@@ -88,3 +88,93 @@ Stage Summary:
   AGENTS/CLAUDE/README/PAD, retail-pos_SKILL.md, .env.example.
 - Known-open (disclosed, out of scope): in-memory limiter single-instance
   only; no SMTP channel; image upload storage remains URL-based.
+
+---
+Task ID: V4-A..E
+Agent: general-purpose (visual-parity auditor + remediation executor,
+  session V4 2026-10-26)
+Task: Deep visual/functional parity audit against the live reference
+  (veloxposretail.base44.app) with computed-style probes, then execute
+  remediation-plan-v4 TDD-first, ship screenshots/docs, and push.
+
+Work Log:
+- Baseline re-verified at `main @ 6606df3`: lint 0 · tsc 0 · unit
+  213/213 · login 200 (`$Abcd1234` seed) · dev server healthy.
+- Audit method: agent-browser logged into BOTH apps side by side; 10
+  VLM pair-comparisons of the saved evidence screenshots, then every
+  candidate gap re-verified with LIVE computed-style probes (DOM walks,
+  getComputedStyle, pixel sampling, CSS rule extraction). Findings with
+  hard evidence: V1 radius-scale drift (shadcn remap made every
+  rounded-xl 16px vs the reference's native 12px), V2/V3 nav states
+  (reference = translucent violet pill + white/40 inactive, clone =
+  solid gradient pill + slate-400), V4/V5 sidebar brand row + toggle,
+  V0 card system (reference = translucent rgba(16,18,32,.9) +
+  white-alpha hairline + elevation shadow; clone = solid + flat), V6
+  StatCard anatomy (blob + horizontal layout + gradient chips + 24px
+  value), V7 reports cards icon-LEFT row layout, V7b period tabs,
+  V8 login (card/socitals/inputs/submit/logo), V9 button system
+  (.glass-button-primary/success CSS extracted live), V10 icon-button
+  hovers, V11 low-stock amber-600, plus the route drift (/Inventario →
+  /Inventory) and two nav icon mismatches (Dashboard=chart-column,
+  Reportes=file-chart-column-increasing).
+- Pixel-verified the reference's own bug: KPI values at text-slate-800
+  on rgb(16,18,32) = 1.27:1 contrast (its Reports page uses white for
+  the same element) — documented SD-1: clone keeps readable values.
+- Wrote docs/remediation-plan-v4.md (ledger + decisions + 5 batches).
+- B1 (TDD): native radius scale restored; nav active/inactive/brand/
+  toggle contracts; mobile chrome brand chips aligned. The active
+  pill's violet edge rides a RING, not a border — a border broke the
+  drawer's pinned 44px pitch (caught by the TRAP-4 guard e2e).
+- B2 (TDD): vx-card = the reference card system; StatCard restructured
+  (blob + flex items-start justify-between + p-2.5 gradient chips +
+  text-xs/slate-500 labels + text-2xl values); reports summary cards
+  get layout="row" (icon-left, w-12 h-12 rounded-2xl chip, text-2xl
+  font-black white values); period tabs = rounded-2xl container +
+  bg-violet-600 active; low-stock row = the reference's light-amber
+  tint (amber-50/50 + amber-100 chip + slate-700 name + amber-600
+  count) — v3's V6 pins re-measured and updated to today's live DOM.
+- B3 (TDD): glass-button re-probed (dark rgba(28,31,52,.85) variant —
+  v3's white-glass measurement was stale) + glass-button-primary/
+  success/warning utilities added (reference CSS verbatim); applied to
+  every CTA (Nuevo Producto/Caja/Cajero, Guardar×2, Crear×3, Iniciar/
+  Cerrar Turno, COBRAR 70px py-5 text-xl font-black, Confirmar,
+  category chips, dialog Cancelars); icon-button hovers → indigo-50/
+  red-50 per reference.
+- B4 (TDD): AuthShell = rounded-2xl bg-white/95 backdrop-blur shadow-2xl
+  on to-bottom-right slate-50→100; veloxpos-logo.png (downloaded from
+  the reference CDN) in ring-4 ring-white/50 + glow; official social
+  brand SVGs (Google/MS/FB/Apple paths extracted from the reference
+  DOM); h-12 inputs (slate-50/50, text-base); near-black slate-900
+  submits; signup refactored onto the shared AuthShell.
+- Route alignment: /Inventario → /Inventory (router + next.config
+  rewrite + all specs/helpers/scripts; /Inventario kept as alias);
+  nav icons → ChartColumn + FileChartColumnIncreasing.
+- Test deltas: +25 unit pins (tests/visual-parity-v4.test.ts, all red
+  first) + 4 v4 e2e computed-style pins (nav pill 12px translucent,
+  StatCard blob+24px, COBRAR 70px/900/16px, login card/social/submit/
+  official-marks); v3's V6 unit+e2e pins re-measured to the live
+  contract; TRAP-4 drawer pitch preserved (ring-not-border).
+- Final gates: lint 0 · tsc 0 · build ✓ · unit 238/238 · e2e 74/74.
+- Ship: 18 screenshots regenerated (same filenames); VLM spot-checks
+  PASS (stat cards/nav/buttons/chips/login; logo areas EQUIVALENT —
+  the reference's own white ring is invisible on its white card);
+  docs lockstep (AGENTS.md contracts 6-10, CLAUDE.md counts, README
+  tokens/badge, PAD v1.2.0 + ADR-014, retail-pos_SKILL.md §4 table +
+  §15 patterns); .env.example verified complete.
+
+Stage Summary:
+- The v4 sweep closed every hard-evidence visual gap to the live
+  reference; the clone remains the functional superset (drawer, cashier
+  CRUD, ticket expansion, Cerrar Turno) with readable KPI values (SD-1)
+  where the reference ships a 1.27:1 contrast bug.
+- Reusable patterns: computed-style probe parity audits (screenshot
+  VLM alone over-reports; probes + pixel sampling decide), ring-not-
+  border for geometry-pinned active states, probe-identity color
+  assertions for Tailwind v4 OKLCH, live CSS-rule extraction for
+  design-system reproduction.
+- Deliverables: docs/remediation-plan-v4.md, tests/visual-parity-v4
+  .test.ts (+25), visual-parity.spec.ts v4 block (+4), public/
+  veloxpos-logo.png, 18 refreshed screenshots, updated AGENTS/CLAUDE/
+  README/PAD v1.2.0/retail-pos_SKILL.md.
+- Known-open (unchanged from v3): in-memory limiter single-instance;
+  no SMTP channel; image upload storage URL-based.

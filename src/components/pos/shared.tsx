@@ -42,11 +42,24 @@ export function PageHeading({
 
 // ---- stat card -----------------------------------------------------------------
 
+// v4 live-probed ramps: the dashboard's blob + chip gradients.
 const STAT_COLORS = {
-  success: { chip: "bg-emerald-500", text: "text-emerald-400" },
-  primary: { chip: "bg-violet-500", text: "text-violet-400" },
-  info: { chip: "bg-blue-500", text: "text-blue-400" },
-  warning: { chip: "bg-orange-500", text: "text-orange-400" },
+  success: {
+    blob: "from-green-400 to-emerald-500",
+    chip: "from-green-400 to-emerald-500",
+  },
+  primary: {
+    blob: "from-indigo-400 to-purple-500",
+    chip: "from-indigo-400 to-purple-500",
+  },
+  info: {
+    blob: "from-blue-400 to-indigo-500",
+    chip: "from-blue-400 to-indigo-500",
+  },
+  warning: {
+    blob: "from-amber-400 to-orange-500",
+    chip: "from-amber-400 to-orange-500",
+  },
 } as const;
 
 export function StatCard({
@@ -54,47 +67,74 @@ export function StatCard({
   value,
   icon,
   color,
-  ghost = true,
+  layout = "stack",
   testId,
 }: {
   label: string;
   value: string | number;
   icon: React.ReactNode;
   color: keyof typeof STAT_COLORS;
-  /** The reference renders a big translucent duplicate icon behind the chip. */
-  ghost?: boolean;
+  /** "stack" = the dashboard KPI (blob + label/value left, chip right);
+   *  "row" = the reports summary (chip left, label/value right). Both
+   *  anatomies measured live on the reference (v4). */
+  layout?: "stack" | "row";
   testId?: string;
 }) {
   const palette = STAT_COLORS[color];
-  return (
-    <div
-      data-testid={testId}
-      className="vx-card relative overflow-hidden p-5"
-    >
-      {ghost && (
-        <div
-          aria-hidden
-          className={cn(
-            "pointer-events-none absolute -right-2 -top-3 opacity-15",
-            palette.text,
-          )}
-        >
-          {icon}
-        </div>
+  const chip = (
+    <span
+      className={cn(
+        "flex shrink-0 items-center justify-center p-2.5 rounded-xl bg-gradient-to-br text-white",
+        palette.chip,
       )}
-      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
-      <div className="mt-2 flex items-end justify-between gap-3">
-        <p className="text-3xl font-bold text-slate-100">{value}</p>
+    >
+      {icon}
+    </span>
+  );
+
+  if (layout === "row") {
+    return (
+      <div data-testid={testId} className="vx-card flex items-center gap-4 p-5">
         <span
           className={cn(
-            "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-lg",
+            "flex w-12 h-12 rounded-2xl shrink-0 items-center justify-center bg-gradient-to-br text-white",
             palette.chip,
           )}
         >
           {icon}
         </span>
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wider text-white/35">{label}</p>
+          <p className="mt-0.5 truncate text-2xl font-black text-white">{value}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      data-testid={testId}
+      className="vx-card relative overflow-hidden p-5"
+    >
+      {/* The reference's corner gradient blob (80px circle, 20% opacity). */}
+      <div
+        aria-hidden
+        className={cn(
+          "absolute -top-6 -right-6 w-20 h-20 rounded-full bg-gradient-to-br opacity-20",
+          palette.blob,
+        )}
+      />
+      <div className="relative flex items-start justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            {label}
+          </p>
+          {/* SD-1: the reference pins text-slate-800 here — 1.27:1 on its own
+              card (unreadable; its Reports page uses white for the same
+              value). We keep the readable tone. */}
+          <p className="mt-1 text-2xl font-bold text-slate-100">{value}</p>
+        </div>
+        {chip}
       </div>
     </div>
   );

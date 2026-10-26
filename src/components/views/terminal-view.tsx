@@ -125,10 +125,10 @@ export function TerminalView() {
                     type="button"
                     onClick={() => setCategory(name)}
                     className={cn(
-                      "vx-focus rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors",
+                      "vx-focus rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap",
                       category === name
-                        ? "vx-gradient text-white"
-                        : "border border-[#262a36] bg-[#12141f] text-slate-300 hover:bg-white/5",
+                        ? "glass-button-primary"
+                        : "glass-button",
                     )}
                   >
                     {name}
@@ -268,7 +268,7 @@ export function TerminalView() {
         {ticket.length > 0 ? (
           <Button
             data-testid="cobrar-button"
-            className="h-12 w-full bg-emerald-500 text-base font-bold text-white hover:bg-emerald-500/90"
+            className="glass-button-success h-auto w-full rounded-2xl px-8 py-5 text-xl font-black"
             onClick={() => setPayOpen(true)}
           >
             <Banknote className="h-5 w-5" />
@@ -278,7 +278,7 @@ export function TerminalView() {
           <Button
             disabled
             data-testid="cobrar-button"
-            className="h-12 w-full bg-emerald-800/60 text-base font-bold text-emerald-200/60"
+            className="glass-button-success pointer-events-none h-auto w-full rounded-2xl px-8 py-5 text-xl font-black opacity-50"
           >
             <Banknote className="h-5 w-5" />
             COBRAR {formatMoney(0)}
@@ -466,7 +466,7 @@ function PaymentDialog({
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-[#262a36] bg-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+                className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
               >
                 Cancelar
               </Button>
@@ -477,7 +477,7 @@ function PaymentDialog({
                   (method === "efectivo" && (cashShort || cashInput.trim() === ""))
                 }
                 onClick={() => void submit()}
-                className="vx-gradient border-0 text-white"
+                className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
               >
                 {submitting ? "Procesando..." : "Confirmar"}
               </Button>

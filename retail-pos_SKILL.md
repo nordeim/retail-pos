@@ -25,10 +25,10 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v3 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 213/213 unit · 70/70 e2e** (both suites run
-> twice consecutively green). Evidence labels: **Verified** (executed here),
-> **Reasoned** (inference), **Assumed** (decision).
+> template), validated against the codebase at the v4 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 238/238 unit · 74/74 e2e**. Evidence labels:
+> **Verified** (executed here), **Reasoned** (inference), **Assumed**
+> (decision).
 
 ## §1 Project Identity & Design Philosophy
 
@@ -68,7 +68,7 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 213 tests / 19 files |
+| Unit | vitest ^5.0.1 (node env) | 238 tests / 20 files |
 | E2E | @playwright/test ^1.63.0 + chromium | 70 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
@@ -99,7 +99,7 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 213/213
+bun run test               # vitest: 238/238
 bun run test:e2e           # playwright: 70/70 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
@@ -128,15 +128,18 @@ parity evidence against `docs/reference-evidence/ref-*.png`):
 | Token / utility | Value | Role |
 |---|---|---|
 | `--color-vx-canvas` | `#080a14` | app background |
-| surface | `#0d0f1a` | cards (`vx-card` bg), drawer, auth inputs |
-| border | `#1e2235` | hairlines (`vx-card` border, dividers) |
+| surface | `#0d0f1a` | sidebar, drawer, auth inputs (SOLID — different from cards) |
+| `vx-card` | `rgba(16,18,32,.9)` bg + `rgba(255,255,255,.07)` hairline + `0 8px 32px rgba(0,0,0,.5)` + radius 1rem | every card surface (v4 re-probe: translucent + elevation, NOT the solid `#0d0f1a`) |
 | chart grid | `#262a36` | dashed gridlines, scrollbar thumb |
 | chart axis text | `#64748b` | SVG `<text fill>` (NOT a Tailwind class — raw hex in the SVG) |
-| `vx-gradient` | `linear-gradient(to right, #8b5cf6, #6d28d9)` | brand chip, active nav, primary CTAs |
-| `vx-card` | surface bg + 1px border + radius 1rem | every card surface |
-| `glass-button` | white/8 bg, white/12 border, blur(8px) | the Ajustes "Subir logo" control (V5) |
+| `vx-gradient` | `linear-gradient(to right, #8b5cf6, #6d28d9)` | data-element fills (chart bars) only — CTAs moved to glass |
+| `glass-button` | `rgba(28,31,52,.85)` bg + white/9 hairline + lavender text | Cancelar buttons, inactive chips, the Ajustes "Subir logo" control |
+| `glass-button-primary` | `135deg #7c3aed→#6366f1` + violet hairline + glow + hover lift | Nuevo Producto/Caja/Cajero, Guardar, Crear, active chips |
+| `glass-button-success` | `135deg #059669→#10b981` + emerald hairline + glow | Abrir/Iniciar Turno, COBRAR (70px, `py-5 text-xl font-black`) |
+| `glass-button-warning` | `135deg #d97706→#f97316` amber sibling | Cerrar Turno (the superset-only state) |
 | `vx-focus` | focus-visible box-shadow ring | shared focus ring |
-| `vx-auth-page` | light gradient | login/signup/reset (dark tokens never leak there) |
+| `vx-auth-page` | `to right bottom #f8fafc→#f1f5f9` | login/signup/reset (dark tokens never leak there) |
+| radius scale | NATIVE v4 (`--radius-xl: 0.75rem`) | the shadcn remap was REMOVED (v4 V1) — re-adding it drifts every control +4px |
 
 The five Tailwind v3→v4 traps (each has a source pin in
 `tests/tailwind-traps.test.ts` — read before touching layout CSS):
@@ -326,7 +329,7 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 213/213 vitest
+bun run test          # 238/238 vitest
 bun run test:e2e      # 70/70 playwright (production posture)
 ```
 
@@ -425,6 +428,22 @@ if (panel.contains(document.activeElement) || document.activeElement === panel) 
 }
 panel.focus({ preventScroll: true });
 frame = requestAnimationFrame(() => moveFocusIn(attempt + 1));
+
+// (v4) Layout-neutral "border" on an active item — a real border shifts
+// box size and breaks uniform-gap geometry pins; a ring is a box-shadow:
+className={active
+  ? "bg-violet-600/20 text-violet-300 ring-1 ring-violet-500/30"
+  : "text-white/40 hover:text-white/80"}
+
+// (v4) The glass action system — the reference's own CSS, extracted live;
+// sizing rides call-site utilities, the utility carries ramp+hairline+glow.
+<button className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium" />
+
+// (v4) Probe-identity color assertions — Tailwind v4 resolves utilities
+// through OKLCH, so a computed color is never a literal rgb() string;
+// render a probe element with the same utility and compare resolved values.
+const probe = getComputedStyle(makeProbe("bg-slate-900")).backgroundColor;
+expect(getComputedStyle(submit).backgroundColor).toBe(probe);
 ```
 
 ## §16 Coding Anti-Patterns (seen and removed)

@@ -17,7 +17,7 @@ export const DEMO_NAME = "Cesar Martínez";
 export const ROUTES = [
   { path: "/", heading: "No hay turno activo" },
   { path: "/Dashboard", heading: "Dashboard" },
-  { path: "/Inventario", heading: "Inventario" },
+  { path: "/Inventory", heading: "Inventario" },
   { path: "/Sales", heading: "Historial de Ventas" },
   { path: "/Registers", heading: "Cajas Registradoras" },
   { path: "/Cashiers", heading: "Cajeros" },

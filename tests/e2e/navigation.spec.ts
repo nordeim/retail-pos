@@ -28,7 +28,7 @@ test.describe("navigation", () => {
 
     await page.getByTestId("nav-inventario").click();
     await expect(page.locator("main h1")).toHaveText("Inventario");
-    await expect(page).toHaveURL(/\/Inventario$/);
+    await expect(page).toHaveURL(/\/Inventory$/);
 
     await page.getByTestId("nav-terminal").click();
     await expect(page).toHaveURL(/\/$|\/terminal$/i);

@@ -73,7 +73,7 @@ export function RegistersView() {
         actions={
           <Button
             data-testid="new-register-button"
-            className="vx-gradient border-0 text-white"
+            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
             onClick={() => setCreating(true)}
           >
             <Plus className="h-4 w-4" /> Nueva Caja
@@ -124,7 +124,7 @@ export function RegistersView() {
                 {openShift ? (
                   <Button
                     data-testid={`close-shift-${register.id}`}
-                    className="h-10 flex-1 bg-amber-500 font-semibold text-amber-950 hover:bg-amber-500/90"
+                    className="glass-button-warning flex-1 rounded-lg px-3 py-1.5 text-sm font-medium"
                     onClick={() => setClosing(register)}
                   >
                     <LogOut className="h-4 w-4" /> Cerrar Turno
@@ -132,7 +132,7 @@ export function RegistersView() {
                 ) : (
                   <Button
                     data-testid={`open-shift-${register.id}`}
-                    className="h-10 flex-1 bg-emerald-500 font-semibold text-white hover:bg-emerald-500/90"
+                    className="glass-button-success flex-1 rounded-lg px-3 py-1.5 text-sm font-medium"
                     onClick={() => setOpening(register)}
                   >
                     <LogIn className="h-4 w-4" /> Abrir Turno
@@ -143,7 +143,7 @@ export function RegistersView() {
                   aria-label={`Eliminar ${register.name}`}
                   data-testid={`delete-register-${register.id}`}
                   onClick={() => setDeleting(register)}
-                  className="vx-focus rounded-lg p-2.5 text-slate-500 hover:bg-white/5 hover:text-red-400"
+                  className="vx-focus rounded-lg p-2.5 text-slate-500 hover:bg-red-50 hover:text-red-500"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -201,7 +201,7 @@ export function RegistersView() {
             <Button
               variant="outline"
               onClick={() => setDeleting(null)}
-              className="border-[#262a36] bg-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+              className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
             >
               Cancelar
             </Button>
@@ -284,7 +284,7 @@ function NewRegisterDialog({
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-[#262a36] bg-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+            className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
           >
             Cancelar
           </Button>
@@ -292,7 +292,7 @@ function NewRegisterDialog({
             data-testid="register-submit"
             disabled={name.trim().length === 0 || saving}
             onClick={() => void submit()}
-            className="vx-gradient border-0 text-white"
+            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
           >
             Crear
           </Button>
@@ -386,7 +386,7 @@ function OpenShiftDialog({
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-[#262a36] bg-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+            className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
           >
             Cancelar
           </Button>
@@ -394,7 +394,7 @@ function OpenShiftDialog({
             data-testid="shift-submit"
             disabled={cashierId === "" || saving}
             onClick={() => void submit()}
-            className="bg-emerald-500 text-white hover:bg-emerald-500/90"
+            className="glass-button-success rounded-xl px-4 py-2.5 text-sm font-medium"
           >
             <LogIn className="h-4 w-4" /> Iniciar Turno
           </Button>
@@ -490,7 +490,7 @@ function CloseShiftDialog({
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-[#262a36] bg-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+            className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
           >
             Cancelar
           </Button>
@@ -498,7 +498,7 @@ function CloseShiftDialog({
             data-testid="shift-close-submit"
             disabled={saving}
             onClick={() => void submit()}
-            className="bg-amber-500 text-amber-950 hover:bg-amber-500/90"
+            className="glass-button-warning rounded-xl px-4 py-2.5 text-sm font-medium"
           >
             Cerrar Turno
           </Button>

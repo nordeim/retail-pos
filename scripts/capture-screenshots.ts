@@ -125,7 +125,7 @@ try {
 
   for (const [route, name] of [
     ["/Dashboard", "desktop-dashboard"],
-    ["/Inventario", "desktop-inventario"],
+    ["/Inventory", "desktop-inventario"],
     ["/Registers", "desktop-cajas"],
     ["/Cashiers", "desktop-cajeros"],
     ["/Reports", "desktop-reportes"],
