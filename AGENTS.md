@@ -245,6 +245,32 @@ rules:
     `<Input>` bound to the same field (the swatch falls back to #000000
     mid-edit; the `hexColor` schema regex is the server-side gate).
 
+21. Route aliases + the path-driven title (v9, live-measured): the rewrites
+    accept the Spanish names (`/Ventas`, `/Inventario`, `/Cajas`,
+    `/Cajeros`, `/Reportes`, `/Ajustes`, `/Terminal`) as a SUPERSET (the
+    reference 404s every one) — `SPANISH_ALIASES` in `src/lib/router.ts`
+    maps them to their views; never let them fall to the terminal fallback
+    again (pre-v9 they silently rendered the WRONG view). The tab title is
+    PATH-driven, exactly like the reference: `documentTitleForPath()`
+    matches the canonical PascalCase path EXACT-CASE → that route's
+    canonical title; everything else slug-cases the first segment
+    (`/SALES` → "SALES | VeloxPOS", `/storesettings` → "Storesettings",
+    `/Ventas` → "Ventas"). The shell's title effect reads
+    `documentTitleForPath(window.location.pathname)` — NOT
+    `DOCUMENT_TITLES[view]`.
+22. Table + chart contracts (v9, live-measured): the ref's tables are BARE
+    (`<table class="w-full">` — 16px base); cells carry their own sizes —
+    never add a table-level `text-sm` (it shrank the Ventas Total to 14px;
+    the ref renders it at the inherited 16px). The foreground family is
+    `#e7e9ef` (`--foreground: 231 233 239` — the ref's measured body
+    default; also card-foreground/popover-foreground). The sales chart has
+    TWO measured skins via `SalesAreaChart variant=`: "dashboard"
+    (gridlines `#e2e8f0` "3 3", labels `#94a3b8` 12px, line `#6366f1`
+    w2.5, `salesGrad` gradient top 0.3) and "reports" (gridlines
+    `rgba(255,255,255,0.04)`, labels `rgba(255,255,255,0.3)` 11px, line
+    w2, gradient top 0.35) — one component, two skins; the dashboard has
+    NO footer credit line (the ref's dashboard ends at the low-stock rows).
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content

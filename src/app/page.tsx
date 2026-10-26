@@ -19,7 +19,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Zap } from "lucide-react";
 import { apiGet, ApiError } from "@/lib/api";
 import { useAppStore, usePosStore, type AppUser, type LoadedKey } from "@/lib/store";
-import { DOCUMENT_TITLES, type ViewId } from "@/lib/router";
+import { documentTitleForPath, type ViewId } from "@/lib/router";
 import { cn } from "@/lib/utils";
 
 import { TerminalView } from "@/components/views/terminal-view";
@@ -165,13 +165,18 @@ export default function Home() {
     }
   }, [primaryColor, secondaryColor]);
 
-  // V7/M1: the tab title follows the active view — the reference titles
-  // every route ("Dashboard | VeloxPOS", "Inventory | VeloxPOS", …; only
-  // the root is the bare "VeloxPOS"). Applied once the shell is ready so
-  // /login (its own route, its own title) never flickers.
+  // V7/M1 → V9/F2: the tab title follows the PATH, exactly like the
+  // reference (live-measured: its titles are path-driven — exact-case
+  // canonical match, everything else slug-cased: "/SALES" is
+  // "SALES | VeloxPOS" there, "/storesettings" is "Storesettings").
+  // Applied once the shell is ready so /login (its own route, its own
+  // title) never flickers. The [status, view] deps remain sufficient:
+  // SPA navigation always pairs a view change with a path change, and
+  // alias→alias same-view hops are unreachable through the UI (the
+  // sidebar links are canonical).
   React.useEffect(() => {
     if (status !== "ready") return;
-    document.title = DOCUMENT_TITLES[view] ?? "VeloxPOS";
+    document.title = documentTitleForPath(window.location.pathname);
   }, [status, view]);
 
   if (status !== "ready") {

@@ -271,19 +271,50 @@ export function thinLabelIndices(count: number, maxLabels = 8): number[] {
   return [...seen].sort((a, b) => a - b);
 }
 
-/** The 7-day/daily sales area: violet stroke, dashed grid, flat when empty —
- *  exactly how the reference's zero data renders. X labels are thinned to
- *  ≤8 evenly spaced (first + last always shown) per the reference's ~8
- *  visible date ticks on a 30-day window. */
+/** V9/SD-27: the reference renders TWO chart skins — measured live on
+ *  both pages. DASHBOARD: gridlines #e2e8f0 dash "3 3" (light — prominent),
+ *  axis labels #94a3b8 at 12px, line #6366f1 at strokeWidth 2.5, the area
+ *  fills the `salesGrad` gradient (#6366f1, stop-opacity 0.3 at 5% → 0 at
+ *  95%). REPORTS: gridlines rgba(255,255,255,0.04), labels
+ *  rgba(255,255,255,0.3) at 11px, line strokeWidth 2, gradient top 0.35.
+ *  Shared: the gradient id, the line color, the dash pattern. X labels are
+ *  thinned to ≤8 evenly spaced (first + last always shown) per the
+ *  reference's ~8 visible date ticks on a 30-day window. */
+const CHART_SKINS = {
+  dashboard: {
+    gridStroke: "#e2e8f0",
+    gridDash: "3 3",
+    labelFill: "#94a3b8",
+    labelSize: 12,
+    lineStroke: "#6366f1",
+    lineWidth: 2.5,
+    gradientTopOpacity: 0.3,
+  },
+  reports: {
+    gridStroke: "rgba(255,255,255,0.04)",
+    gridDash: "3 3",
+    labelFill: "rgba(255,255,255,0.3)",
+    labelSize: 11,
+    lineStroke: "#6366f1",
+    lineWidth: 2,
+    gradientTopOpacity: 0.35,
+  },
+} as const;
+
+/** The 7-day/daily sales area on the reference's measured skin — flat when
+ *  empty. `variant` picks the page's skin (dashboard default). */
 export function SalesAreaChart({
   points,
   height = 260,
   formatY = (v: number) => String(v),
+  variant = "dashboard",
 }: {
   points: { label: string; value: number }[];
   height?: number;
   formatY?: (v: number) => string;
+  variant?: "dashboard" | "reports";
 }) {
+  const skin = CHART_SKINS[variant];
   const width = 640;
   const padLeft = 52;
   const padBottom = 28;
@@ -316,6 +347,12 @@ export function SalesAreaChart({
       role="img"
       aria-label="Gráfica de ventas"
     >
+      <defs>
+        <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor="#6366f1" stopOpacity={skin.gradientTopOpacity} />
+          <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+        </linearGradient>
+      </defs>
       {gridLines.map((g) => {
         const gy = padTop + innerH - g * innerH;
         const value = Math.round(max * g * 100) / 100;
@@ -326,25 +363,33 @@ export function SalesAreaChart({
               x2={width - 8}
               y1={gy}
               y2={gy}
-              stroke="#262a36"
-              strokeDasharray="3 4"
+              stroke={skin.gridStroke}
+              strokeDasharray={skin.gridDash}
             />
-            <text x={padLeft - 8} y={gy + 4} textAnchor="end" fontSize="11" fill="#64748b">
+            <text
+              x={padLeft - 8}
+              y={gy + 4}
+              textAnchor="end"
+              fontSize={skin.labelSize}
+              fill={skin.labelFill}
+            >
               {formatY(value)}
             </text>
           </g>
         );
       })}
-      {area ? <path d={area} fill="rgba(139,92,246,0.12)" /> : null}
-      {path ? <path d={path} fill="none" stroke="#8b5cf6" strokeWidth="2" /> : null}
+      {area ? <path d={area} fill="url(#salesGrad)" /> : null}
+      {path ? (
+        <path d={path} fill="none" stroke={skin.lineStroke} strokeWidth={skin.lineWidth} />
+      ) : null}
       {labelIndices.map((i) => (
         <text
           key={`${points[i].label}-${i}`}
           x={x(i)}
           y={height - 8}
           textAnchor="middle"
-          fontSize="11"
-          fill="#64748b"
+          fontSize={skin.labelSize}
+          fill={skin.labelFill}
         >
           {points[i].label}
         </text>

@@ -41,14 +41,38 @@ export const NAV_ITEMS: NavItem[] = [
   { id: "ajustes", label: "Ajustes", path: "/StoreSettings" },
 ];
 
+/** V9/SD-23: the Spanish route names the rewrites accept as a SUPERSET
+ *  (the reference 404s every one of them — live-measured: /Ventas, /Cajas,
+ *  /Ajustes, … all render "Página no encontrada" there). The clone keeps
+ *  the aliases (they are documented superset behavior) and maps them to
+ *  their views; before v9 they fell to the terminal fallback and silently
+ *  rendered the WRONG view. `/Terminal` maps too — the ref 404s it while
+ *  our rewrite accepts it (the terminal is also reachable at "/"). */
+const SPANISH_ALIASES: Record<string, ViewId> = {
+  terminal: "terminal",
+  ventas: "ventas",
+  inventario: "inventario",
+  cajas: "cajas",
+  cajeros: "cajeros",
+  reportes: "reportes",
+  ajustes: "ajustes",
+};
+
+function aliasForSegment(segment: string | undefined): ViewId | undefined {
+  if (!segment) return undefined;
+  const hit = NAV_ITEMS.find(
+    (item) => item.path.toLowerCase() === `/${segment}`,
+  );
+  if (hit) return hit.id;
+  return SPANISH_ALIASES[segment];
+}
+
 /** Path aliases the rewrites accept (superset: case-insensitive + the
  *  Spanish names the reference 404s on). Canonical paths stay PascalCase. */
 export function isKnownPath(pathname: string): boolean {
   const segment = pathname.split("/").filter(Boolean)[0]?.toLowerCase();
   if (!segment) return true; // "/" IS the Terminal
-  return NAV_ITEMS.some(
-    (item) => item.path.toLowerCase() === `/${segment}`,
-  );
+  return aliasForSegment(segment) !== undefined;
 }
 
 /** Canonical PascalCase path for a view. */
@@ -57,12 +81,12 @@ export function pathForView(view: ViewId): string {
 }
 
 /** Map a pathname to its view id — first segment wins, case-insensitive,
- *  trailing slashes tolerated; root/unknown → terminal. */
+ *  trailing slashes tolerated; the Spanish aliases resolve too (V9/SD-23);
+ *  root/unknown → terminal. */
 export function viewFromPath(pathname: string): ViewId {
   const segment = pathname.split("/").filter(Boolean)[0]?.toLowerCase();
   if (!segment) return "terminal";
-  const hit = NAV_ITEMS.find((item) => item.path.toLowerCase() === `/${segment}`);
-  return hit?.id ?? "terminal";
+  return aliasForSegment(segment) ?? "terminal";
 }
 
 /**
@@ -84,16 +108,23 @@ export const DOCUMENT_TITLES: Record<ViewId, string> = {
 };
 
 /**
- * The document title for a path — known paths resolve to their view's title
- * (case-insensitive, aliases included); unknown paths get the reference's
- * 404 treatment: the first segment's hyphens become spaces, each word is
- * capitalized, and " | VeloxPOS" is appended ("/foo-bar-baz" →
- * "Foo Bar Baz | VeloxPOS" — live-measured on the reference).
+ * The document title for a path — the reference's own algorithm,
+ * live-measured across nine probes (V9/F2): an EXACT-CASE match against a
+ * canonical PascalCase path resolves to that route's canonical title
+ * ("/StoreSettings" → "Store Settings | VeloxPOS"); EVERYTHING else gets
+ * the slug treatment — the first segment's hyphens become spaces, each
+ * word's first letter is upper-cased (the rest preserved), and
+ * " | VeloxPOS" is appended. Measured consequences: "/sales" → "Sales"
+ * (coincides with canonical), "/SALES" → "SALES", "/storesettings" →
+ * "Storesettings", "/ventas" → "Ventas" (the ref titles its own 404 on
+ * /Ventas exactly this way), "/foo-bar-baz" → "Foo Bar Baz". The title is
+ * purely PATH-driven — the view rendering is independent (the ref renders
+ * the Sales VIEW at /sales while slug-titling it).
  */
 export function documentTitleForPath(pathname: string): string {
   const segment = pathname.split("/").filter(Boolean)[0];
   if (!segment) return DOCUMENT_TITLES.terminal;
-  const hit = NAV_ITEMS.find((item) => item.path.toLowerCase() === `/${segment.toLowerCase()}`);
+  const hit = NAV_ITEMS.find((item) => item.path === `/${segment}`);
   if (hit) return DOCUMENT_TITLES[hit.id];
   const slugCased = segment
     .split("-")

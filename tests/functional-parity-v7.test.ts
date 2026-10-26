@@ -70,9 +70,14 @@ describe("B1/M1 — the reference's per-route document titles", () => {
     expect(documentTitleForPath("/no-such-view")).toBe("No Such View | VeloxPOS");
   });
 
-  it("the shell syncs document.title with the active view (source pin)", () => {
+  it("the shell syncs document.title with the active route (source pin)", () => {
+    // V9/F2 alignment: the title is PATH-driven now (the reference's own
+    // algorithm — exact-case canonical match, slug-case fallback), so the
+    // shell reads documentTitleForPath(pathname) instead of the view's
+    // canonical title. The v9 spec owns the full matrix; this pin keeps
+    // asserting the shell wires A title effect at all.
     const s = page();
-    expect(s).toContain("DOCUMENT_TITLES[view]");
+    expect(s).toContain("documentTitleForPath(window.location.pathname)");
     expect(s).toMatch(/document\.title\s*=/);
   });
 

@@ -81,7 +81,7 @@ export function CashiersView() {
       ) : (
         <div className="vx-card mb-6 overflow-hidden">
           <div className="vx-scroll overflow-x-auto">
-            <table className="w-full min-w-[640px] text-sm" data-testid="cashiers-table">
+            <table className="w-full min-w-[640px]" data-testid="cashiers-table">
               <thead>
                 <tr className="border-b border-[#1e2235]">
                   <th className="text-left text-xs font-semibold text-slate-500 uppercase px-5 py-3">Cajero</th>
@@ -150,7 +150,7 @@ export function CashiersView() {
       </h3>
       <div className="vx-card overflow-hidden">
         <div className="vx-scroll overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm" data-testid="recent-shifts-table">
+          <table className="w-full min-w-[720px]" data-testid="recent-shifts-table">
             <thead>
               {/* V5/C1: the reference's dense shifts table — px-4 py-2 headers
                   with per-column alignment, px-4 py-2.5 cells, slate-50

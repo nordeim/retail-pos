@@ -9,7 +9,6 @@
 import * as React from "react";
 import {
   TriangleAlert,
-  ShoppingBasket,
   DollarSign,
   Package,
   ShoppingCart,
@@ -105,6 +104,7 @@ export function DashboardView() {
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <SectionCard title="Ventas — Últimos 7 días" testId="weekly-chart-card" className="lg:col-span-2">
           <SalesAreaChart
+            variant="dashboard"
             points={(data.weekly ?? []).map((d) => ({ label: d.label, value: d.total / 100 }))}
             formatY={(v) => String(Math.round(v))}
           />
@@ -157,11 +157,6 @@ export function DashboardView() {
           </ul>
         )}
       </SectionCard>
-
-      <div className="mt-6 flex items-center gap-2 text-xs text-slate-600">
-        <ShoppingBasket className="h-3.5 w-3.5" />
-        VeloxPOS
-      </div>
     </div>
   );
 }

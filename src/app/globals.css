@@ -49,11 +49,14 @@
    surfaces locally and never reads these. */
 :root {
   --background: 8 10 20;
-  --foreground: 248 250 252;
+  /* V9/F4: the reference's measured body default is #e7e9ef (231 233 239)
+     — its foreground token, its pill text, its dialog text all read it.
+     The clone had shipped slate-50 (#f8fafc); this aligns the token. */
+  --foreground: 231 233 239;
   --card: 13 15 26;
-  --card-foreground: 248 250 252;
+  --card-foreground: 231 233 239;
   --popover: 18 20 31;
-  --popover-foreground: 248 250 252;
+  --popover-foreground: 231 233 239;
   --primary: 99 102 241;
   --primary-foreground: 255 255 255;
   /* V5/T1b: the reference's secondary badge colors, measured live on its

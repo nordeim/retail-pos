@@ -129,6 +129,7 @@ export function ReportsView() {
         variant="kicker"
       >
         <SalesAreaChart
+          variant="reports"
           points={data.daily.map((d) => ({ label: d.label, value: d.total / 100 }))}
           height={280}
           formatY={(v) => `$${Math.round(v)}`}

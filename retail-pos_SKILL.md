@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.3.0
+version: 1.4.0
 last_updated: "2026-10-26"
 tags:
   - pos
@@ -26,7 +26,7 @@ tags:
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
 > template), validated against the codebase at the v8 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 342/342 unit · 105/105 e2e**. Evidence labels:
+> **lint 0 · tsc 0 · build ✓ · 363/363 unit · 115/115 e2e**. Evidence labels:
 > **Verified** (executed here), **Reasoned** (inference), **Assumed**
 > (decision).
 
@@ -68,8 +68,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 342 tests / 24 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 105 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 363 tests / 25 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 115 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -99,8 +99,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 342/342
-bun run test:e2e           # playwright: 105/105 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 363/363
+bun run test:e2e           # playwright: 115/115 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -237,6 +237,37 @@ The v8 contract additions (AGENTS.md 19-20, all live-measured):
   `<Input>` (h-9, same form field, two-way; the swatch shows #000000
   while the typed value is mid-edit; the `hexColor` schema regex stays
   the server-side gate — invalid hex 400s to a toast on save).
+
+The v9 contract additions (AGENTS.md 21-22, all live-measured):
+- The Spanish route names are a working SUPERSET: `/Ventas`, `/Inventario`,
+  `/Cajas`, `/Cajeros`, `/Reportes`, `/Ajustes`, `/Terminal` all resolve to
+  their views via `SPANISH_ALIASES` in `src/lib/router.ts` (the reference
+  404s every one — its own titles for those URLs are the slug-cased names).
+  Pre-v9 they fell to the terminal fallback and silently rendered the
+  WRONG view — a rewrite-listed path MUST resolve in `viewFromPath`.
+- The tab title is PATH-driven (the reference's algorithm):
+  `documentTitleForPath()` matches the canonical PascalCase path EXACT-CASE
+  → that route's canonical title; EVERYTHING else slug-cases the first
+  segment ("/SALES" → "SALES | VeloxPOS", "/storesettings" →
+  "Storesettings", "/Ventas" → "Ventas"). The shell's title effect reads
+  `documentTitleForPath(window.location.pathname)`, not `DOCUMENT_TITLES[view]`.
+- Tables are BARE: `<table class="w-full">` — the reference's tables
+  inherit the 16px base and CELLS carry their own sizes. Never add a
+  table-level `text-sm` (it shrank the Ventas Total from the ref's 16px
+  to 14px).
+- The shadcn foreground family is the ref's measured `#e7e9ef`
+  (`--foreground: 231 233 239` — also card/popover foreground).
+- `SalesAreaChart` has TWO measured skins via `variant=`: "dashboard"
+  (gridlines `#e2e8f0` "3 3" — light/prominent, labels `#94a3b8` 12px,
+  line `#6366f1` w2.5, `salesGrad` gradient top opacity 0.3) and
+  "reports" (gridlines `rgba(255,255,255,0.04)`, labels
+  `rgba(255,255,255,0.3)` 11px, line w2, gradient 0.35). One component,
+  two skins — the ref renders DIFFERENT chart chrome per page.
+- The dashboard has NO footer credit line (the reference's dashboard ends
+  at the low-stock rows — scrollHeight-verified).
+- Screenshot methodology: capture from the PRODUCTION standalone build
+  (`scripts/capture-screenshots-prod.sh`, :3100) — the dev server leaks
+  the Next.js dev-tools badge into captures.
 
 ## §5 Component Architecture & Patterns
 
@@ -413,8 +444,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 342/342 vitest
-bun run test:e2e      # 105/105 playwright (production posture)
+bun run test          # 363/363 vitest
+bun run test:e2e      # 115/115 playwright (production posture)
 ```
 
 Verification beyond the gates:

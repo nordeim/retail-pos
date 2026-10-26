@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (342 tests / 24 files)
-bun run test:e2e       # playwright e2e layer (105 specs, boots standalone :3100)
+bun run test           # vitest unit layer (363 tests / 25 files)
+bun run test:e2e       # playwright e2e layer (115 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -122,8 +122,11 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   width (Reports is the reference's only BRIGHT H1 — `tone="bright"`
   white/90). Chart X labels thin to ≤8 (first+last kept) via
   `thinLabelIndices`; Y labels are integers ($ on Reports). The TAB TITLE
-  is per-route (`DOCUMENT_TITLES` in `src/lib/router.ts`; the 404 slug
-  title rides the guarded observer in `src/app/not-found-title.tsx`).
+  is per-route and PATH-driven (v9: `documentTitleForPath()` — exact-case
+  canonical match, slug-case everything else, e.g. "/SALES" → "SALES |
+  VeloxPOS"; the 404 slug title rides the guarded observer in
+  `src/app/not-found-title.tsx`; the Spanish aliases resolve to their
+  views via `SPANISH_ALIASES`).
 - The auth round-trip (v8): a logged-out app route bounces to
   `/login?from_url=…` and login RETURNS there through
   `safeReturnTo(raw, origin)` (`src/lib/router.ts` — same-origin only,
@@ -131,6 +134,14 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   dropdown panels `bg-[#161922]`; the ticket modal is the reference's
   2×2 meta grid + `{qty}x` lines; the mail action prompts for the
   recipient; the Ajustes colors carry editable hex inputs.
+- The v9 contracts: the Spanish route aliases render their views
+  (`SPANISH_ALIASES` — the ref 404s them; the clone's superset works);
+  tables are BARE `<table class="w-full">` (cells carry their own sizes —
+  the Ventas Total inherits the ref's 16px); the foreground family is
+  #e7e9ef; `SalesAreaChart` has two measured skins
+  (`variant="dashboard"` vs `"reports"` — gridlines/labels/line/gradient
+  all differ); the dashboard has NO footer credit (the ref ends at the
+  low-stock rows).
 - Table contract (v5, live-measured): headers `text-xs font-semibold
   text-slate-500 uppercase` per-column-aligned; rows ride
   `border-b border-slate-50` + `hover:bg-white/40`; body cells `text-sm

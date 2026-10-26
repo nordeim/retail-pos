@@ -127,7 +127,7 @@ export function InventoryView() {
 
       <div className="vx-card overflow-hidden">
         <div className="vx-scroll overflow-x-auto">
-          <table className="w-full min-w-[860px] text-sm" data-testid="inventory-table">
+          <table className="w-full min-w-[860px]" data-testid="inventory-table">
             <thead>
               {/* V5/T1b: the reference's header + cell contract (live-probed):
                   headers text-xs/600/slate-500 uppercase px-5 py-3; producto

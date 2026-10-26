@@ -511,3 +511,75 @@ Stage Summary:
   transport), SD-20 (public 404/signup superset). Standing disclosures
   unchanged (SD-14 og:url/canonical, aspect-true preview, unobservable
   dialog inputs, in-memory limiter, donut palette, terminal grid).
+
+---
+Task ID: V9
+Agent: general-purpose (remediation executor, session V9 2026-10-26)
+Task: The v9 cycle — audit the route-alias/table/chart surfaces no prior
+session had probed, write remediation-plan-v9, execute it TDD, and ship.
+
+Work Log:
+- Baseline re-verified after pull (b7f0237 = v8 close + session_10.md
+  transcript): lint 0 · tsc 0 · build ✓ · 342/342 unit · 105/105 e2e.
+- Live audit (agent-browser, BOTH apps): the Spanish route aliases render
+  the TERMINAL (the rewrites accept them; viewFromPath never mapped them —
+  F1); the ref's title algorithm pinned across 9 probes (exact-case
+  canonical match → canonical title, else slug-case — "/SALES" is "SALES |
+  VeloxPOS" — F2); the ref's tables are BARE w-full (16px base — the
+  Ventas Total renders 16px there, 14px on the clone via table-level
+  text-sm — F3); --foreground #e7e9ef vs #f8fafc (F4); the chart SVG
+  internals measured for the first time — the ref renders TWO skins
+  (dashboard: #e2e8f0 "3 3" gridlines, #94a3b8 12px labels, salesGrad
+  gradient 0.3, #6366f1 line w2.5; reports: white/4% gridlines, white/30%
+  11px labels, gradient 0.35, line w2 — F5-F8); the Next.js dev badge had
+  leaked into the shipped screenshots (F9); a clone-invented
+  ShoppingBasket+VeloxPOS dashboard footer (F10 — scrollHeight-verified
+  absent on the ref; initially dismissed by a flawed leaf-node DOM probe).
+- Pinned-parity re-checks: mobile drawer contract fully green live (288px
+  panel, 8×40px links, 44px pitch, scroll-lock, aria, Escape + focus
+  return); ref mobile still has no drawer; 404 pages identical; table
+  cell classes identical; low-stock card 1012px both; KPI casing is
+  CSS-uppercased on both (invisible).
+- Wrote docs/remediation-plan-v9.md (15-item ledger, SD-23..SD-28,
+  B1-B5 batches, F10 folded in mid-execution).
+- TDD execution, all pins red first (21 unit + 10 e2e):
+  - B1: SPANISH_ALIASES in router.ts (viewFromPath/isKnownPath consult it
+    after the canonical case-insensitive paths); documentTitleForPath went
+    exact-case; the shell title effect reads the PATH (the [status, view]
+    deps stay sufficient — SPA nav pairs view+path changes).
+  - B2: the four ref-aligned tables dropped text-sm (sales, inventory,
+    cashiers ×2 — the reports table is unobservable, kept).
+  - B3: --foreground family → 231 233 239 (body/card/popover).
+  - B4: SalesAreaChart variant="dashboard"|"reports" (CHART_SKINS: the
+    salesGrad gradient defs + per-skin gridline/label/line values); the
+    call sites pass their variants.
+  - B4b (F10): the dashboard footer removed (+ the unused import).
+  - B5: 18 screenshots regenerated from the PRODUCTION standalone build
+    (scripts/capture-screenshots-prod.sh, :3100, db/custom.db) — no dev
+    badge (VLM-verified); the dashboard re-shot after the footer removal.
+- Legacy-pin alignment: v7's DOCUMENT_TITLES[view] source pin → the new
+  documentTitleForPath contract (updated, not weakened); every other v7
+  title pin survived the exact-case change verbatim.
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 363/363 · e2e 115/115.
+- Docs lockstep: AGENTS.md 21-22; CLAUDE.md counts + the v9 notes; README
+  badge + row (363+115); PAD v1.7.0 + ADR-019 + §8; SKILL v1.4.0 (counts +
+  the v9 block); session_11.md; this entry.
+
+Stage Summary:
+- v9 made the route-alias superset whole (the six Spanish names + /Terminal
+  resolve to their views), aligned the tab title to the reference's
+  path-driven algorithm, restored the ref's table typography (the Ventas
+  Total at its measured 16px), aligned the foreground token, shipped the
+  two measured chart skins, removed the clone-invented dashboard footer,
+  and moved the screenshot methodology to the production build.
+- Probe lessons recorded: a rewrite-listed path MUST resolve in
+  viewFromPath (the alias space is a contract surface); DOM probes for
+  "does the ref have X" must search ALL descendants (a leaf-node filter
+  missed the footer the VLM caught); chart SVG internals (gridline stroke/
+  dash, gradient stops, label fill/size) are measurable attributes — pin
+  them; the dev server leaks the Next.js badge into captures (shoot the
+  production build).
+- Known-open (disclosed): the ref's Spanish-path 404s not replicated
+  (SD-23 superset); the Detalle-por-método table unobservable; donut
+  palette standing. Standing v8 disclosures unchanged (SD-18/19/20,
+  SD-14, aspect-true preview, in-memory limiter, terminal grid).

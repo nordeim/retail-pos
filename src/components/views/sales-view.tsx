@@ -94,7 +94,7 @@ export function SalesView() {
 
       <div className="vx-card overflow-hidden">
         <div className="vx-scroll overflow-x-auto">
-          <table className="w-full min-w-[820px] text-sm" data-testid="sales-table">
+          <table className="w-full min-w-[820px]" data-testid="sales-table">
             <thead>
               {/* V5/T1: the reference's headers — text-xs font-semibold
                   slate-500 UPPERCASE, per-column alignment, px-5 py-3. */}
