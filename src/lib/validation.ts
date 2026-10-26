@@ -171,18 +171,17 @@ export const saleItemInput = z.object({
   qty: intField.refine((v) => v >= 1, { message: "Quantity must be at least 1." }),
 });
 
-export const saleCreateSchema = z
-  .object({
-    registerId: idField,
-    items: z.array(saleItemInput).min(1, { message: "The ticket is empty." }),
-    method: z.enum(["efectivo", "tarjeta"]).default("efectivo"),
-    clientName: z.string().max(120).optional().default(""),
-    cashReceived: moneyCents.optional(),
-  })
-  .refine(
-    (sale) => sale.method !== "efectivo" || sale.cashReceived === undefined || true,
-    { message: "Invalid cash amount." },
-  );
+// L2: cashReceived stays an OPTIONAL parse-time field — the business rule
+// ("efectivo needs declared cash ≥ total") is enforced server-side at sale
+// creation through money.paymentCoversTotal, where the computed total is
+// available (the pre-remediation `.refine(... || true)` here was vacuous).
+export const saleCreateSchema = z.object({
+  registerId: idField,
+  items: z.array(saleItemInput).min(1, { message: "The ticket is empty." }),
+  method: z.enum(["efectivo", "tarjeta"]).default("efectivo"),
+  clientName: z.string().max(120).optional().default(""),
+  cashReceived: moneyCents.optional(),
+});
 
 // ---- read helpers ------------------------------------------------------------------------
 

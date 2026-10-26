@@ -1,6 +1,6 @@
 # VeloxPOS — Punto de venta, your store
 
-![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-147%20%2B%2049%20green-22c55e)
+![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-213%20%2B%2070%20green-22c55e)
 
 **VeloxPOS** is a production-ready, self-hosted clone (functional superset) of
 the [`veloxposretail.base44.app`](https://veloxposretail.base44.app/) point-of-sale
@@ -69,7 +69,7 @@ flowchart TB
 | API | Next route handlers + Zod 4 | Strip-mode validation, typed error mapper |
 | DB | Prisma 6 + SQLite | Zero-ops persistence at `<repo>/db/custom.db` |
 | Charts | Hand-rolled SVG | Zero dependencies, deterministic, pixel-controlled |
-| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (147 + 49 green) |
+| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (213 + 70 green) |
 | Runtime | Bun 1.3 | Scripts, seed, and the standalone server |
 
 ## Quick start
@@ -111,8 +111,10 @@ it is a demo seed, not a secret store.
 | Variable | Required | Purpose |
 |---|---|---|
 | `DATABASE_URL` | yes | `file:../db/custom.db` (schema-anchored → `<repo>/db/custom.db`) |
-| `AUTH_SECRET` | prod | 64-hex HMAC secret; a missing/blank/public-dev value is a fatal boot error in production |
+| `AUTH_SECRET` | prod | 64-hex HMAC secret; a missing/blank/public-dev/example value is a fatal boot error in production |
 | `NEXT_PUBLIC_SITE_URL` | no | Canonical origin for metadata/sitemap |
+| `RESET_INAPP_DELIVERY` | no | `"1"` opts a production deploy into forgot-password carrying the reset link in the API response (default OFF — the production response never carries the one-shot token) |
+| `AUTH_PROXY_HOPS` | no | Trusted reverse-proxy depth for the auth rate limiters' client-IP selection (default `0` = rightmost `x-forwarded-for` hop, fail-closed) |
 | `SEED_OWNER_EMAIL` / `SEED_OWNER_PASSWORD` / `SEED_OWNER_NAME` | no | Seed identity overrides (see above) |
 
 ## Testing

@@ -1,7 +1,9 @@
 // ---------------------------------------------------------------------------
 // POST /api/auth/reset-password — the 3-state reset flow's completion leg.
 // The 48-hex token is ONE-SHOT (usedAt set inside the same transaction as
-// the password write) and expires 30 minutes after issue. The response is
+// the password write) and expires 30 minutes after issue. The same
+// transaction also bumps the user's tokenVersion (M6) — every session
+// cookie minted before the reset dies on its next request. The response is
 // the success signal the login screen's note renders.
 // ---------------------------------------------------------------------------
 
@@ -28,11 +30,15 @@ export async function POST(request: NextRequest) {
     }
 
     // The one-shot consumption rides the SAME transaction as the write —
-    // a replay can never land between them.
+    // a replay can never land between them — and the tokenVersion bump
+    // revokes every pre-reset session cookie (M6).
     await db.$transaction([
       db.user.update({
         where: { id: record.userId },
-        data: { passwordHash: hashPassword(password) },
+        data: {
+          passwordHash: hashPassword(password),
+          tokenVersion: { increment: 1 },
+        },
       }),
       db.passwordResetToken.update({
         where: { id: record.id },

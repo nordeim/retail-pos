@@ -1,11 +1,16 @@
-# VeloxPOS (`web-retail-pos`) — Master Project Architecture Document (PAD) v1.0.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.1.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
 > workspace), **Reasoned** (inference from code), **Assumed** (stated
 > decision). Companion: `docs/reference-investigation.md` (the reference
 > dossier), `docs/implementation-plan.md` (the replication plan),
+> `docs/remediation-plan-v3.md` (the executed remediation record),
 > `AGENTS.md` (agent gotchas), `worklog.md` (session journal).
+>
+> v1.1.0 (2026-10-26): the remediation-plan-v3 execution — security
+> hardening (R1), data integrity (R2), visual parity (R3), hygiene (R4);
+> ADR-011..013 added; §6 controls extended.
 
 ## Table of Contents
 
@@ -54,6 +59,9 @@ lowest-risk path. **Verified.**
 | ADR-008 | Mobile drawer is a superset feature (the reference has none); geometry e2e-pinned at 390×844 | Accepted — Verified (mobile-navigation.spec.ts) |
 | ADR-009 | Seed identity via `SEED_OWNER_*` env with an in-code password default (bun dotenv expands `$…`) | Accepted — Verified |
 | ADR-010 | db-path v3 hardening: the repo owning `prisma/schema.prisma` wins over Turbopack's mangled sibling-db absolute form | Accepted — Verified (db-path.test.ts pins) |
+| ADR-011 | Reset delivery is ENVIRONMENT-GATED: the forgot-password response carries the one-shot reset link only outside production or with `RESET_INAPP_DELIVERY=1` (a production response is `{ok:true}` only) | Accepted — Verified (security.spec.ts, production posture) |
+| ADR-012 | Sessions carry a `tokenVersion`; reset-password bumps it transactionally — pre-reset cookies are revoked on their next request | Accepted — Verified (security.spec.ts) |
+| ADR-013 | The remediation contract set: guarded in-transaction stock decrement + server-side cash gate (422), duplicate-open 409 via ConflictError, raw ZodError → 400, 413/415 body gates, OTP 6-strike lockout, proxy-hop-aware client IP, drawer focus contract (latched rAF + Tab wrap + focus return) | Accepted — Verified (213 unit + 70 e2e) |
 
 ---
 
@@ -205,15 +213,20 @@ live. **Verified** (settings.spec e2e).
 | Control | Implementation | Evidence |
 |---|---|---|
 | Password storage | scrypt (64-byte key, 16-byte salt), `scrypt$salt$key` format | src/lib/auth.ts — Verified |
-| Sessions | HMAC-signed stateless token, httpOnly cookie `sf_session`, 7-day TTL; verification re-proves the user exists | Verified (auth.test.ts) |
-| Rate limiting | In-memory per-IP buckets on login/forgot (10/15min); successful login RESETS the user's bucket | Verified (auth.test.ts) |
-| Boot guard | Production fatals on missing/blank/public-dev `AUTH_SECRET` (exit 1, not a degraded server) | Verified (env-check.test.ts) |
+| Sessions | HMAC-signed stateless token, httpOnly cookie `sf_session`, 7-day TTL; verification re-proves the user exists AND the token's `v` matches the user's `tokenVersion` (ADR-012) | Verified (auth.test.ts + security.spec.ts) |
+| Rate limiting | In-memory per-IP buckets on login/forgot/verify/register (10/15min) with in-flight pruning; successful login RESETS the user's bucket; the client IP is the x-forwarded-for hop at the DECLARED trusted depth (`AUTH_PROXY_HOPS`, fail-closed) | Verified (security-hardening.test.ts + security.spec.ts) |
+| Login timing | The unknown-email branch burns a real scrypt verify against a throwaway hash — no enumeration oracle | Verified (UNKNOWN_ACCOUNT_HASH pin) |
+| Reset delivery | The one-shot reset token never rides a production response (ADR-011); the flow is completed via reset-password with the tokenVersion bump | Verified (security.spec.ts) |
+| OTP lockout | verify-email: IP limiter + per-token atomic 6-strike counter (spent rows invisible to the fetch) | Verified (security.spec.ts) |
+| Request bodies | 1MB budget (413), JSON-only content types (415), malformed → 400 | Verified (http-body.test.ts) |
+| Error mapping | ZodError/ValidationError → 400, BusinessRuleError → 422, ConflictError → 409, P2002 → 409, P2025 → 404, 413/415, unauth → 401, unknown → 500 (detail logged server-side only) | Verified |
+| Boot guard | Production fatals on missing/blank/public-dev/`.env.example` `AUTH_SECRET` values (exit 1, not a degraded server) | Verified (env-check.test.ts) |
 | Ownership | Every retail query scoped `where:{userId}`; deletes verify ownership first | Verified (delegates) |
 | Input validation | Zod strip-mode on every write path; unknown keys dropped; partial PATCH filtered by `sentKeysPatch` | Verified |
 | Injection | Prisma parameterized queries only; no string-built SQL | Verified (code inspection) |
 | Secret hygiene | `.env` gitignored; seed password default documented as demo-only; no credentials in src (the reference account's email/password never appear in committed code — seed reads env) | Verified |
-| Money integrity | Prices/IVA recomputed server-side from DB rows; client cannot set totals | Verified (sales route) |
-| Shift/stock integrity | Open-shift gate + transactional stock decrement; duplicate-open 409; delete guards on registers/cashiers with open shifts | Verified (e2e) |
+| Money integrity | Prices/IVA recomputed server-side from DB rows; client cannot set totals; efectivo must cover the total (`paymentCoversTotal` → 422) | Verified (sale-integrity pins) |
+| Shift/stock integrity | Open-shift gate + GUARDED in-transaction stock decrement (`stock:{gte:qty}` — no oversell); duplicate-open re-checked inside the transaction → 409; delete guards on registers/cashiers with open shifts | Verified (sale-integrity.spec.ts) |
 
 Threat notes: the login limiter is in-memory (per-process) — acceptable for
 single-tenant self-hosting; multi-instance deploys need a shared store.

@@ -172,6 +172,23 @@
   background-color: #eef2f7;
 }
 
+/* V5: the reference's glassy translucent control (the Ajustes "Subir logo"
+   button — measured live: backdrop blur, white/10 fill, hairline border). */
+@utility glass-button {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #e2e8f0;
+  transition: background-color 150ms ease;
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+  }
+}
+
 /* The skip link (a11y). */
 .vx-skip-link {
   position: absolute;

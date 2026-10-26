@@ -1,20 +1,20 @@
 // ---------------------------------------------------------------------------
 // /api/dashboard — the stats + series the Dashboard view renders:
 // sales today, transactions today, product count, low-stock count,
-// the 7-day sales series (Monday-first labels), the category split, and the
-// low-stock rows.
+// the 7-day sales series (V4/M2: the rolling window ends TODAY and each
+// bucket's weekday label derives from its own date — isoWeekday — never
+// from the bucket position), the category split, and the low-stock rows.
 // ---------------------------------------------------------------------------
 
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
-import { formatDayMonth, startOfDay, WEEKDAY_MIN } from "@/lib/date";
+import { isoWeekday, startOfDay, WEEKDAY_MIN, weekWindow } from "@/lib/date";
 import { withUser } from "@/lib/server/http";
 
 export async function buildDashboard(userId: string, now: Date) {
   const today = startOfDay(now);
-  const weekStart = new Date(today);
-  weekStart.setDate(weekStart.getDate() - 6);
+  const week = weekWindow(now); // 7 local midnights, oldest-first, today LAST
 
   const [todaySales, productCount, lowStockRows, weekSales, categories] =
     await Promise.all([
@@ -30,7 +30,7 @@ export async function buildDashboard(userId: string, now: Date) {
         orderBy: { stock: "asc" },
       }),
       db.sale.findMany({
-        where: { userId, status: "completada", createdAt: { gte: weekStart } },
+        where: { userId, status: "completada", createdAt: { gte: week[0] } },
         select: { createdAt: true, total: true },
       }),
       db.category.findMany({
@@ -40,21 +40,21 @@ export async function buildDashboard(userId: string, now: Date) {
       }),
     ]);
 
-  // Bucket the week's sales by local calendar day, Monday-first.
+  // Bucket the week's sales by local calendar day; the label rolls per-date
+  // (V4/M2 — the pre-remediation positional bucket-index labeling was wrong
+  // 6 days out of 7; isoWeekday per date is the reference behavior).
   const buckets = new Map<string, number>();
-  for (let i = 0; i < 7; i += 1) {
-    const day = new Date(weekStart);
-    day.setDate(day.getDate() + i);
+  for (const day of week) {
     buckets.set(day.toDateString(), 0);
   }
   for (const sale of weekSales) {
     const key = sale.createdAt.toDateString();
     if (buckets.has(key)) buckets.set(key, buckets.get(key)! + sale.total);
   }
-  const weekly = Array.from(buckets.entries()).map(([key, total], index) => ({
-    key,
-    label: WEEKDAY_MIN[index],
-    total,
+  const weekly = week.map((day) => ({
+    key: day.toDateString(),
+    label: WEEKDAY_MIN[isoWeekday(day)],
+    total: buckets.get(day.toDateString()) ?? 0,
   }));
 
   return {
@@ -70,6 +70,5 @@ export async function buildDashboard(userId: string, now: Date) {
 
 export const GET = withUser(async (user) => {
   const data = await buildDashboard(user.id, new Date());
-  void formatDayMonth; // the axis formatter lives in date.ts (unit-pinned)
   return NextResponse.json(data);
 });

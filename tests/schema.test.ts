@@ -70,6 +70,23 @@ describe("the retail schema", () => {
     expect(text).toContain("closingAmount Int?");
     expect(text).toContain('status        String    @default("open")');
   });
+
+  it("R1/M6: User carries the session-revocation tokenVersion (default 0)", () => {
+    expect(schema()).toContain("tokenVersion  Int      @default(0)");
+  });
+
+  it("R1/H2: VerificationToken carries the atomic OTP attempt counter", () => {
+    expect(schema()).toContain("attempts  Int      @default(0)");
+  });
+
+  it("R2/L8: hot paths carry the @@index set", () => {
+    const text = schema();
+    expect(text).toContain("@@index([userId, createdAt])");
+    expect(text).toContain("@@index([saleId])");
+    expect(text).toContain("@@index([userId, registerId, status])");
+    // Per-user table scans (every list route scopes where userId).
+    expect((text.match(/@@index\(\[userId\]\)/g) ?? []).length).toBe(4);
+  });
 });
 
 describe("the .env contract", () => {

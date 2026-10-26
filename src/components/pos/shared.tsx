@@ -26,7 +26,9 @@ export function PageHeading({
   return (
     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-800 sm:text-3xl">
+        {/* V2: the reference's H1 is 24px FIXED at every width (390 + 1280
+            measured) — no sm: bump. */}
+        <h1 className="text-2xl font-bold tracking-tight text-slate-800">
           {title}
         </h1>
         {subtitle ? (
@@ -106,21 +108,30 @@ export function SectionCard({
   children,
   className,
   testId,
+  variant = "card",
 }: {
   title?: string;
   icon?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
   testId?: string;
+  /** V1: "card" = the dashboard/ajustes heading (h3, title-case, 16px/700,
+   *  slate-700 — measured live); "kicker" = the reports heading (h2,
+   *  uppercase, 14px/700, white/60, 0.7px tracking — measured live). */
+  variant?: "card" | "kicker";
 }) {
   return (
     <div data-testid={testId} className={cn("vx-card p-5", className)}>
       {title ? (
         <div className="mb-4 flex items-center gap-2">
           {icon}
-          <h3 className="text-sm font-bold uppercase tracking-wider text-violet-400">
-            {title}
-          </h3>
+          {variant === "kicker" ? (
+            <h2 className="text-sm font-bold uppercase tracking-[0.7px] text-white/60">
+              {title}
+            </h2>
+          ) : (
+            <h3 className="text-base font-bold text-slate-700">{title}</h3>
+          )}
         </div>
       ) : null}
       {children}
@@ -176,8 +187,25 @@ export function BanknoteIcon({ className }: { className?: string }) {
 
 // ---- charts -------------------------------------------------------------------------
 
+/** V3: evenly spaced label indices for a series too dense to label fully —
+ *  ALWAYS keeps the first and the last, at most `maxLabels` of them. */
+export function thinLabelIndices(count: number, maxLabels = 8): number[] {
+  if (count <= 0) return [];
+  if (count <= maxLabels) {
+    return Array.from({ length: count }, (_, i) => i);
+  }
+  const step = (count - 1) / (maxLabels - 1);
+  const seen = new Set<number>();
+  for (let i = 0; i < maxLabels; i += 1) {
+    seen.add(Math.round(i * step));
+  }
+  return [...seen].sort((a, b) => a - b);
+}
+
 /** The 7-day/daily sales area: violet stroke, dashed grid, flat when empty —
- *  exactly how the reference's zero data renders. */
+ *  exactly how the reference's zero data renders. X labels are thinned to
+ *  ≤8 evenly spaced (first + last always shown) per the reference's ~8
+ *  visible date ticks on a 30-day window. */
 export function SalesAreaChart({
   points,
   height = 260,
@@ -195,6 +223,8 @@ export function SalesAreaChart({
   const innerH = height - padBottom - padTop;
   const max = Math.max(4, ...points.map((p) => p.value));
   const stepX = points.length > 1 ? innerW / (points.length - 1) : innerW;
+  // Computed once per render (not inside the map).
+  const labelIndices = thinLabelIndices(points.length, 8);
 
   const x = (i: number) => padLeft + i * stepX;
   const y = (v: number) => padTop + innerH - (v / max) * innerH;
@@ -238,16 +268,16 @@ export function SalesAreaChart({
       })}
       {area ? <path d={area} fill="rgba(139,92,246,0.12)" /> : null}
       {path ? <path d={path} fill="none" stroke="#8b5cf6" strokeWidth="2" /> : null}
-      {points.map((p, i) => (
+      {labelIndices.map((i) => (
         <text
-          key={`${p.label}-${i}`}
+          key={`${points[i].label}-${i}`}
           x={x(i)}
           y={height - 8}
           textAnchor="middle"
           fontSize="11"
           fill="#64748b"
         >
-          {p.label}
+          {points[i].label}
         </text>
       ))}
     </svg>
@@ -270,6 +300,14 @@ export function DonutChart({
   const circumference = 2 * Math.PI * r;
   const visible = data.filter((d) => d.count > 0);
 
+  // L5: ONE color assignment over the ORIGINAL array feeds BOTH the arcs
+  // and the legend swatches — indexing the filtered list for arcs while the
+  // swatches indexed the unfiltered one mismatched colors whenever a
+  // zero-count category preceded a non-zero one.
+  const colorByName = new Map(
+    data.map((d, i) => [d.name, DONUT_COLORS[i % DONUT_COLORS.length]]),
+  );
+
   const fractions = visible.map((d) => (total > 0 ? d.count / total : 0));
   const starts: number[] = [];
   let running = 0;
@@ -281,7 +319,7 @@ export function DonutChart({
     const fraction = fractions[i];
     return {
       ...d,
-      color: DONUT_COLORS[i % DONUT_COLORS.length],
+      color: colorByName.get(d.name) ?? DONUT_COLORS[0],
       dash: fraction * circumference,
       offset: starts[i] * circumference,
       gap: total > 0 && visible.length > 1 ? 2 : 0,
@@ -318,13 +356,13 @@ export function DonutChart({
         )}
       </svg>
       <ul className="w-full space-y-2">
-        {data.map((d, i) => (
+        {data.map((d) => (
           <li key={d.name} className="flex items-center justify-between gap-3 text-sm">
             <span className="flex min-w-0 items-center gap-2 text-slate-300">
               <span
                 aria-hidden
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }}
+                style={{ backgroundColor: colorByName.get(d.name) ?? DONUT_COLORS[0] }}
               />
               <span className="truncate">{d.name}</span>
             </span>

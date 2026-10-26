@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import * as React from "react";
-import { Store, Palette, ReceiptText, CreditCard, Tags, Plus, X } from "lucide-react";
+import { Store, Palette, ReceiptText, CreditCard, Tags, Plus, Upload, X } from "lucide-react";
 
 import { PageHeading, SectionCard } from "@/components/pos/shared";
 import { Button } from "@/components/ui/button";
@@ -66,6 +66,8 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
   const [newCategory, setNewCategory] = React.useState("");
   const [status, setStatus] = React.useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = React.useState("");
+  // V5: the styled Subir-logo control's filename feedback.
+  const [logoName, setLogoName] = React.useState("");
 
   const set = <K extends keyof typeof DEFAULTS>(key: K, value: (typeof DEFAULTS)[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -128,11 +130,29 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
             </div>
             <div>
               <Label htmlFor="settings-logo" className="text-slate-200">Logotipo</Label>
-              <Input
+              {/* V5: the reference's styled control — a glass "Subir logo"
+                  button (label wrapping the hidden input keeps it a single
+                  click-target with native input semantics). */}
+              <label
+                htmlFor="settings-logo"
+                data-testid="settings-logo-button"
+                className="glass-button vx-focus mt-1.5 inline-flex max-w-xs cursor-pointer items-center gap-2"
+              >
+                <Upload className="h-4 w-4 shrink-0" />
+                <span>Subir logo</span>
+                {logoName ? (
+                  <span className="truncate text-xs text-slate-400">{logoName}</span>
+                ) : null}
+              </label>
+              <input
                 id="settings-logo"
                 type="file"
                 accept="image/*"
-                className="mt-1.5 max-w-xs bg-[#0d0f1a] text-slate-400"
+                data-testid="settings-logo-input"
+                className="hidden"
+                onChange={(event) =>
+                  setLogoName(event.target.files?.[0]?.name ?? "")
+                }
               />
             </div>
             <div>

@@ -25,7 +25,42 @@ export function MobileChrome() {
   const mobileMenuOpen = useAppStore((s) => s.mobileMenuOpen);
   const setMobileMenu = useAppStore((s) => s.setMobileMenu);
   const storeName = usePosStore((s) => s.settings?.name ?? "Mi Tienda");
-  const close = React.useCallback(() => setMobileMenu(false), [setMobileMenu]);
+  const panelRef = React.useRef<HTMLDivElement | null>(null);
+  const menuButtonRef = React.useRef<HTMLButtonElement | null>(null);
+
+  // L11: closing ALWAYS returns focus to the hamburger (the trigger keeps
+  // the keyboard user's place; verified against activeElement in the e2e).
+  const close = React.useCallback(() => {
+    setMobileMenu(false);
+    requestAnimationFrame(() => {
+      menuButtonRef.current?.focus();
+    });
+  }, [setMobileMenu]);
+
+  // L11: opening moves focus INTO the panel. The neo-crm focus pattern,
+  // adapted: rAF retries until the landing is VERIFIED against
+  // activeElement — and once focus is inside the drawer (the panel itself
+  // OR any of its focusables), the loop latches OFF forever. The latch is
+  // the contract: a focus-management loop must never re-steal focus the
+  // user has already moved (the unbounded retry shape fights the first Tab
+  // for its whole window).
+  React.useEffect(() => {
+    if (!mobileMenuOpen) return;
+    let frame = 0;
+    let landed = false;
+    const moveFocusIn = (attempt: number) => {
+      const panel = panelRef.current;
+      if (landed || attempt >= 10 || !panel) return;
+      if (document.activeElement === panel || panel.contains(document.activeElement)) {
+        landed = true; // verified — the user owns the focus from here
+        return;
+      }
+      panel.focus({ preventScroll: true });
+      frame = requestAnimationFrame(() => moveFocusIn(attempt + 1));
+    };
+    frame = requestAnimationFrame(() => moveFocusIn(0));
+    return () => cancelAnimationFrame(frame);
+  }, [mobileMenuOpen]);
 
   // While the drawer is open: lock body scroll, close on Escape, and close
   // if the viewport crosses into lg (the app bar disappears there).
@@ -52,6 +87,26 @@ export function MobileChrome() {
     };
   }, [mobileMenuOpen, close]);
 
+  // L11: Tab wraps INSIDE the drawer (the first focusable cycles to the
+  // last and back) — focus never escapes a modal dialog via Tab.
+  const onOverlayKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Tab" || !panelRef.current) return;
+    const focusables = panelRef.current.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled])',
+    );
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || active === panelRef.current)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   return (
     <>
       {/* App bar (the page's banner below lg). */}
@@ -67,6 +122,7 @@ export function MobileChrome() {
             aria-expanded={mobileMenuOpen}
             aria-controls="vx-mobile-drawer"
             data-testid="mobile-menu-button"
+            ref={menuButtonRef}
             onClick={() => setMobileMenu(true)}
             className="vx-focus flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-white/5"
           >
@@ -89,6 +145,7 @@ export function MobileChrome() {
           aria-modal="true"
           aria-label="Menú de navegación"
           id="vx-mobile-drawer"
+          onKeyDown={onOverlayKeyDown}
         >
           <button
             type="button"
@@ -99,8 +156,10 @@ export function MobileChrome() {
           />
           <div
             data-testid="mobile-drawer-panel"
+            ref={panelRef}
+            tabIndex={-1}
             className={cn(
-              "vx-scroll absolute bottom-0 left-0 top-0 flex w-72 flex-col overflow-y-auto border-r bg-[#0d0f1a] shadow-2xl",
+              "vx-scroll absolute bottom-0 left-0 top-0 flex w-72 flex-col overflow-y-auto border-r bg-[#0d0f1a] shadow-2xl outline-none",
               "animate-in slide-in-from-left duration-200",
             )}
             style={{ borderColor: "#1e2235" }}

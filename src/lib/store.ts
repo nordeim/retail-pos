@@ -13,6 +13,7 @@
 import { create } from "zustand";
 
 import { apiGet, apiSend, ApiError } from "./api";
+import { useToastStore } from "@/components/ui/toast";
 import { pathForView, viewFromPath, type ViewId } from "./router";
 import { lineTotalCents, ticketTotals } from "./money";
 import type { TicketLineInput } from "./pos-types";
@@ -301,13 +302,25 @@ export const usePosStore = create<PosStore>((set, get) => ({
     );
     const patch: Partial<PosStore> = {};
     const loadedPatch: Partial<Record<LoadedKey, boolean>> = {};
+    let failures = 0;
     results.forEach((result, index) => {
       const key = keys[index];
-      if (result.status !== "fulfilled") return;
+      if (result.status !== "fulfilled") {
+        failures += 1;
+        return;
+      }
       if (key === "settings") patch.settings = result.value as StoreSettings;
       else (patch as Record<string, unknown>)[key] = result.value;
       loadedPatch[key] = true;
     });
+    // L6: a failed burst surfaces ONE error toast (the app's zustand
+    // toaster) instead of silently rendering empty collections; the views
+    // keep their own empty states for the loaded-but-empty case.
+    if (failures > 0) {
+      useToastStore
+        .getState()
+        .push("error", "No se pudieron cargar los datos. Reintenta más tarde.");
+    }
     const nextState: Partial<PosStore> = {
       ...patch,
       loaded: { ...get().loaded, ...loadedPatch } as Record<LoadedKey, boolean>,

@@ -37,7 +37,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { apiSend, ApiError } from "@/lib/api";
-import { changeDue, formatMoney, isCashSufficient, parseMoneyToCents } from "@/lib/money";
+import {
+  changeDue,
+  formatMoney,
+  isCashSufficient,
+  lineTotalCents,
+  parseMoneyToCents,
+} from "@/lib/money";
 import { computeTicketTotals, useAppStore, usePosStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -181,7 +187,7 @@ export function TerminalView() {
         data-testid="ticket-panel"
       >
         <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-          {activeShift ? "Agregado" : "Agregado"}
+          Agregado
         </p>
         <h2 className="mb-3 text-lg font-bold text-slate-100">TICKET</h2>
 
@@ -231,8 +237,11 @@ export function TerminalView() {
                     </button>
                   </div>
                   <p className="text-sm font-bold text-slate-100">
+                    {/* M3: the SAME once-per-line rounding as money.ts and the
+                        sale route — round(price × (1+iva) × qty), never
+                        round(unit)×qty (the on-screen/persisted 1¢ divergence). */}
                     {formatMoney(
-                      Math.round(line.product.price * (1 + line.product.ivaRate / 100)) * line.qty,
+                      lineTotalCents(line.product.price, line.qty, line.product.ivaRate),
                     )}
                   </p>
                 </div>
@@ -337,9 +346,8 @@ function PaymentDialog({
           throw new ApiError(422, "Stock insuficiente para completar la venta.");
         }
       }
-      const productById = new Map(products.map((p) => [p.id, p]));
-      // The API recomputes prices; the ticket lines drive the payload.
-      void productById;
+      // The API recomputes prices from the DB rows; the ticket lines drive
+      // the payload (L3: the built-then-voided productById map is gone).
       await apiSend("POST", "/api/sales", {
         registerId,
         items: lines,

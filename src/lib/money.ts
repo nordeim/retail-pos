@@ -86,3 +86,18 @@ export function changeDue(totalCents: number, cashReceivedCents: number): number
 export function isCashSufficient(totalCents: number, cashReceivedCents: number): boolean {
   return cashReceivedCents >= totalCents;
 }
+
+/**
+ * L2: does this payment method + cash on hand cover the ticket? The
+ * SERVER-side gate for sale creation — efectivo must arrive with declared
+ * cash that covers the total (the client's cobrar gate is UX, not
+ * integrity); tarjeta ignores the cash field entirely.
+ */
+export function paymentCoversTotal(
+  method: string,
+  totalCents: number,
+  cashReceivedCents: number | undefined,
+): boolean {
+  if (method !== "efectivo") return true;
+  return cashReceivedCents !== undefined && cashReceivedCents >= totalCents;
+}

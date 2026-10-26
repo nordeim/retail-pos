@@ -11,7 +11,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
-import type { ZodError, ZodType } from "zod";
+import { ZodError, type ZodType } from "zod";
 
 import type { SessionUser } from "./auth";
 import { requireUser } from "./auth";
@@ -41,6 +41,38 @@ export class ValidationError extends Error {
     super(message);
     this.name = "ValidationError";
     this.issues = issues;
+  }
+}
+
+/** M4: request body exceeds the 1MB read budget (413). */
+export class PayloadTooLargeError extends Error {
+  constructor(message = "The request body is too large.") {
+    super(message);
+    this.name = "PayloadTooLargeError";
+  }
+}
+
+/** M4: the request declares a non-JSON content type (415). */
+export class UnsupportedMediaTypeError extends Error {
+  constructor(message = "Expected a JSON body.") {
+    super(message);
+    this.name = "UnsupportedMediaTypeError";
+  }
+}
+
+/** R2: the payload violates a business rule after parsing (422). */
+export class BusinessRuleError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BusinessRuleError";
+  }
+}
+
+/** R2: the resource state conflicts with the request (409). */
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConflictError";
   }
 }
 
@@ -78,8 +110,26 @@ export function parseWith<T>(schema: ZodType<T>, input: unknown): T {
   return result.data;
 }
 
-/** Read a JSON body defensively (malformed JSON → the caller's 400 path). */
-export async function readJson(request: NextRequest): Promise<unknown> {
+/** The single body-read budget — 1MB (M4: no unbounded pre-auth reads). */
+const MAX_BODY_BYTES = 1024 * 1024;
+
+/** Read a JSON body defensively: non-JSON content types → 415, declared
+ *  bodies over 1MB → 413, malformed JSON → the caller's 400 path. Absent
+ *  content-type and empty bodies are tolerated (same-origin app posts and
+ *  the optional-payload routes). Accepts plain `Request` — NextRequest is
+ *  a subclass, and only headers/text are touched. */
+export async function readJson(request: Request): Promise<unknown> {
+  const contentType = request.headers.get("content-type");
+  if (contentType !== null && contentType.trim() !== "") {
+    const mime = contentType.split(";")[0]?.trim().toLowerCase() ?? "";
+    if (mime !== "" && mime !== "application/json" && !mime.endsWith("+json")) {
+      throw new UnsupportedMediaTypeError();
+    }
+  }
+  const declaredLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES) {
+    throw new PayloadTooLargeError();
+  }
   const text = await request.text();
   if (text.length === 0) return {};
   try {
@@ -98,8 +148,26 @@ export function toErrorResponse(err: unknown): NextResponse {
   if (err instanceof ValidationError) {
     return errorResponse(400, err.message);
   }
+  if (err instanceof PayloadTooLargeError) {
+    return errorResponse(413, err.message);
+  }
+  if (err instanceof UnsupportedMediaTypeError) {
+    return errorResponse(415, err.message);
+  }
+  if (err instanceof BusinessRuleError) {
+    return errorResponse(422, err.message);
+  }
+  if (err instanceof ConflictError) {
+    return errorResponse(409, err.message);
+  }
   if (err instanceof NotFoundError) {
     return errorResponse(404, err.message);
+  }
+  // H1: delegates call Zod `.parse` directly — a raw ZodError here is a
+  // validation failure, not a server fault. Map it to the contracted 400
+  // (single root fix; the message shape matches parseWith's).
+  if (err instanceof ZodError) {
+    return errorResponse(400, formatZodError(err));
   }
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     if (err.code === "P2002") {

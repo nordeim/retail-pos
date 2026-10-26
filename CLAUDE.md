@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (147 tests / 14 files)
-bun run test:e2e       # playwright e2e layer (49 specs, boots standalone :3100)
+bun run test           # vitest unit layer (213 tests / 19 files)
+bun run test:e2e       # playwright e2e layer (70 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -105,13 +105,22 @@ docs/               investigation dossier, plan, v4 trap report, evidence
 ### Testing
 
 - Unit (vitest, node env): pure seams — money/ticket/date/router/validation/
-  schema/db-path/auth/api-timeout/api-offline + source pins
-  (tailwind-traps, schema). `bun run test`.
+  schema/db-path/auth/api-timeout/api-offline + the remediation pins
+  (security-hardening, http-body, sale-integrity, visual-parity, hygiene)
+  + source pins (tailwind-traps, schema). `bun run test`.
 - E2E (playwright, chromium): boots the standalone build on :3100 against
   `db/e2e.db` (force-reset per run). Auth once via the setup project's
-  storageState. `bun run test:e2e` (build first!).
+  storageState. Remediation specs: `security.spec.ts` (R1, production
+  posture), `sale-integrity.spec.ts` (R2), `visual-parity.spec.ts` (R3,
+  computed styles with OKLCH probe comparison), `hygiene.spec.ts` (R4,
+  toast + drawer focus). `bun run test:e2e` (build first!).
 - A11y: axe smoke (critical/serious, color-contrast excluded as a disclosed
   parity deviation) in `tests/e2e/a11y-smoke.spec.ts`.
+- Visual contract: `SectionCard` has `variant="card"` (dashboard/ajustes
+  h3 title-case slate-700 16px) vs `variant="kicker"` (reports h2
+  uppercase white/60 14px) — measured live; the H1 is 24px FIXED at every
+  width. Chart X labels thin to ≤8 (first+last kept) via
+  `thinLabelIndices`; Y labels are integers ($ on Reports).
 
 ## Framework-specific checklist (Next.js 16)
 

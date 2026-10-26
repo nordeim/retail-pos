@@ -20,6 +20,18 @@ export { DEV_FALLBACK_SECRET };
 const SCRYPT_KEYLEN = 64;
 export const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
+/**
+ * A real scrypt hash of a fixed throwaway constant. The login route burns
+ * one verifyPassword() against it on the unknown-email branch so both 401
+ * paths run the same scrypt work (M7: no timing enumeration oracle).
+ * NOT a credential — it verifies nothing; it only spends the same cycles.
+ */
+export const UNKNOWN_ACCOUNT_HASH =
+  "scrypt$304d5e537a210b140be019f2dec280fd$35207f16ad6789e85849c81cac735deaaee7d7a0d3389e1ffdd2a8e6de331f1cfc2fd2dccbdb741d9d6351928fc385b3da1128fdcedee5245627bcd9344bca4c";
+
+/** Failed OTP attempts before a verification token is dead (H2). */
+export const MAX_OTP_ATTEMPTS = 6;
+
 // ---- password hashing (scrypt) ----------------------------------------------
 
 /** Format: scrypt$<16-byte salt hex>$<64-byte derived key hex> */
@@ -39,7 +51,7 @@ export function verifyPassword(password: string, stored: string): boolean {
   return timingSafeEqual(derived, expected);
 }
 
-// ---- session tokens (HMAC over { uid, iat, exp }) -----------------------------
+// ---- session tokens (HMAC over { uid, iat, exp, v }) ------------------------
 
 function sessionSecret(): string {
   return process.env.AUTH_SECRET?.trim() || DEV_FALLBACK_SECRET;
@@ -49,14 +61,24 @@ function b64url(input: Buffer | string): string {
   return Buffer.from(input).toString("base64url");
 }
 
-export function createSessionToken(userId: string): string {
-  const payload = { uid: userId, iat: Date.now(), exp: Date.now() + SESSION_TTL_MS };
+/** The token payload — `v` is the user's tokenVersion at issue time (M6:
+ *  a password reset bumps the user's version and every cookie carrying a
+ *  lower version dies on its next request). */
+export type SessionPayload = { uid: string; iat: number; exp: number; v: number };
+
+export function createSessionToken(userId: string, tokenVersion = 0): string {
+  const payload: SessionPayload = {
+    uid: userId,
+    iat: Date.now(),
+    exp: Date.now() + SESSION_TTL_MS,
+    v: tokenVersion,
+  };
   const body = b64url(JSON.stringify(payload));
   const mac = createHmac("sha256", sessionSecret()).update(body).digest("base64url");
   return `${body}.${mac}`;
 }
 
-export function readSessionToken(token: string): { uid: string; iat: number; exp: number } | null {
+export function readSessionToken(token: string): SessionPayload | null {
   const parts = token.split(".");
   if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
   const [body, mac] = parts;
@@ -71,13 +93,20 @@ export function readSessionToken(token: string): { uid: string; iat: number; exp
   try {
     const payload: unknown = JSON.parse(Buffer.from(body, "base64url").toString());
     if (typeof payload !== "object" || payload === null) return null;
-    const { uid, iat, exp } = payload as Record<string, unknown>;
+    const { uid, iat, exp, v } = payload as Record<string, unknown>;
     if (typeof uid !== "string" || typeof iat !== "number" || typeof exp !== "number") return null;
     if (exp <= Date.now()) return null;
-    return { uid, iat, exp };
+    // Tokens minted before tokenVersion exist read as v=0 — they stay
+    // valid until the user's version is bumped by a reset.
+    return { uid, iat, exp, v: typeof v === "number" ? v : 0 };
   } catch {
     return null;
   }
+}
+
+/** M6: does this token's version still match the user's current one? */
+export function sessionMatchesVersion(payload: SessionPayload, tokenVersion: number): boolean {
+  return payload.v === tokenVersion;
 }
 
 // ---- rate limiting (in-memory; single instance only — documented) --------------
@@ -90,8 +119,20 @@ const buckets = new Map<string, Bucket>();
 
 export type RateLimitResult = { ok: boolean; retryAfterSec: number };
 
+/** Live-bucket census — the L10 pruning pin's observable. */
+export function rateLimitBucketCount(): number {
+  return buckets.size;
+}
+
 export function checkRateLimit(key: string, max: number = MAX_ATTEMPTS): RateLimitResult {
   const now = Date.now();
+  // L10: prune expired buckets on every check so long-lived processes
+  // don't grow the map without bound (a spoofed-hop flood can't leak memory).
+  if (buckets.size > 1) {
+    for (const [bucketKey, bucket] of buckets) {
+      if (now - bucket.windowStart >= WINDOW_MS) buckets.delete(bucketKey);
+    }
+  }
   const bucket = buckets.get(key);
   if (!bucket || now - bucket.windowStart >= WINDOW_MS) {
     buckets.set(key, { count: 1, windowStart: now });
@@ -140,4 +181,49 @@ export function secureRandomBytes(size: number): Buffer {
   const buf = Buffer.alloc(size);
   randomFillSync(buf);
   return buf;
+}
+
+// ---- R1 security seams --------------------------------------------------------------
+
+/**
+ * H3: pick the limiter's client-IP material out of an x-forwarded-for
+ * header at a DECLARED trusted depth. `hops` = how many trusted reverse
+ * proxies sit in front of the app (AUTH_PROXY_HOPS, default 0 = one
+ * hop appended by the closest trusted proxy). The client-controlled LEFT
+ * hops are never selected: at depth 0 the rightmost entry wins (the one the
+ * trusted proxy appended), at depth N the entry N-from-right wins. Anything
+ * unparsable — absent, empty, garbage, or a declared depth beyond the actual
+ * hop count — fails CLOSED to the shared "local" bucket (never the
+ * attacker's pick).
+ */
+export function resolveClientIp(
+  xff: string | null | undefined,
+  hops = 0,
+): string {
+  const trimmedList = (xff ?? "").trim();
+  if (trimmedList === "") return "local";
+  const hopsList = trimmedList.split(",").map((hop) => hop.trim()).filter((hop) => hop !== "");
+  if (hopsList.length === 0 || hops < 0 || hops >= hopsList.length) return "local";
+  const selected = hopsList[hopsList.length - 1 - hops];
+  // Fail closed on non-IP garbage (v4/v6 shapes only: digits, dots, colons,
+  // hex letters). No IPv4 octet validation — the value is limiter key
+  // material, not a routing target.
+  if (!/^[0-9a-fA-F.:]+$/.test(selected) || !/\d/.test(selected)) return "local";
+  return selected;
+}
+
+/**
+ * C1: may the forgot-password response carry the reset link? In-app link
+ * delivery is the self-hosted/no-SMTP convenience — fine for local dev and
+ * the e2e suite, but a network-reachable PRODUCTION deploy answers with the
+ * bare `{ ok: true }` (the operator recovers via the documented seed/CLI path
+ * or opts in explicitly with RESET_INAPP_DELIVERY=1).
+ */
+export function inAppResetDeliveryEnabled(
+  nodeEnv: string | undefined,
+  flag: string | undefined,
+): boolean {
+  const normalized = (flag ?? "").trim().toLowerCase();
+  if (normalized === "1" || normalized === "true") return true;
+  return (nodeEnv ?? "") !== "production";
 }

@@ -29,6 +29,9 @@ model User {
   // The S15 flow: register → verify (the OTP rides the API response — no
   // SMTP in a self-hosted install) → verified. The seed's owner is verified.
   emailVerified Boolean @default(false)
+  // M6: bumped by reset-password — session cookies carry the version they
+  // were minted with and die when it no longer matches (revocation).
+  tokenVersion  Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -50,6 +53,9 @@ model VerificationToken {
   userId    String
   code      String // 6-digit OTP
   expiresAt DateTime // 15-minute window
+  // H2: atomic attempt counter — 6 failed verifications kill the token
+  // (10^6 brute-force space, and the route never sees spent tokens).
+  attempts  Int      @default(0)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -97,6 +103,7 @@ model Category {
   products Product[]
 
   @@unique([userId, name])
+  @@index([userId])
 }
 
 model Product {
@@ -121,6 +128,7 @@ model Product {
   saleItems SaleItem[]
 
   @@unique([userId, name])
+  @@index([userId])
 }
 
 model Register {
@@ -135,6 +143,8 @@ model Register {
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   shifts Shift[]
   sales  Sale[]
+
+  @@index([userId])
 }
 
 model Cashier {
@@ -148,6 +158,8 @@ model Cashier {
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   shifts Shift[]
+
+  @@index([userId])
 }
 
 model Shift {
@@ -165,6 +177,8 @@ model Shift {
   register Register @relation(fields: [registerId], references: [id], onDelete: Cascade)
   cashier  Cashier  @relation(fields: [cashierId], references: [id], onDelete: Cascade)
   sales    Sale[]
+
+  @@index([userId, registerId, status])
 }
 
 model Sale {
@@ -187,6 +201,8 @@ model Sale {
   register Register? @relation(fields: [registerId], references: [id], onDelete: SetNull)
   shift    Shift?    @relation(fields: [shiftId], references: [id], onDelete: SetNull)
   items    SaleItem[]
+
+  @@index([userId, createdAt])
 }
 
 model SaleItem {
@@ -197,8 +213,10 @@ model SaleItem {
   qty       Int
   unitPrice Int // cents, IVA-exclusive
   ivaRate   Int    @default(16)
-  lineTotal Int // cents, IVA-inclusive (unitPrice × (1+iva/100)) × qty
+  lineTotal Int // cents, IVA-inclusive: round(unitPrice × (1+iva/100) × qty) — once per line
 
   sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([saleId])
 }

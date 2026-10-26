@@ -1,19 +1,24 @@
 // ---------------------------------------------------------------------------
 // /api/sales — GET lists the sale history (items included — the detail
-// dialog reads straight from this list). POST creates a sale:
+// dialog reads straight from this list; capped newest-first, M5) . POST
+// creates a sale:
 //   · an OPEN shift on the requested register is required (the reference
 //     gates the Terminal on "No hay turno activo");
 //   · prices/IVA come from the DB rows, never the client;
-//   · stock decrements in the same transaction; insufficient stock → 422;
+//   · stock re-checked + decremented GUARDED inside the transaction
+//     (M1: `stock: { gte: qty }` — concurrent checkouts cannot oversell;
+//     a guard miss aborts with 422 and rolls the whole sale back);
+//   · efectivo must arrive with declared cash covering the total (L2 → 422);
 //   · ticket numbers are generated server-side (V-XXXXXXXX).
 // ---------------------------------------------------------------------------
 
 import { NextResponse, type NextRequest } from "next/server";
 
 import { db } from "@/lib/db";
-import { lineTotalCents, ticketTotals } from "@/lib/money";
+import { lineTotalCents, paymentCoversTotal, ticketTotals } from "@/lib/money";
 import { ticketNumber } from "@/lib/ticket";
 import {
+  BusinessRuleError,
   NotFoundError,
   parseWith,
   readJson,
@@ -28,14 +33,16 @@ export const NO_ACTIVE_SHIFT =
 
 export const INSUFFICIENT_STOCK = "Stock insuficiente para completar la venta.";
 
-function uniqueTicket(): string {
-  return ticketNumber();
-}
+export const CASH_SHORT = "El efectivo recibido no cubre el total de la venta.";
+
+/** The newest-first list cap (M5: unbounded reads are a DoS surface). */
+const SALES_LIST_CAP = 200;
 
 export const GET = withUser(async (user) => {
   const rows = await db.sale.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
+    take: SALES_LIST_CAP,
     include: { items: { orderBy: { id: "asc" } } },
   });
   return NextResponse.json(
@@ -76,10 +83,11 @@ export const POST = withUser(async (user, request: NextRequest) => {
       }
     }
 
-    // Stock + totals come from the DB rows.
+    // Stock + totals come from the DB rows (the fast-path check; the
+    // authoritative guard is the guarded decrement inside the transaction).
     const lines = input.items.map((item) => {
       const product = byId.get(item.productId)!;
-      if (product.stock < item.qty) throw new ValidationError(INSUFFICIENT_STOCK);
+      if (product.stock < item.qty) throw new BusinessRuleError(INSUFFICIENT_STOCK);
       return {
         product,
         qty: item.qty,
@@ -94,6 +102,11 @@ export const POST = withUser(async (user, request: NextRequest) => {
       })),
     );
 
+    // L2: the server-side cash gate (the client's cobrar gate is UX only).
+    if (!paymentCoversTotal(input.method, totals.total, input.cashReceived)) {
+      throw new BusinessRuleError(CASH_SHORT);
+    }
+
     const created = await db.$transaction(async (tx) => {
       let saleId = "";
       // Ticket collisions are astronomically unlikely (36^8); two retries
@@ -103,7 +116,7 @@ export const POST = withUser(async (user, request: NextRequest) => {
           const sale = await tx.sale.create({
             data: {
               userId: user.id,
-              ticketNo: uniqueTicket(),
+              ticketNo: ticketNumber(),
               method: input.method,
               status: "completada",
               subtotal: totals.subtotal,
@@ -139,10 +152,16 @@ export const POST = withUser(async (user, request: NextRequest) => {
         }
       }
       for (const line of lines) {
-        await tx.product.update({
-          where: { id: line.product.id },
+        // M1: the GUARDED decrement — the row only moves when it still has
+        // the stock this ticket promised (concurrent sales cannot drive it
+        // negative). A guard miss aborts the whole transaction → 422.
+        const decremented = await tx.product.updateMany({
+          where: { id: line.product.id, userId: user.id, stock: { gte: line.qty } },
           data: { stock: { decrement: line.qty } },
         });
+        if (decremented.count < 1) {
+          throw new BusinessRuleError(INSUFFICIENT_STOCK);
+        }
       }
       return tx.sale.findUnique({
         where: { id: saleId },

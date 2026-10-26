@@ -45,9 +45,16 @@ test.describe("mobile navigation (390×844)", () => {
 
     const panel = page.getByTestId("mobile-drawer-panel");
     await expect(panel).toBeVisible();
-    const box = await panel.boundingBox();
-    expect(box?.width).toBe(288);
-    expect(box?.height).toBe(MOBILE.height);
+    // The 200ms slide-in must SETTLE before the geometry pins — a
+    // mid-animation measurement catches the transform mid-flight (the
+    // sub-pixel flake). The assertion stays strict: exactly 288px wide,
+    // exactly the 844px viewport tall.
+    await expect
+      .poll(async () => {
+        const box = await panel.boundingBox();
+        return { width: box?.width ?? 0, height: box?.height ?? 0 };
+      })
+      .toEqual({ width: 288, height: MOBILE.height });
 
     const locked = await page.evaluate(() => document.body.style.overflow);
     expect(locked).toBe("hidden");

@@ -7,9 +7,6 @@ const nextConfig: NextConfig = {
   // at .next/standalone/server.js — even when the repo is cloned inside a
   // parent workspace that has its own lockfile.
   outputFileTracingRoot: path.join(import.meta.dirname, "."),
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   reactStrictMode: false,
   // Next 16's dev-origin protection silently blocks dev chunks for the
   // 127.0.0.1 origin (unhydrated page, native form GET fallbacks) — restore
@@ -17,9 +14,10 @@ const nextConfig: NextConfig = {
   // docs/Tailwind-V4-Validation-Report.md, session-12 methodology note).
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   // Path-based SPA routing: the reference app's views live at real paths
-  // (/Dashboard, /MyDay, /Tasks, ... — PascalCase, measured live). We keep
-  // ONE page (src/app/page.tsx) and rewrite those paths onto it; the client
-  // store syncs view state with location.pathname (see src/lib/router.ts).
+  // (/Dashboard, /Inventario, /Sales, ... — PascalCase, measured live). We
+  // keep ONE page (src/app/page.tsx) and rewrite those paths onto it; the
+  // client store syncs view state with location.pathname (see
+  // src/lib/router.ts).
   async rewrites() {
     return [
       { source: "/Terminal", destination: "/" },

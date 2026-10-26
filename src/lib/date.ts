@@ -121,6 +121,19 @@ export function lastNDays(n: number, now: Date = new Date()): Date[] {
   return out;
 }
 
+/**
+ * The Dashboard's rolling 7-day window ENDING TODAY, oldest-first (local
+ * midnights). V4/M2: the chart's weekday labels derive from each date's own
+ * `isoWeekday` (today always last, matching the reference) — never from the
+ * bucket's position.
+ */
+export function weekWindow(now: Date = new Date()): Date[] {
+  const today = startOfDay(now);
+  const out: Date[] = [];
+  for (let i = 6; i >= 0; i -= 1) out.push(addDays(today, -i));
+  return out;
+}
+
 function pad(n: number): string {
   return String(n).padStart(2, "0");
 }

@@ -103,7 +103,7 @@ export function DashboardView() {
         <SectionCard title="Ventas — Últimos 7 días" testId="weekly-chart-card">
           <SalesAreaChart
             points={(data.weekly ?? []).map((d) => ({ label: d.label, value: d.total / 100 }))}
-            formatY={(v) => (Number.isInteger(v) ? String(v) : v.toFixed(1))}
+            formatY={(v) => String(Math.round(v))}
           />
         </SectionCard>
         <SectionCard title="Productos por Categoría" testId="category-chart-card">
@@ -128,12 +128,26 @@ export function DashboardView() {
             {data.lowStock.map((product) => (
               <li
                 key={product.id}
-                className="flex items-center justify-between gap-3 rounded-xl bg-amber-400/10 px-4 py-3"
+                data-testid="low-stock-row"
+                className="flex items-center gap-3 rounded-xl bg-amber-400/10 px-4 py-3"
               >
-                <p className="text-sm font-semibold text-slate-100">{product.name}</p>
-                <p className="text-sm font-medium text-orange-400" data-testid="low-stock-detail">
-                  {product.stock} en stock (mín. {product.minStock})
-                </p>
+                {/* V6: the reference's amber chip-left row — icon chip, bold
+                    name, amber stock sub-line on the second row. */}
+                <span
+                  aria-hidden
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/20 text-amber-400"
+                >
+                  <Package className="h-4.5 w-4.5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-slate-100">{product.name}</p>
+                  <p
+                    className="text-xs font-medium text-amber-400"
+                    data-testid="low-stock-detail"
+                  >
+                    {product.stock} en stock (mín. {product.minStock})
+                  </p>
+                </div>
               </li>
             ))}
           </ul>

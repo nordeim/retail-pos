@@ -12,7 +12,12 @@ import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
 
 import { db } from "../db";
-import { createSessionToken, readSessionToken } from "../auth";
+import {
+  createSessionToken,
+  readSessionToken,
+  resolveClientIp,
+  sessionMatchesVersion,
+} from "../auth";
 import { UnauthorizedError } from "./http";
 
 // ---- the session cookie contract ------------------------------------------------
@@ -24,12 +29,14 @@ export const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 // ---- the session user (hashless by construction) -----------------------------
 
 /** The columns every authed surface may see — passwordHash is never in the
- *  select (rule #3: no secret fields in any select). */
+ *  select (rule #3: no secret fields in any select). tokenVersion is read
+ *  here so the M6 revocation comparison stays in this one lookup. */
 const SESSION_USER_SELECT = {
   id: true,
   email: true,
   fullName: true,
   emailVerified: true,
+  tokenVersion: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -39,6 +46,7 @@ export type SessionUser = {
   email: string;
   fullName: string;
   emailVerified: boolean;
+  tokenVersion: number;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -59,8 +67,10 @@ export function publicUser(user: SessionUser) {
 // ---- reading the session ---------------------------------------------------------
 
 /** Resolve the signed-in user from the `sf_session` cookie, or null. The
- *  token verification (HMAC + expiry) is the pure seam's job; the DB lookup
- *  proves the user still exists (a deleted account's cookie is dead). */
+ *  token verification (HMAC + expiry + version) is the pure seam's job; the
+ *  DB lookup proves the user still exists AND that its tokenVersion still
+ *  matches (M6: a password reset bumps the version — pre-reset cookies die
+ *  on their next request). A deleted account's cookie is dead too. */
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE_NAME)?.value;
@@ -71,6 +81,8 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     where: { id: payload.uid },
     select: SESSION_USER_SELECT,
   });
+  if (!user) return null;
+  if (!sessionMatchesVersion(payload, user.tokenVersion)) return null;
   return user;
 }
 
@@ -95,9 +107,9 @@ export async function requireUser(): Promise<SessionUser> {
 export function setSessionCookie(
   response: NextResponse,
   userId: string,
-  options?: { secure?: boolean },
+  options?: { secure?: boolean; tokenVersion?: number },
 ): NextResponse {
-  response.cookies.set(SESSION_COOKIE_NAME, createSessionToken(userId), {
+  response.cookies.set(SESSION_COOKIE_NAME, createSessionToken(userId, options?.tokenVersion ?? 0), {
     httpOnly: true,
     sameSite: "lax",
     secure: options?.secure ?? process.env.NODE_ENV === "production",
@@ -122,10 +134,15 @@ export function clearSessionCookie(response: NextResponse): NextResponse {
 
 // ---- client-IP extraction (the limiter's key material) -------------------------------
 
-/** First hop of x-forwarded-for, or a loopback fallback. Single-instance
+/** The limiter's key for this request: the x-forwarded-for hop at the
+ *  declared trusted proxy depth (AUTH_PROXY_HOPS, default 0 = rightmost —
+ *  the hop the closest trusted proxy appended), fail-closed per H3. Pure
+ *  selection lives in src/lib/auth.ts (unit-pinned); single-instance
  *  in-memory limiter — per-process by design (documented). */
 export function clientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  const first = forwarded?.split(",")[0]?.trim();
-  return first && first.length > 0 ? first : "local";
+  const hops = Number(process.env.AUTH_PROXY_HOPS ?? "0");
+  return resolveClientIp(
+    request.headers.get("x-forwarded-for"),
+    Number.isFinite(hops) && hops >= 0 ? Math.floor(hops) : 0,
+  );
 }

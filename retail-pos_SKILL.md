@@ -1,0 +1,555 @@
+---
+name: retail-pos
+description: >
+  VeloxPOS — a self-hosted Spanish-language retail point-of-sale (terminal,
+  inventory, sales history, registers, cashiers, reports, store settings)
+  built as a functional-superset clone of veloxposretail.base44.app on
+  Next.js 16 + React 19 + Prisma/SQLite, hardened through the v3 remediation
+  (security, data integrity, visual parity, hygiene). This SKILL is the
+  codebase-verified engineering reference for future agents: architecture,
+  contracts, anti-patterns, debugging procedures, and pre-ship gates.
+version: 1.0.0
+last_updated: "2026-10-26"
+tags:
+  - pos
+  - retail
+  - nextjs
+  - prisma
+  - sqlite
+  - tailwind-v4
+  - zustand
+  - security-remediation
+---
+
+# retail-pos_SKILL.md — VeloxPOS Engineering Reference
+
+> Distilled per `skills/to-distill-project-into-skill` (six-phase process)
+> and `skills/distill-codebase-skill` (the post-remediation reference
+> template), validated against the codebase at the v3 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 213/213 unit · 70/70 e2e** (both suites run
+> twice consecutively green). Evidence labels: **Verified** (executed here),
+> **Reasoned** (inference), **Assumed** (decision).
+
+## §1 Project Identity & Design Philosophy
+
+VeloxPOS is a production-ready, self-hosted retail POS — a functional
+SUPERSET of the base44 reference app (the reference is the visual contract,
+not the ceiling). Core philosophy, in binding order:
+
+1. **Correctness of money and stock first.** Integer cents everywhere; one
+   rounding per line; stock never goes negative (guarded in-transaction
+   decrement). Verified against the reference ticket ($18.50 + 16% IVA →
+   $21.46 exactly).
+2. **Security defaults that fail closed.** The reset token never rides a
+   production response; the OTP dies after 6 strikes; the client IP is the
+   x-forwarded-for hop at the DECLARED proxy depth; unparsable = pooled,
+   never the attacker's pick.
+3. **The reference is measured, never guessed.** Every visual constant
+   (24px H1, slate-700 card headings, white/60 report kickers, ~8 chart
+   labels, amber low-stock rows) was measured live with computed styles and
+   pinned by e2e; superset features (mobile drawer, cashier CRUD) are kept
+   BECAUSE the reference lacks them, not despite it.
+4. **One source per truth.** `lineTotalCents()` is THE line formula;
+   `resolveClientIp()` is THE ip selector; `inAppResetDeliveryEnabled()` is
+   THE delivery gate. Views/routes call them; nobody re-derives.
+5. **TDD as the working method.** Every remediation fix landed red-test
+   first (`tests/security-hardening.test.ts`, `http-body`, `sale-integrity`,
+   `visual-parity`, `hygiene` + four new e2e specs).
+
+## §2 Tech Stack & Environment (locked, verified)
+
+| Layer | Version (package.json + lockfile) | Notes |
+|---|---|---|
+| Runtime | Bun 1.3.14 | Scripts, seed, `bun -e` probes; NOT the unit runner (vitest is) |
+| Framework | next ^16.4.2 | App Router, standalone output, Turbopack dev, `rewrites()` SPA |
+| UI | react ^19.0.0, react-dom ^19.0.0 | |
+| Language | typescript ^5 (strict; `noImplicitAny` back ON — remediation L1) | `tsc --noEmit` is the fast gate |
+| Styling | tailwindcss ^4 (CSS-first `@theme`/`@utility`), tw-animate-css ^1.3.5 | v3 reference → v4 clone traps (§9) |
+| Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
+| State | zustand ^5.0.6 | Two stores; no React Context |
+| Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
+| Unit | vitest ^5.0.1 (node env) | 213 tests / 19 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 70 specs; standalone prod server :3100 |
+| Icons | lucide-react ^0.525.0 | |
+| UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
+
+No chart library (hand-rolled SVG — ADR-007), no toast library (zustand
+toaster), no auth library (scrypt + HMAC, own seams), NO dead deps
+(`quill`/`web-vitals`/`z-ai-web-dev-sdk` removed — remediation M8).
+
+Environment contract (`.env.example` documents all of it):
+
+| Variable | Required | Contract |
+|---|---|---|
+| `DATABASE_URL` | yes | `file:../db/custom.db` — schema-anchored AND runtime-anchored (db-path v3) |
+| `AUTH_SECRET` | prod | 64-hex; missing/blank/`DEV_FALLBACK_SECRET`/`EXAMPLE_ENV_SECRET` = FATAL boot (exit 1) |
+| `NEXT_PUBLIC_SITE_URL` | no | metadata/sitemap origin (`src/lib/site.ts`) |
+| `RESET_INAPP_DELIVERY` | no | `"1"` opts production into in-app reset-link delivery (default OFF) |
+| `AUTH_PROXY_HOPS` | no | trusted proxy depth for client-IP selection (default `0` = rightmost hop) |
+| `SEED_OWNER_EMAIL/PASSWORD/NAME` | no | seed identity overrides (defaults live in `prisma/seed.ts` because bun dotenv expands `$…`) |
+
+## §3 Bootstrapping & Configuration
+
+```bash
+bun install                # 498 packages
+cp .env.example .env       # then set a real AUTH_SECRET for anything shared
+bun run db:push            # prisma db push --accept-data-loss (schema-anchored)
+bun run db:seed            # owner + 6 categories + 12 products + 2 registers
+                           # + 2 closed shifts + 2 completed sales
+bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
+bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
+bun run build              # standalone → .next/standalone/server.js (e2e needs it)
+bun run test               # vitest: 213/213
+bun run test:e2e           # playwright: 70/70 (boots NODE_ENV=production :3100,
+                           #   its own db/e2e.db force-reset per run)
+```
+
+The gate order is binding: **lint → typecheck → build → unit → e2e**. The
+e2e webServer boots the standalone build — a stale build tests dead code.
+Single file: `bunx vitest run tests/money.test.ts` /
+`bunx playwright test tests/e2e/inventory.spec.ts`.
+
+Configuration gotchas (all Verified):
+- **bun dotenv expands `$…`** — a `'$Abcd1234'` .env value arrives as `""`;
+  the seed password default therefore lives in `prisma/seed.ts`.
+- **Turbopack pre-resolves** relative `file:` DATABASE_URL against the
+  project dir (one level off) — `src/lib/db-path.ts` v3 makes the repo
+  owning `prisma/schema.prisma` win. Unit-pinned; do not simplify.
+- **next.config.ts**: standalone + `outputFileTracingRoot` + `rewrites()`
+  for the 8 PascalCase view paths + `allowedDevOrigins`. The e2e server runs
+  `NODE_ENV=production` — the boot guard would exit(1) on a weak secret.
+
+## §4 The Design System (Code-First, reference-measured)
+
+`src/app/globals.css` is CSS-first Tailwind v4: `@theme inline` tokens +
+`@utility` component classes. Measured tokens (do not change — they are
+parity evidence against `docs/reference-evidence/ref-*.png`):
+
+| Token / utility | Value | Role |
+|---|---|---|
+| `--color-vx-canvas` | `#080a14` | app background |
+| surface | `#0d0f1a` | cards (`vx-card` bg), drawer, auth inputs |
+| border | `#1e2235` | hairlines (`vx-card` border, dividers) |
+| chart grid | `#262a36` | dashed gridlines, scrollbar thumb |
+| chart axis text | `#64748b` | SVG `<text fill>` (NOT a Tailwind class — raw hex in the SVG) |
+| `vx-gradient` | `linear-gradient(to right, #8b5cf6, #6d28d9)` | brand chip, active nav, primary CTAs |
+| `vx-card` | surface bg + 1px border + radius 1rem | every card surface |
+| `glass-button` | white/8 bg, white/12 border, blur(8px) | the Ajustes "Subir logo" control (V5) |
+| `vx-focus` | focus-visible box-shadow ring | shared focus ring |
+| `vx-auth-page` | light gradient | login/signup/reset (dark tokens never leak there) |
+
+The five Tailwind v3→v4 traps (each has a source pin in
+`tests/tailwind-traps.test.ts` — read before touching layout CSS):
+1. Never `mt-*`/`mb-*` on children of `space-y-*` (v4 `:where()` flips
+   specificity; the reference's own mobile-menu bug) — use `flex gap-*`.
+2. `@theme inline` values must be full `rgb(var(--x))` colors, not bare
+   triplets.
+3. `--shadow-sm` is pinned to reference geometry (v4 shifted the scale).
+4. Exact-sRGB gradients are explicit `linear-gradient` utilities, never
+   `bg-gradient-to-*` (v4 interpolates oklab).
+5. The `h-dvh` class is NOT needed here: the drawer overlay is
+   `fixed inset-0` (viewport-anchored, no vh units) — neo-crm's dvh fix
+   targets a different drawer construction.
+
+## §5 Component Architecture & Patterns
+
+Four layers, one direction of dependency:
+
+```
+src/app/api/**        route shells (3-line factories or withUser handlers)
+src/lib/server/**     http.ts (errors/factories), auth.ts (cookie/session), entities.ts (delegates)
+src/lib/**            PURE seams: money, validation, date, auth primitives, db-path, env-check, store, api
+src/components/**     views/ (8 SPA views) · pos/shared.tsx · layout/ (sidebar, mobile-chrome) · auth/ · ui/
+```
+
+- **Route factories** (`makeCollectionRoutes`/`makeItemRoutes` +
+  `EntityDelegate`): every owned model gets list/create/update/remove with
+  `where:{userId}` scoping and ownership pre-checks (404 before mutate).
+- **Error contract** (the mapper is the single root — `toErrorResponse`):
+  `ZodError`/`ValidationError` → 400 · `PayloadTooLargeError` → 413 ·
+  `UnsupportedMediaTypeError` → 415 · `BusinessRuleError` → 422 ·
+  `ConflictError` → 409 · `NotFoundError` → 404 · `P2002` → 409 ·
+  `P2025` → 404 · `UnauthorizedError` → 401 · unknown → 500 (detail logged
+  server-side ONLY).
+- **SPA shell**: ONE page (`src/app/page.tsx`) renders the 8 views at real
+  paths via `rewrites()`; `src/lib/router.ts` + `useAppStore` sync
+  `location.pathname` ⇄ view state.
+- **Key-remount dialogs**: `<Dialog key={entity?.id ?? "new"}>` rendered
+  only while open — no setState-in-effect (the lint rule bites otherwise).
+- **Store discipline**: `useAppStore` (view/chrome), `usePosStore` (retail
+  collections + ticket); selector subscriptions; views never fetch
+  bare-handed — mutations go through `apiSend` and settle back into the
+  store.
+
+## §6 State, Data-Binding & Async Patterns (hooks-level knowledge)
+
+There are no custom hooks by design; the equivalents are store-driven:
+
+- **Collection loading**: `usePosStore.loadCollections(keys)` —
+  `Promise.allSettled` burst; one error toast per failed burst
+  ("No se pudieron cargar los datos…") via the zustand toaster (L6 — never
+  render failures silently); loaded-but-empty keeps the view's own empty
+  state.
+- **Async button states**: `submitting` in component state; buttons
+  disabled during async; toasts for failures (never alert()).
+- **URL-derived state**: hydrate once on mount with a `setTimeout(0)` deferral
+  for the SPA path; never setState synchronously in an effect body.
+- **Per-store selectors are the memo boundary** — `usePosStore((s) => s.x)`
+  per consumed field; the ticket math is derived at render via
+  `computeTicketTotals` (store.ts), which delegates to `money.ts`.
+
+## §7 The Retail Domain Model (data layer)
+
+Prisma schema (`prisma/schema.prisma`) — User-owned cascade models:
+
+```
+User (tokenVersion Int @default(0)) ──┬─ StoreSetting (1:1)
+                                     ├─ Category/─┐
+VerificationToken (attempts Int)     Product ─┬── SaleItem ─┬─ Sale ── Shift ── Register
+PasswordResetToken (one-shot)        (SetNull)─┘   (Cascade)─┘   (SetNull)   Cashier
+```
+
+- **Money**: `Int` cents; prices IVA-exclusive; per-product `ivaRate`
+  (default 16). Line formula (ONE rounding): `lineTotalCents = round(price ×
+  (1 + iva/100) × qty)`. Subtotal = Σ pre-tax; tax = Σ per-line tax; total
+  = subtotal + tax. Never floats at a boundary; never re-derive in views.
+- **Sale creation invariants** (all server-side): open shift required ·
+  prices/IVA from DB rows · guarded decrement `updateMany({where:{id,
+  userId, stock:{gte:qty}}})` INSIDE the transaction (count<1 → 422 +
+  rollback) · efectivo requires `cashReceived ≥ total`
+  (`paymentCoversTotal` → 422) · ticket numbers server-generated `V-XXXXXXXX`
+  (3-attempt P2002 retry).
+- **Shift lifecycle**: open (in-tx duplicate re-check → 409) → sales accrue
+  → close stamps `closingAmount`/`closedAt` and re-closes the register.
+  Listing aggregates via ONE `groupBy(shiftId, _sum)` (M5) — never
+  per-shift row loads. Sales list capped `take: 200` newest-first.
+- **Indexes (L8)**: `Sale([userId, createdAt])`, `SaleItem([saleId])`,
+  `Shift([userId, registerId, status])`, per-user `@@index([userId])` on
+  Product/Category/Register/Cashier.
+- **Seed** (`prisma/seed.ts`): the reference-verified dataset — owner
+  (`SEED_OWNER_*`), 6 categories, 12 products (incl. low-stock
+  "Atún Dolores 295g" stock 3/min 5), 2 registers, Cesar Martínez cashier,
+  2 completed sales on closed shifts. The e2e seed password is
+  `VeloxDemo123!` (pinned in global-setup; the DEV seed default is
+  `$Abcd1234` living in code, not .env).
+
+## §8 Accessibility (the enforced set)
+
+- Skip link (`vx-skip-link`) → `#main-content`; every view's landmarks:
+  banner (mobile app bar) / navigation (drawer + sidebar) / main.
+- **Drawer focus contract (L11)**: focus moves INTO the panel on open (rAF
+  retries verified against `activeElement`), Tab wraps inside
+  (first⇄last focusable), close RETURNS focus to the hamburger;
+  `aria-expanded` on the trigger. The rAF loop LATCHES once focus is inside
+  the drawer — a focus loop must never re-steal user-moved focus.
+- Axe smoke (`a11y-smoke.spec.ts`): critical/serious only;
+  color-contrast is a disclosed exclusion (the reference's own palette).
+- All interactive chrome shares `vx-focus` (visible focus-visible ring);
+  disabled states carry opacity + `cursor-not-allowed`; the toaster is an
+  `aria-live=polite` region.
+
+## §9 Anti-Patterns & Common Bugs (the "never again" list)
+
+Each entry is a real defect found in this codebase (pre-remediation) and
+now pinned against by a test. Findings use the `docs/remediation-plan-v3.md`
+IDs.
+
+1. **Money rounded per-unit then multiplied** (M3): `round(unit×1.16)×qty`
+   diverged from the stored `round(unit×1.16×qty)` by 1¢ ($12.34×2 showed
+   $28.62, stored $28.63). Pin: `lineTotalCents(1234,2,16) === 2863` + the
+   view imports the seam.
+2. **Raw ZodError → 500** (H1): delegates call `.parse` directly; the
+   factory routes answered 500 for invalid payloads. Fix: map `ZodError` in
+   `toErrorResponse` (single root). Pin: unit + e2e (invalid POST/PATCH → 400).
+3. **Secret-bearing responses** (C1): forgot-password returned the one-shot
+   reset token to ANY unauthenticated caller. Fix: the
+   `inAppResetDeliveryEnabled` gate (production = `{ok:true}` only).
+4. **First-hop x-forwarded-for trust** (H3): the limiter keyed on the
+   client-controlled leftmost hop — header rotation un-bypassed every
+   brake. Fix: `resolveClientIp(xff, hops)` rightmost-by-depth, fail-closed.
+5. **Unguarded stock decrement** (M1): sufficiency checked OUTSIDE the
+   transaction; concurrent sales oversold into negative stock. Fix: guarded
+   `updateMany` inside the tx → 422 + rollback.
+6. **Client-only cash gate** (L2): a vacuous `.refine(... || true)` accepted
+   any `cashReceived`; the server never re-checked. Fix:
+   `paymentCoversTotal` → 422.
+7. **Positional weekday labels** (M2): `WEEKDAY_MIN[index]` on a rolling
+   window labeled 6 of 7 days wrong. Fix: `weekWindow()` + per-date
+   `isoWeekday` (today last).
+8. **Unbounded request bodies** (M4): `readJson` read any length, any
+   content type. Fix: 1MB → 413, non-JSON → 415.
+9. **Unbounded list reads** (M5): sales unbounded; shifts loaded EVERY sale
+   row per shift. Fix: `take: 200` + `groupBy` aggregation.
+10. **`void` dead-code hacks** (L3): `void formatDayDash;`, built-then-voided
+    `productById`, identical `cond ? "Agregado" : "Agregado"` ternary —
+    deleted, never suppressed.
+11. **Focus loops that re-steal** (L11 lesson): an rAF retry loop checking
+    only `activeElement !== panel` will fight the user's first Tab for its
+    whole window. Fix: latch once focus lands ANYWHERE inside the drawer.
+12. **Bun `-e` probes through Playwright env** (e2e infra): `FORCE_COLOR`
+    leaks from the test env; bun wraps output in ANSI escapes that corrupt
+    `JSON.parse`. Fix: neutralize color env AND strip control chars before
+    parsing.
+13. **Animation-race geometry assertions** (e2e infra): measuring the drawer
+    panel immediately after open catches the 200ms slide-in mid-flight.
+    Fix: `expect.poll` until settled (assertion stays strict: exactly 288).
+14. **Tailwind v4 computed-style literals** (e2e infra): v4 resolves
+    `text-slate-700` to OKLCH/LAB — a computed `color` string is not
+    `rgb(51,65,85)`. Fix: compare against a probe element with the same
+    class in the same page.
+15. **Spec-order-dependent pins** (e2e infra): a sale-creating spec running
+    BEFORE `reports.spec.ts` breaks its seeded-total pins; a register
+    left open breaks `terminal-sales`. Fix: alphabetical file naming as
+    ordering contract (`sale-integrity` runs after `reports`) + afterAll
+    state restoration.
+
+## §10 Debugging Guide (symptom → root cause → fix)
+
+| Symptom | Likely root cause | Fix / verification |
+|---|---|---|
+| Unit tests fail only under `bun test` | Wrong runner — bun test picks up `*.spec.ts` too | Use `bun run test` (vitest, `*.test.ts` only) |
+| E2E "server is not running"/timeout | Stale standalone build or port 3100 busy | `bun run build` first; check `E2E_PORT` |
+| e2e DB probe returns garbage/`null` | ANSI-wrapped bun -e output | `NO_COLOR=1`,`FORCE_COLOR=0`, strip `[\u0000-\u001f\u007f]`, parse last line |
+| Drawer geometry test flaky (288px ±) | Measured mid-slide-in | `expect.poll` the boundingBox until settled |
+| `tsc` green but build fails | Next's compiler stricter in some paths | Build is a gate for a reason — fix, never `ignoreBuildErrors` (removed, L1) |
+| Empty database at `<parent>/db/custom.db` | Turbopack pre-resolution | db-path v3 handles it; if it regressed, `tests/db-path.test.ts` goes red first |
+| Seed sets owner password to `""` | bun dotenv expanded `$Abcd1234` | Defaults live in `prisma/seed.ts`; override via `SEED_OWNER_*` |
+| 500 on invalid POST/PATCH to products/categories/registers/cashiers | Raw ZodError escaping the mapper (regression) | `tests/security-hardening.test.ts` H1 pin + `security.spec.ts` |
+| 401 after password reset for OLD sessions | tokenVersion revocation WORKING (expected) | Not a bug — ADR-012; the user simply signs in again |
+| Toast storm "No se pudieron…" on every boot | A collection fetch failing — check `/api/health` + db + which 500s | `loadCollections` surfaces bursts; the failing key is in the network tab |
+| 429s during e2e auth flows | The shared "local" IP limiter budget (10/15min) spent | Keep real login attempts per run low; successful logins reset their bucket; isolate bursts on distinct XFF keys |
+| Dashboard labels look shifted | Positional labeling regressed | `visual-parity.test.ts` weekWindow pins |
+
+## §11 Pre-Ship Checklist (run in this order — all must be green)
+
+```bash
+bun run lint          # eslint 9 flat config — 0 errors
+bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
+bun run build         # standalone build compiles + prerenders
+bun run test          # 213/213 vitest
+bun run test:e2e      # 70/70 playwright (production posture)
+```
+
+Verification beyond the gates:
+- No secrets in the diff: `git diff --stat` must not touch `.env`, `db/*.db`,
+  `*.key`, `ssh-key.txt` (gitignored — double-check staged files).
+- Screenshots regenerated if visuals changed: `bun scripts/capture-screenshots.ts`
+  (needs a live `bun run dev`), review the diff on `docs/screenshots/`.
+- Doc counts in sync: README badge, CLAUDE.md commands, this file's §2
+  (unit/e2e counts change with every pin added).
+- Schema changed? `bun run db:generate && bun run db:push` (e2e's global-setup
+  force-resets its own db; the DEV db needs the manual push).
+- Single-branch: commit to `main`; push via `docs/ssh_git_wrapper_v3.py`.
+
+## §12 Lessons Learnt (remediation v3 — how each class of bug arises)
+
+1. **F1 — Dual math implementations drift.** The view re-derived the line
+   formula "for convenience." Lesson: when two call sites need one number,
+   the seam is the ONLY place the formula may live; source-pin the import.
+2. **F2 — The error mapper is the contract, not the caller.** Delegates
+   threw ZodErrors because the mapper "should have" caught them. Lesson:
+   audit thrown types against mapper branches; a type with no branch = 500.
+3. **F3 — Convenience delivery is a security boundary.** "The response IS
+   the delivery" was fine for localhost and catastrophic on a network. The
+   environment must gate the channel (ADR-011), not the copy.
+4. **F4 — Stateless sessions need a revocation axis.** HMAC cookies can't be
+   revoked; tokenVersion gives stateless sessions a per-user epoch (ADR-012).
+5. **F5 — Test-visible randomness hides in tooling.** bun's `-e` output is
+   colorized when the parent env carries FORCE_COLOR — the probe "worked on
+   my machine." Neutralize the environment inside the helper, every time.
+6. **F6 — Focus management must be idempotent-after-landing.** Any focus
+   loop needs a latch: once the user has focus, the loop is done. Retry
+   windows that re-check "is focus where I put it" will fight the user.
+7. **F7 — Layout engines outlive the literal colors.** Tailwind v4's OKLCH
+   pipeline changes computed strings; write style pins against identity
+   probes, not rgb literals.
+
+## §13 Pitfalls to Avoid (don't do these in this repo)
+
+- Do NOT round money twice or re-derive totals outside `money.ts`.
+- Do NOT read the first x-forwarded-for hop, or trust any header without a
+  declared depth.
+- Do NOT check stock outside the transaction that decrements it.
+- Do NOT return tokens, hashes, stacks, or provider messages in responses.
+- Do NOT add a per-test login in e2e (rate limiter is shared per IP).
+- Do NOT use `space-y-*` with margin-utility children (v4 trap #1).
+- Do NOT relax `ignoreBuildErrors`/`noImplicitAny` to make a gate pass —
+  they were removed/turned back ON deliberately (L1).
+- Do NOT measure animating geometry without polling to a settled state.
+- Do NOT hand-edit `package.json` dependency lists — use `bun add/remove`
+  (identity fields by direct edit are fine).
+- Do NOT create a new branch; main is the only branch.
+
+## §14 Best Practices (the house style)
+
+- Pure seams with explicit args first (`authSecretBootStatus`,
+  `paymentCoversTotal`, `resolveClientIp`); env reads happen at the route
+  boundary, seams stay unit-testable.
+- Source pins for server-file contracts that import `next/headers`
+  (`readSource(...)` + `toContain`) — the established idiom.
+- e2e specs own their preconditions and restore their state (afterAll close
+  shifts; fresh emails per run; isolated playwright request contexts for
+  cookie-sensitive pins).
+- Every status the API can emit has exactly one constructor class in
+  `http.ts` — add a class, add a mapper branch, add a pin.
+- Screenshots are evidence: same filenames, overwritten, git-diffed.
+
+## §15 Coding Patterns (copy these shapes)
+
+```ts
+// Money: ONE rounding per line (M3) — the single implementation.
+lineTotalCents(unitPriceCents, qty, ivaRate)   // round(price × (1+iva/100) × qty)
+
+// Payment gate (L2) — server-side, 422 on failure.
+paymentCoversTotal(method, totalCents, cashReceivedCents)
+
+// Client IP (H3) — declared trusted depth, fail-closed to "local".
+resolveClientIp(request.headers.get("x-forwarded-for"), hops)
+
+// Delivery gate (C1) — pure seam, route reads the env.
+inAppResetDeliveryEnabled(process.env.NODE_ENV, process.env.RESET_INAPP_DELIVERY)
+
+// Guarded stock decrement (M1) — inside the sale transaction.
+const decremented = await tx.product.updateMany({
+  where: { id, userId, stock: { gte: qty } },
+  data: { stock: { decrement: qty } },
+});
+if (decremented.count < 1) throw new BusinessRuleError(INSUFFICIENT_STOCK);
+
+// Chart label thinning (V3) — first + last always kept, ≤ maxLabels.
+thinLabelIndices(points.length, 8)
+
+// Latched focus entry (L11) — retries only while focus never landed inside.
+if (panel.contains(document.activeElement) || document.activeElement === panel) {
+  landed = true; return;            // the user owns focus from here
+}
+panel.focus({ preventScroll: true });
+frame = requestAnimationFrame(() => moveFocusIn(attempt + 1));
+```
+
+## §16 Coding Anti-Patterns (seen and removed)
+
+- `Math.round(unit * (1 + iva / 100)) * qty` — dual math (use the seam).
+- `forwarded?.split(",")[0]` — first-hop trust (use `resolveClientIp`).
+- `.refine((x) => condition || true)` — vacuous validation.
+- `if (product.stock < qty) throw ...` OUTSIDE the tx only — the guard
+  belongs INSIDE with `updateMany`.
+- `void someSymbol;` / built-then-voided locals / identical-branch ternaries.
+- Loop that re-`focus()`es while `activeElement !== target` — no latch.
+- `getComputedStyle(el).color === "rgb(51,65,85)"` — v4 OKLCH (probe it).
+
+## §17 Responsive Breakpoint Reference
+
+| Range | Chrome |
+|---|---|
+| `< 1024px` (lg) | fixed app bar (h-16) + slide-in drawer (w-72=288px, 200ms), `lg:hidden` |
+| `≥ 1024px` | desktop sidebar (collapsible, `vx-sidebar-collapsed` persisted), drawer never rendered |
+
+The reference has NO mobile menu at 390px (its 220px sidebar squeezes
+content — verified); the drawer is the superset. Breakpoint-crossing while
+the drawer is open closes it (matchMedia `change` handler). Pinned
+surfaces: 390×844 (mobile-navigation.spec), 1280×800 (desktop views +
+visual-parity.spec). Zero horizontal overflow is asserted on every view at
+390px (`scrollWidth - clientWidth ≤ 1`).
+
+## §18 Z-Index Layer Map
+
+| Layer | z | Element |
+|---|---|---|
+| Toaster | `z-[60]` | fixed bottom-right notification region |
+| Drawer overlay | `z-50` | modal nav (backdrop + panel) |
+| App bar | `z-40` | mobile fixed header |
+| Radix dialogs/popovers | component defaults | below toaster |
+
+## §19 Color Reference (complete, measured)
+
+Dark POS canvas family: canvas `#080a14` · surface `#0d0f1a` · surface-2
+`#12141f` · border `#1e2235` · grid `#262a36` · axis text `#64748b`.
+Text scale: headings `slate-800` (H1) / `slate-700` (card headings, V1) /
+`slate-100/200/300` (body on dark) / `slate-400`-`500` (muted) · reports
+kickers `white/60` (V1). Brand: violet `#8b5cf6` / indigo `#6366f1` /
+deep `#6d28d9` (`vx-gradient`). Semantic: emerald (success/cash), amber
+`amber-400` (low-stock rows, V6), red (errors), violet-300 (price accents).
+Charts: stroke `#8b5cf6`, area fill `rgba(139,92,246,0.12)`, donut palette
+`["#8b5cf6","#7c3aed","#a78bfa","#c4b5fd","#22c55e","#e2e8f0","#6366f1",
+"#f59e0b"]` assigned by `colorByName` (L5 — one map feeds arcs AND swatches).
+Auth pages: light `#eef2f7→#e2e8f0` gradient (`vx-auth-page`).
+
+## §20 TypeScript Interface Reference (the boundary shapes)
+
+```ts
+// src/lib/auth.ts
+type SessionPayload = { uid: string; iat: number; exp: number; v: number };
+function sessionMatchesVersion(payload: SessionPayload, tokenVersion: number): boolean;
+function resolveClientIp(xff: string | null | undefined, hops?: number): string;
+function inAppResetDeliveryEnabled(nodeEnv?: string, flag?: string): boolean;
+
+// src/lib/money.ts
+function lineTotalCents(unitPriceCents: number, qty: number, ivaRate: number): number;
+function paymentCoversTotal(method: string, totalCents: number, cash?: number): boolean;
+
+// src/lib/server/http.ts — the error classes (one per status)
+class BusinessRuleError extends Error {}   // → 422
+class ConflictError extends Error {}       // → 409
+class PayloadTooLargeError extends Error {}     // → 413
+class UnsupportedMediaTypeError extends Error {} // → 415
+
+// src/lib/server/entities.ts
+type EntityDelegate = { list(userId); create(userId, input); update(userId, id, input); remove(userId, id) };
+
+// API boundaries (JSON)
+type DashboardData = { salesToday; transactionsToday; productCount; lowStockCount;
+  weekly: { key: string; label: string; total: number }[];   // labels roll per-date (M2)
+  byCategory: { name: string; count: number }[]; lowStock: { id; name; stock; minStock }[] };
+type ReportData = { totalRevenue; transactions; averageTicket; daily: { label; total }[]; byMethod: { method; total; count }[] };
+
+// src/lib/store.ts — the mutation surface
+type PosStore = { …collections; ticket: TicketLine[]; loadCollections(keys): Promise<void>;
+  ticketAdd/ticketSetQty/ticketRemove/ticketClear; loadAll(); setActiveShiftFrom(shifts) };
+```
+
+## §21 Appendices
+
+**A. ADR index (the binding decisions)** — full table in
+`Project_Architecture_Document.md` (v1.1.0): ADR-001 single page + SPA
+rewrites · ADR-002 SQLite schema-anchored · ADR-003 integer-cents money ·
+ADR-004 Tailwind v4 CSS-first + trap pins · ADR-005 two zustand stores ·
+ADR-006 route factories · ADR-007 hand-rolled SVG charts · ADR-008 drawer
+superset · ADR-009 SEED_OWNER_* env · ADR-010 db-path v3 · **ADR-011
+environment-gated reset delivery** · **ADR-012 tokenVersion session
+revocation** · **ADR-013 the remediation contract set**.
+
+**B. The remediation batches (v3, executed 2026-10-26)** —
+`docs/remediation-plan-v3.md` is the record:
+R1 security (C1 delivery gate, H1 ZodError→400, H2 OTP lockout, H3
+proxy-hop IP, M4 body gates, M6 tokenVersion, M7 timing equalizer, L10
+pruning) · R2 integrity (M1 guarded decrement, M3 line math, L2 cash gate,
+L4 409 in-tx, M5 bounded/aggregated reads, L8 indexes) · R3 visual parity
+(V1 card/kicker variants, V2 24px H1, V3 thinned labels, V4 rolling
+weekdays, V5 glass logo button, V6 amber low-stock rows) · R4 hygiene (M8
+identity + dead deps, L1 strict gates, L3 dead code, L5 donut map, L6
+toast, L9 env example, L11 drawer focus) · R5 ship (18 screenshots, docs
+lockstep, this SKILL, worklog).
+
+**C. Evidence set** — `docs/reference-evidence/` (live reference captures)
+· `docs/screenshots/` (18 remediated captures, regenerated via
+`scripts/capture-screenshots.ts`) · `docs/Tailwind-V4-Validation-Report.md`
+(the trap proofs) · `docs/reference-investigation.md` (the parity dossier).
+
+**D. Quick Reference Card**
+
+| Need | File |
+|---|---|
+| The line formula | `src/lib/money.ts` (`lineTotalCents`) |
+| The IP selector | `src/lib/auth.ts` (`resolveClientIp`) |
+| The delivery gate | `src/lib/auth.ts` (`inAppResetDeliveryEnabled`) |
+| The error mapper | `src/lib/server/http.ts` (`toErrorResponse`) |
+| The session/cookie seam | `src/lib/server/auth.ts` |
+| The chart components | `src/components/pos/shared.tsx` |
+| The drawer | `src/components/layout/mobile-chrome.tsx` |
+| The stores | `src/lib/store.ts` |
+| The schema contract pins | `tests/schema.test.ts` |
+| The security e2e | `tests/e2e/security.spec.ts` |
+| The DB probe helper | inside `tests/e2e/security.spec.ts` (`probeLatestResetToken`) |
+| Screenshots | `scripts/capture-screenshots.ts` → `docs/screenshots/` |
+| Push procedure | `docs/how-to-git-push-using-ssh-wrapper_SKILL.md` + `docs/ssh_git_wrapper_v3.py` |

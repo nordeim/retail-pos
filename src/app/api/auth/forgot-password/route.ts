@@ -1,15 +1,23 @@
 // ---------------------------------------------------------------------------
 // POST /api/auth/forgot-password — the 3-state reset flow's request leg
-// (S15/ADR-013). ALWAYS answers 200 (no account oracle). No SMTP: the reset
-// URL rides the response when the account exists — that IS the delivery.
-// The 30-minute one-shot PasswordResetToken is created here, consumed by
-// reset-password.
+// (S15/ADR-013). ALWAYS answers 200 (no account oracle). No SMTP: in self-
+// hosted/dev installs the reset URL rides the response — but ONLY while
+// in-app delivery is enabled (C1: the gate lives in the pure seam
+// `inAppResetDeliveryEnabled`; a PRODUCTION deploy answers with the bare
+// `{ ok: true }` unless RESET_INAPP_DELIVERY=1 opts in — a network-reachable
+// instance must never hand a one-shot reset token to an unauthenticated
+// caller). The 30-minute one-shot PasswordResetToken is created here,
+// consumed by reset-password.
 // ---------------------------------------------------------------------------
 
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
-import { checkRateLimit, generateResetToken } from "@/lib/auth";
+import {
+  checkRateLimit,
+  generateResetToken,
+  inAppResetDeliveryEnabled,
+} from "@/lib/auth";
 import { db } from "@/lib/db";
 import { siteUrl } from "@/lib/site";
 import { clientIp } from "@/lib/server/auth";
@@ -49,15 +57,20 @@ export async function POST(request: NextRequest) {
           expiresAt: new Date(Date.now() + TOKEN_TTL_MS),
         },
       });
-      // The absolute URL derives from the REQUEST origin (the e2e suite
-      // serves the app on a non-default port; siteUrl() is the metadata
-      // origin, not the serving origin).
-      const origin = request.nextUrl.origin;
-      return NextResponse.json({
-        ok: true,
-        resetPath: `/reset-password?token=${token}`,
-        resetUrl: `${origin}/reset-password?token=${token}`,
-      });
+      if (inAppResetDeliveryEnabled(process.env.NODE_ENV, process.env.RESET_INAPP_DELIVERY)) {
+        // The absolute URL derives from the REQUEST origin (the e2e suite
+        // serves the app on a non-default port; siteUrl() is the metadata
+        // origin, not the serving origin).
+        const origin = request.nextUrl.origin;
+        return NextResponse.json({
+          ok: true,
+          resetPath: `/reset-password?token=${token}`,
+          resetUrl: `${origin}/reset-password?token=${token}`,
+        });
+      }
+      // Production without the opt-in: the token exists, the response never
+      // carries it. The operator delivers via the documented seed/CLI path.
+      return NextResponse.json({ ok: true });
     }
 
     // Unknown email: the identical 200 with no link (no enumeration).
