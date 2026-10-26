@@ -57,13 +57,28 @@ export function resolveDatabaseUrl(envUrl: string | undefined, anchors: string[]
       // against the PROJECT directory and injects an absolute value one
       // level off from this module's schema-anchored contract (observed
       // live: .env "file:../db/custom.db" arrived as
-      // "file:<project>/../db/custom.db"). When such a pre-resolved target
-      // does not exist but the documented default DOES, prefer the default;
-      // a genuinely valid absolute URL (production deployments) still passes
-      // through untouched.
-      if (!existsSync(raw)) {
-        const fallback = path.resolve(schemaRoot, "prisma", DEFAULT_RELATIVE_DB);
-        if (existsSync(fallback)) return `file:${fallback}`;
+      // "file:<project>/../db/custom.db"). Two guards:
+      //   (a) the pre-resolved target does not exist but the documented
+      //       default DOES — prefer the default (the original v2.3 rule);
+      //   (b) HARDENING (v3): the pre-resolved target is the DEFAULT's name
+      //       in a /db directory OUTSIDE this repo (the classic mangled
+      //       form — <anything>/db/custom.db) while this repo owns the real
+      //       <repo>/db/custom.db. Turbopack's mangling wins the existsSync
+      //       check the moment the stray file is created (next dev creates
+      //       it on boot), silently pointing the app at an EMPTY database.
+      //       The repo that owns prisma/schema.prisma wins. A genuinely
+      //       deployed absolute URL (production) names its own file outside
+      //       a sibling /db directory and passes through untouched.
+      const fallback = path.resolve(schemaRoot, "prisma", DEFAULT_RELATIVE_DB);
+      const mangledForm =
+        path.basename(raw) === path.basename(fallback) &&
+        path.basename(path.dirname(raw)) === "db" &&
+        path.dirname(raw) !== path.dirname(fallback);
+      if (raw !== fallback && mangledForm && existsSync(fallback)) {
+        return `file:${fallback}`;
+      }
+      if (!existsSync(raw) && existsSync(fallback)) {
+        return `file:${fallback}`;
       }
       return `file:${raw}`;
     }

@@ -29,13 +29,6 @@ const SESSION_USER_SELECT = {
   id: true,
   email: true,
   fullName: true,
-  themeMode: true,
-  accentColor: true,
-  avatarEmoji: true,
-  notificationsEnabled: true,
-  schoolName: true,
-  gradeLevel: true,
-  studyGoalHours: true,
   emailVerified: true,
   createdAt: true,
   updatedAt: true,
@@ -45,32 +38,18 @@ export type SessionUser = {
   id: string;
   email: string;
   fullName: string;
-  themeMode: string;
-  accentColor: string;
-  avatarEmoji: string;
-  notificationsEnabled: boolean;
-  schoolName: string;
-  gradeLevel: string;
-  studyGoalHours: number;
   emailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
 
-/** The API's public user shape — `name` (the reference's field), never the
- *  hash. Every user-bearing response funnels through this mapper. */
+/** The API's public user shape — `name`, never the hash. Every user-bearing
+ *  response funnels through this mapper. */
 export function publicUser(user: SessionUser) {
   return {
     id: user.id,
     email: user.email,
     name: user.fullName,
-    themeMode: user.themeMode,
-    accentColor: user.accentColor,
-    avatarEmoji: user.avatarEmoji,
-    notificationsEnabled: user.notificationsEnabled,
-    schoolName: user.schoolName,
-    gradeLevel: user.gradeLevel,
-    studyGoalHours: user.studyGoalHours,
     emailVerified: user.emailVerified,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),

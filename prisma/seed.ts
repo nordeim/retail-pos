@@ -1,249 +1,237 @@
 // ---------------------------------------------------------------------------
-// StudyFlow seed — idempotent demo data.
+// VeloxPOS seed — the reference-verified dataset (docs/reference-investigation.md):
+// the 6 categories, the 12 products (11 rows read live + the count-pinned
+// 12th), 2 registers, the 2 completed sales + their closed Cesar Martínez
+// shifts. The owner account comes from the environment (SEED_OWNER_EMAIL /
+// SEED_OWNER_PASSWORD) — credentials never live in source.
 //
-// Contract (AGENTS.md / omni-study_SKILL.md §7): early-returns when the demo
-// user already exists. Changing seed VALUES requires deleting the target db
-// (db/custom.db or db/e2e.db) first — the upsert will not refresh them.
-// Run via `bun run db:seed` (the script sets DATABASE_URL inline, schema-
-// anchored; this file resolves the same env var through src/lib/db.ts).
+//   DATABASE_URL="file:../db/custom.db" bun prisma/seed.ts
 // ---------------------------------------------------------------------------
+
+import { PrismaClient } from "@prisma/client";
+
 import { hashPassword } from "../src/lib/auth";
-import { db } from "../src/lib/db";
+import { lineTotalCents, ticketTotals } from "../src/lib/money";
+import { resolveProcessDatabaseUrl } from "../src/lib/db-path";
 
-const DEMO_EMAIL = "demo@studyflow.app";
-const DEMO_PASSWORD = "Demo1234!";
+process.env.DATABASE_URL = resolveProcessDatabaseUrl();
 
-function at(dayOffset: number, hour = 9, minute = 0): Date {
+const db = new PrismaClient();
+
+// The seed identity mirrors the reference account the operator provisions
+// (docs/reference-investigation.md §2). bun's dotenv expands `$` in .env
+// values, so the password default lives HERE; the env vars override it.
+// NOTE: demo-seed credentials only — never a production secret.
+const OWNER_EMAIL = (process.env.SEED_OWNER_EMAIL || "owner@veloxpos.local").toLowerCase();
+const OWNER_PASSWORD = process.env.SEED_OWNER_PASSWORD || "$Abcd1234";
+const OWNER_NAME = process.env.SEED_OWNER_NAME || "Cesar Martínez";
+
+function daysAgo(n: number, hour = 12, minute = 0): Date {
   const d = new Date();
-  d.setDate(d.getDate() + dayOffset);
+  d.setDate(d.getDate() - n);
   d.setHours(hour, minute, 0, 0);
   return d;
 }
 
-async function main(): Promise<void> {
-  const existing = await db.user.findUnique({ where: { email: DEMO_EMAIL } });
-  if (existing) {
-    console.log(`Seed: demo user already exists (${DEMO_EMAIL}) — nothing to do.`);
-    return;
-  }
-
-  const user = await db.user.create({
-    data: {
-      email: DEMO_EMAIL,
-      passwordHash: hashPassword(DEMO_PASSWORD),
-      fullName: "Demo Student",
-      themeMode: "light",
-      accentColor: "violet",
-      avatarEmoji: "", // reference default state — initial-letter avatar
+async function main() {
+  const owner = await db.user.upsert({
+    where: { email: OWNER_EMAIL },
+    create: {
+      email: OWNER_EMAIL,
+      passwordHash: hashPassword(OWNER_PASSWORD),
+      fullName: OWNER_NAME,
       emailVerified: true,
-      schoolName: "Lincoln High",
-      gradeLevel: "9th Grade",
-      studyGoalHours: 4,
     },
+    update: { emailVerified: true },
   });
 
-  const subjects = await Promise.all(
-    [
-      { name: "Mathematics", color: "#8b5cf6" },
-      { name: "Physics", color: "#3b82f6" },
-      { name: "Chemistry", color: "#10b981" },
-      { name: "History", color: "#f59e0b" },
-      { name: "English", color: "#ec4899" },
-      { name: "Biology", color: "#ef4444" },
-    ].map((s) => db.subject.create({ data: { ...s, userId: user.id } })),
-  );
-  const [math, physics, chemistry, history, english, biology] = subjects;
-
-  const lists = await Promise.all(
-    ["My Tasks", "Homework", "Errands"].map((name) =>
-      db.taskList.create({ data: { name, userId: user.id } }),
-    ),
-  );
-  const [myTasks, homework, errands] = lists;
-
-  // Tasks — includes the overdue row behind the dashboard overdue banner
-  // ("Return library books") and a today/+1 spread for the KPI cards.
-  const taskDefs = [
-    { title: "Return library books", listId: errands.id, dueDate: at(-2, 17), priority: "medium" },
-    { title: "Finish calculus problem set", listId: homework.id, subjectId: math.id, dueDate: at(0, 20), priority: "high", myDay: true },
-    { title: "Read chapter 4 — vectors", listId: homework.id, subjectId: math.id, dueDate: at(0, 22), priority: "high", important: true, myDay: true },
-    { title: "Outline history essay", listId: homework.id, subjectId: history.id, dueDate: at(1, 18), priority: "low" },
-    { title: "Weekly vocabulary review", listId: homework.id, subjectId: english.id, repeat: "weekly" },
-    { title: "Annotate Keats ode", listId: homework.id, subjectId: english.id, dueDate: at(2, 18), priority: "low" },
-    { title: "Lab report: pendulum experiment", listId: homework.id, subjectId: physics.id, dueDate: at(3, 17), priority: "medium" },
-    { title: "Lab report draft", listId: homework.id, subjectId: physics.id, dueDate: at(3, 17), priority: "medium" },
-    { title: "Practice French vocabulary", listId: myTasks.id, repeat: "daily", myDay: true },
-    { title: "Book dentist appointment", listId: errands.id },
-    { title: "Set up study group chat", listId: myTasks.id, completed: true },
-    { title: "Submit scholarship form", listId: myTasks.id, completed: true, dueDate: at(-1, 12) },
-  ];
-  for (const t of taskDefs) {
-    await db.task.create({ data: { ...t, userId: user.id } });
-  }
-
-  const assignmentDefs = [
-    { title: "Problem set 7 — integrals", subjectId: math.id, type: "homework", progress: 80, priority: "high", dueDate: at(2, 17) },
-    { title: "Problem set 6", subjectId: math.id, type: "worksheet", progress: 40, priority: "high", dueDate: at(5, 17) },
-    { title: "Kinetics lab write-up", subjectId: chemistry.id, type: "lab", progress: 45, priority: "urgent", dueDate: at(4, 17) },
-    { title: "Romeo & Juliet analysis", subjectId: english.id, type: "essay", progress: 25, priority: "medium", dueDate: at(6, 17) },
-    { title: "Cold War timeline", subjectId: history.id, type: "project", progress: 60, priority: "medium", dueDate: at(8, 17) },
-    { title: "Physics reading — ch. 12", subjectId: physics.id, type: "reading", progress: 0, priority: "low", dueDate: at(1, 17) },
-  ];
-  for (const a of assignmentDefs) {
-    await db.assignment.create({ data: { ...a, userId: user.id } });
-  }
-
-  const examDefs = [
-    { title: "Calculus II Midterm", subjectId: math.id, date: at(1, 9), type: "midterm", duration: 90, topics: JSON.stringify(["Integration by parts", "Series"]) },
-    { title: "Quiz — Integration", subjectId: math.id, date: at(4, 9), type: "quiz", duration: 45, topics: JSON.stringify(["u-substitution"]) },
-    { title: "Chemistry Quiz 5", subjectId: chemistry.id, date: at(3, 10), type: "quiz", duration: 30, topics: JSON.stringify(["Equilibrium"]) },
-    // S76/AC5: one seeded location so the 📍 card row renders on a
-    // populated account (the FIRST card keeps no location — the S8 pin's
-    // no-map-pin assertion stays valid for it).
-    { title: "Physics Final", subjectId: physics.id, date: at(12, 9), type: "final", duration: 120, topics: JSON.stringify(["Mechanics", "Thermo"]), location: "Examination Hall A" },
-  ];
-  for (const e of examDefs) {
-    await db.exam.create({ data: { ...e, userId: user.id } });
-  }
-
-  const eventDefs = [
-    { title: "Study group — calculus", startDate: at(0, 16), endDate: at(0, 17, 30), location: "Library room 2B", repeat: "weekly", reminders: "[15,60]" },
-    { title: "Advisor meeting", startDate: at(2, 13), endDate: at(2, 13, 30), location: "Room 210" },
-    { title: "Chemistry lab session", startDate: at(4, 14), endDate: at(4, 16), location: "Science hall", repeat: "weekly" },
-  ];
-  for (const ev of eventDefs) {
-    await db.event.create({ data: { ...ev, userId: user.id } });
-  }
-
-  const classDefs = [
-    { name: "Calculus II", dayOfWeek: 0, startTime: "9:00", endTime: "10:30", subjectId: math.id, room: "M201" },
-    { name: "Physics", dayOfWeek: 1, startTime: "11:00", endTime: "12:30", subjectId: physics.id, room: "P105", weekType: "A" },
-    { name: "World History", dayOfWeek: 2, startTime: "9:00", endTime: "10:30", subjectId: history.id, room: "H14" },
-    { name: "English Literature", dayOfWeek: 3, startTime: "13:00", endTime: "14:30", subjectId: english.id, room: "E3" },
-    { name: "Chemistry Lab", dayOfWeek: 4, startTime: "14:00", endTime: "16:00", subjectId: chemistry.id, room: "Sci 2", weekType: "B" },
-  ];
-  for (const c of classDefs) {
-    await db.timetableClass.create({ data: { ...c, userId: user.id } });
-  }
-
-  const notebooks = await Promise.all(
-    ["Lecture Notes", "Reading Journal"].map((name) =>
-      db.notebook.create({ data: { name, userId: user.id } }),
-    ),
-  );
-  const noteDefs = [
-    { title: "Dot product intuition", content: "The dot product measures alignment: positive when vectors point the same way, zero when perpendicular.", notebookId: notebooks[0].id, subjectId: math.id, tags: '["calculus"]' },
-    { title: "Integration techniques", content: "# Integration\n\n- substitution\n- by parts: ∫u dv = uv − ∫v du\n- partial fractions for rational functions", notebookId: notebooks[0].id, subjectId: math.id, tags: '["calculus","exam-prep"]' },
-    { title: "Kinetics summary", content: "Rate laws: zero/first/second order.\nArrhenius: k = A·e^(−Ea/RT).", notebookId: notebooks[0].id, subjectId: chemistry.id },
-    { title: "Essay sources", content: "Primary: letters collection.\nSecondary: two journal articles (2009, 2015).", notebookId: notebooks[1].id, subjectId: history.id, tags: '["research"]' },
-  ];
-  for (const n of noteDefs) {
-    await db.note.create({ data: { ...n, userId: user.id } });
-  }
-
-  const decks = await Promise.all(
-    [
-      { name: "Integration rules", description: "Derivatives and antiderivatives", color: "#8b5cf6", subjectId: math.id },
-      { name: "Biology Chapter 5", description: "Cell energy and enzymes", color: "#10b981", subjectId: biology.id },
-      { name: "Spanish Vocabulary", description: "Unit 4 — travel", color: "#3b82f6", subjectId: null },
-    ].map((d) => db.flashcardDeck.create({ data: { ...d, userId: user.id } })),
-  );
-  const cardDefs = [
-    { deckId: decks[0].id, front: "Chain rule", back: "Differentiate the outer function and multiply by the inner derivative — e.g. d/dx sin(x^2) = 2x cos(x)", difficulty: "medium" },
-    { deckId: decks[0].id, front: "What does ATP stand for?", back: "Adenosine triphosphate", difficulty: "easy" },
-    { deckId: decks[0].id, front: "Enzyme function definition", back: "A biological catalyst that lowers activation energy", difficulty: "medium" },
-    { deckId: decks[0].id, front: "Krebs cycle location", back: "Mitochondrial matrix", difficulty: "hard" },
-    { deckId: decks[1].id, front: "the airport", back: "el aeropuerto", difficulty: "easy" },
-    { deckId: decks[1].id, front: "to travel", back: "viajar", difficulty: "medium" },
-  ];
-  for (const c of cardDefs) {
-    await db.flashcard.create({ data: c });
-  }
-
-  await db.practiceTest.create({
-    data: {
-      userId: user.id,
-      title: "Vectors practice set",
-      durationMinutes: 30,
-      questions: JSON.stringify([
-        { question: "What is the dot product of two orthogonal vectors?", type: "short_answer" },
-        { question: "The magnitude of a vector is always positive.", type: "true_false" },
-      ]),
-      subjectId: math.id,
+  await db.storeSetting.upsert({
+    where: { userId: owner.id },
+    create: {
+      userId: owner.id,
+      name: "Mi Tienda",
+      address: "",
+      phone: "",
+      email: "",
+      fiscalId: "",
+      currency: "MXN - Peso Mexicano",
+      primaryColor: "#6366f1",
+      secondaryColor: "#8b5cf6",
+      ticketFooter: "¡Gracias por su compra!",
+      cardProvider: "Ninguno",
     },
+    update: {},
   });
 
-  await db.practiceTest.create({
-    data: {
-      userId: user.id,
-      title: "Biology Review",
-      durationMinutes: 45,
-      questions: JSON.stringify([
-        { question: "What is DNA?", type: "short_answer" },
-        { question: "Mitochondria are the powerhouse of the cell.", type: "true_false" },
-        { question: "Which organelle synthesizes proteins?", type: "multiple_choice" },
-      ]),
-      subjectId: biology.id,
-    },
-  });
-
-  await db.studyGroup.create({
-    data: {
-      userId: user.id,
-      name: "Calc Crew",
-      subjectId: math.id,
-      members: JSON.stringify([
-        { name: "Ari", email: "ari@example.com" },
-        { name: "Sam", email: "sam@example.com" },
-      ]),
-    },
-  });
-
-  const gradeDefs = [
-    { title: "Problem set 6", score: 92, maxScore: 100, weight: 1, subjectId: math.id },
-    { title: "Quiz 4", score: 85, maxScore: 100, weight: 0.5, subjectId: math.id },
-    { title: "Kinetics quiz", score: 78, maxScore: 100, weight: 1, subjectId: chemistry.id },
-    { title: "Midterm essay", score: 88, maxScore: 100, weight: 2, subjectId: english.id },
-    { title: "Lab practical", score: 95, maxScore: 100, weight: 1, subjectId: physics.id },
-  ];
-  for (const g of gradeDefs) {
-    await db.grade.create({ data: { ...g, userId: user.id } });
+  const categoryNames = ["Lácteos", "Limpieza", "Higiene Personal", "Alimentos", "Snacks", "Bebidas"];
+  const categories = new Map<string, { id: string }>();
+  for (const name of categoryNames) {
+    const row = await db.category.upsert({
+      where: { userId_name: { userId: owner.id, name } },
+      create: { userId: owner.id, name },
+      update: {},
+    });
+    categories.set(name, row);
   }
 
-  // Focus sessions across the last 7 days (the Analytics charts' data).
-  const focusDefs = [
-    { dayOffset: 0, durationSeconds: 1500 },
-    { dayOffset: 1, durationSeconds: 3000 },
-    { dayOffset: 2, durationSeconds: 4500 },
-    { dayOffset: 3, durationSeconds: 1500 },
-    { dayOffset: 4, durationSeconds: 6000 },
-    { dayOffset: 5, durationSeconds: 3000 },
-    { dayOffset: 6, durationSeconds: 4500 },
+  // (name, barcode, price pesos, stock, category, iva%)
+  const products: [string, string, number, number, string, number][] = [
+    ["Yogurt Danone Natural 900g", "7501005102148", 38.5, 10, "Lácteos", 16],
+    ["Frijoles La Costeña 560g", "7501017006113", 22.5, 30, "Alimentos", 16],
+    ["Leche Lala Entera 1L", "7501055301114", 26.5, 24, "Lácteos", 16],
+    ["Shampoo Pantene 400ml", "7501001165599", 89.0, 12, "Higiene Personal", 16],
+    ["Cloro Cloralex 1L", "7501025400117", 24.0, 22, "Limpieza", 16],
+    ["Papel Higiénico Pétalo 4 rollos", "7501019600012", 35.0, 17, "Higiene Personal", 16],
+    ["Sabritas Original 45g", "7501011115019", 16.0, 35, "Snacks", 16],
+    ["Agua Bonafont 1L", "7501013100018", 12.0, 60, "Bebidas", 16],
+    ["Coca-Cola 600ml", "7501055300120", 18.5, 47, "Bebidas", 16],
+    ["Atún Dolores 295g", "7501024520148", 32.0, 3, "Alimentos", 16],
+    ["Pan Bimbo Blanco", "7441029500103", 52.0, 15, "Alimentos", 16],
+    // The 12th row: below the fold on the reference — count-pinned (12),
+    // values Assumed (dossier §8).
+    ["Jabón Zote Barra 400g", "7501234567890", 18.0, 20, "Limpieza", 16],
   ];
-  for (const f of focusDefs) {
-    await db.focusSession.create({
-      data: {
-        userId: user.id,
-        startedAt: at(-f.dayOffset, 15),
-        durationSeconds: f.durationSeconds,
-        mode: "focus",
-        completed: true,
+
+  const productRows = new Map<string, { id: string; name: string; price: number; ivaRate: number }>();
+  for (const [name, barcode, price, stock, category, ivaRate] of products) {
+    const row = await db.product.upsert({
+      where: { userId_name: { userId: owner.id, name } },
+      create: {
+        userId: owner.id,
+        name,
+        barcode,
+        categoryId: categories.get(category)!.id,
+        price: Math.round(price * 100),
+        cost: Math.round(price * 100 * 0.75),
+        stock,
+        minStock: 5,
+        ivaRate,
+        unit: "Pieza",
+        active: true,
       },
+      update: {},
+    });
+    productRows.set(name, { id: row.id, name: row.name, price: row.price, ivaRate: row.ivaRate });
+  }
+
+  const existingRegisters = await db.register.findMany({ where: { userId: owner.id } });
+  const registers = new Map<string, string>();
+  if (existingRegisters.length === 0) {
+    const caja1 = await db.register.create({
+      data: { userId: owner.id, name: "Caja 1", location: "Entrada principal", status: "closed" },
+    });
+    const caja2 = await db.register.create({
+      data: { userId: owner.id, name: "Caja 2", location: "Área de abarrotes", status: "closed" },
+    });
+    registers.set("Caja 1", caja1.id);
+    registers.set("Caja 2", caja2.id);
+  } else {
+    for (const row of existingRegisters) registers.set(row.name, row.id);
+  }
+
+  const cashierCount = await db.cashier.count({ where: { userId: owner.id } });
+  if (cashierCount === 0) {
+    await db.cashier.create({
+      data: { userId: owner.id, name: OWNER_NAME, email: OWNER_EMAIL, active: true },
     });
   }
 
-  await db.holiday.createMany({
-    data: [
-      { userId: user.id, name: "Fall break", date: at(21, 0) },
-      { userId: user.id, name: "Thanksgiving", date: at(38, 0) },
-    ],
-  });
+  const existingSales = await db.sale.count({ where: { userId: owner.id } });
+  if (existingSales === 0 && registers.has("Caja 1")) {
+    const cashier = await db.cashier.findFirst({ where: { userId: owner.id } });
+    if (cashier) {
+      // The two verified historical sales + their closed shifts.
+      const salesSpec = [
+        {
+          ticketNo: "V-MO6BJT7G",
+          openedAt: daysAgo(7, 1, 39),
+          closedAt: daysAgo(1, 22, 16),
+          saleAt: daysAgo(1, 22, 9),
+          items: [{ name: "Coca-Cola 600ml", qty: 1 }],
+        },
+        {
+          ticketNo: "V-MMPNY55Z",
+          openedAt: daysAgo(45, 1, 36),
+          closedAt: daysAgo(42, 3, 30),
+          saleAt: daysAgo(43, 1, 45),
+          items: [
+            { name: "Coca-Cola 600ml", qty: 2 },
+            { name: "Sabritas Original 45g", qty: 1 },
+          ],
+        },
+      ];
 
-  console.log("Seed: demo account ready — demo@studyflow.app / Demo1234!");
-  await db.$disconnect();
+      for (const spec of salesSpec) {
+        const shift = await db.shift.create({
+          data: {
+            userId: owner.id,
+            registerId: registers.get("Caja 1")!,
+            cashierId: cashier.id,
+            openingFloat: 50000,
+            openedAt: spec.openedAt,
+            closedAt: spec.closedAt,
+            status: "closed",
+            closingAmount: 50000,
+          },
+        });
+
+        const lines = spec.items.map((item) => {
+          const product = productRows.get(item.name)!;
+          return {
+            product,
+            qty: item.qty,
+            lineTotal: lineTotalCents(product.price, item.qty, product.ivaRate),
+          };
+        });
+        const totals = ticketTotals(
+          lines.map((l) => ({ unitPrice: l.product.price, qty: l.qty, ivaRate: l.product.ivaRate })),
+        );
+
+        await db.sale.create({
+          data: {
+            userId: owner.id,
+            ticketNo: spec.ticketNo,
+            method: "efectivo",
+            status: "completada",
+            subtotal: totals.subtotal,
+            tax: totals.tax,
+            total: totals.total,
+            cashierName: cashier.name,
+            registerName: "Caja 1",
+            registerId: registers.get("Caja 1")!,
+            shiftId: shift.id,
+            createdAt: spec.saleAt,
+            items: {
+              create: lines.map((line) => ({
+                productId: line.product.id,
+                name: line.product.name,
+                qty: line.qty,
+                unitPrice: line.product.price,
+                ivaRate: line.product.ivaRate,
+                lineTotal: line.lineTotal,
+              })),
+            },
+          },
+        });
+      }
+    }
+  }
+
+  const counts = {
+    products: await db.product.count({ where: { userId: owner.id } }),
+    categories: await db.category.count({ where: { userId: owner.id } }),
+    registers: await db.register.count({ where: { userId: owner.id } }),
+    sales: await db.sale.count({ where: { userId: owner.id } }),
+    shifts: await db.shift.count({ where: { userId: owner.id } }),
+  };
+  console.log(
+    `[seed] VeloxPOS ready for ${OWNER_EMAIL}: ${JSON.stringify(counts)}`,
+  );
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main()
+  .catch((err: unknown) => {
+    console.error(err);
+    process.exit(1);
+  })
+  .finally(() => void db.$disconnect());

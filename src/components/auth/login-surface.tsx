@@ -1,627 +1,392 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// The auth surface — ONE client component rendering the reference's
-// measured sub-screens inside a single card (S15): sign-in ↔ sign-up ↔
-// verify ↔ forgot ↔ reset, swapped by view state (the reference never
-// navigates between them). Every heading/label/button name here is pinned
-// by tests/e2e/auth-flows.spec.ts — treat the copy as a parity contract.
+// The auth surface — the reference-measured LIGHT page: white card on a soft
+// gray-blue gradient, dark circular logo, "Welcome to VeloxPOS", the four
+// social buttons, the OR divider, Email/Password, Sign in, Forgot password?,
+// and "Need an account? Sign up".
+//
+// The social buttons are the reference's hosted-OAuth affordances; this
+// self-hosted build has no OAuth apps configured, so they explain themselves
+// honestly (the inline notice) instead of dead-ending.
 // ---------------------------------------------------------------------------
 
 import * as React from "react";
-import { useSearchParams } from "next/navigation";
-import { Chrome, GraduationCap, ShieldCheck } from "lucide-react";
+import { Lock, Mail, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/views/shared";
 import { apiSend, ApiError } from "@/lib/api";
-import { useThemeStore } from "@/lib/store";
 
-type AuthView = "signin" | "signup" | "verify" | "forgot" | "reset";
-
-function InlineError({ message }: { message: string }) {
-  return (
-    <div
-      role="alert"
-      className="rounded-xl border border-red-200 bg-red-50/70 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200"
-    >
-      {message}
-    </div>
-  );
-}
-
-function InlineStatus({ message }: { message: string }) {
-  return (
-    <div
-      role="status"
-      className="sf-alert-emerald rounded-xl px-3 py-2 text-sm"
-    >
-      {message}
-    </div>
-  );
-}
+type Screen = "login" | "forgot" | "sent" | "reset";
 
 export function LoginSurface() {
-  const params = useSearchParams();
-
-  const [view, setView] = React.useState<AuthView>(() =>
-    params.get("view") === "reset" || params.get("token") ? "reset" : "signin",
-  );
-  const [email, setEmail] = React.useState(params.get("email") ?? "");
+  const [screen, setScreen] = React.useState<Screen>("login");
+  const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [confirm, setConfirm] = React.useState("");
-  const [newPassword, setNewPassword] = React.useState("");
-  const [resetEmail, setResetEmail] = React.useState("");
-  const [resetUrl, setResetUrl] = React.useState("");
-  const [forgotDone, setForgotDone] = React.useState(false);
-  const [code, setCode] = React.useState<string[]>(Array(6).fill(""));
-  const [surfacedCode, setSurfacedCode] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState("");
-  const [status, setStatus] = React.useState("");
+  const [notice, setNotice] = React.useState("");
+  const [resetToken, setResetToken] = React.useState("");
+  const [newPassword, setNewPassword] = React.useState("");
 
-  const boxRefs = React.useRef<(HTMLInputElement | null)[]>([]);
-
-  const setBox = (index: number, value: string) => {
-    const digit = value.replace(/\D/g, "").slice(-1);
-    setCode((prev) => prev.map((c, i) => (i === index ? digit : c)));
-    if (digit && index < 5) boxRefs.current[index + 1]?.focus();
+  const social = (provider: string) => {
+    setNotice(
+      `${provider} no está configurado en esta instalación. Usa tu email y contraseña.`,
+    );
   };
 
-  const finishSignIn = () => {
-    // Full reload — the boot script re-defaults the theme, and the shell
-    // lands on the reference's canonical /Dashboard path.
-    window.location.replace("/Dashboard");
-  };
-
-  const submitSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (busy) return;
+  const submitLogin = async (event: React.FormEvent) => {
+    event.preventDefault();
     setBusy(true);
     setError("");
     try {
       await apiSend("POST", "/api/auth/login", { email, password });
-      finishSignIn();
+      // Full reload — the shell boots fresh with the session cookie.
+      window.location.replace("/");
     } catch (err: unknown) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof ApiError ? err.message : "No se pudo iniciar sesión.");
       setBusy(false);
     }
   };
 
-  const submitSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (busy) return;
-    if (password !== confirm) {
-      setError("The passwords do not match.");
-      return;
-    }
+  const submitForgot = async (event: React.FormEvent) => {
+    event.preventDefault();
     setBusy(true);
     setError("");
     try {
-      const res = await apiSend<{ ok: boolean; code?: string }>(
+      const res = await apiSend<{ ok: boolean; resetPath?: string }>(
         "POST",
-        "/api/auth/register",
-        { fullName: "", email, password },
+        "/api/auth/forgot-password",
+        { email },
       );
-      setSurfacedCode(res?.code ?? "");
-      setCode(Array(6).fill(""));
-      setStatus("");
-      setView("verify");
+      setBusy(false);
+      // No SMTP in a self-hosted install: the API returns the one-shot
+      // reset path directly (documented delivery contract) — complete the
+      // flow in place when it does.
+      if (res?.resetPath) {
+        const token = new URL(res.resetPath, window.location.origin).searchParams.get(
+          "token",
+        );
+        if (token) {
+          setResetToken(token);
+          setScreen("reset");
+          return;
+        }
+      }
+      setScreen("sent");
     } catch (err: unknown) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
-    } finally {
+      setError(err instanceof ApiError ? err.message : "No se pudo enviar el enlace.");
       setBusy(false);
     }
   };
 
-  const submitVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (busy) return;
-    setBusy(true);
-    setError("");
-    try {
-      await apiSend("POST", "/api/auth/verify-email", { email, code: code.join("") });
-      // Verified = signed in — the verify endpoint sets the session cookie.
-      finishSignIn();
-    } catch (err: unknown) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
-      setBusy(false);
-    }
-  };
-
-  const resend = async () => {
-    if (busy) return;
-    setError("");
-    try {
-      const res = await apiSend<{ code?: string }>("POST", "/api/auth/resend-verification", { email });
-      if (res?.code) setSurfacedCode(res.code);
-      setStatus("If that account needs verification, a new code is on its way.");
-    } catch {
-      // uniform-200 endpoint — never an error surface
-      setStatus("If that account needs verification, a new code is on its way.");
-    }
-  };
-
-  const submitForgot = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (busy) return;
-    setBusy(true);
-    setError("");
-    try {
-      const res = await apiSend<{ resetUrl?: string }>("POST", "/api/auth/forgot-password", {
-        email: resetEmail,
-      });
-      setResetUrl(res?.resetUrl ?? "");
-      setForgotDone(true);
-    } catch (err: unknown) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const submitReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (busy) return;
-    if (newPassword !== confirm) {
-      setError("The passwords do not match.");
-      return;
-    }
+  const submitReset = async (event: React.FormEvent) => {
+    event.preventDefault();
     setBusy(true);
     setError("");
     try {
       await apiSend("POST", "/api/auth/reset-password", {
-        token: params.get("token") ?? "",
+        token: resetToken,
         password: newPassword,
       });
-      useThemeStore.getState().clearThemeCache();
-      setView("signin");
-      setError("Password reset successfully. Sign in with your new password.");
-      setEmail(resetEmail || email);
+      setBusy(false);
+      setNotice("Contraseña actualizada. Inicia sesión con la nueva.");
+      setScreen("login");
     } catch (err: unknown) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
-    } finally {
+      setError(err instanceof ApiError ? err.message : "No se pudo restablecer.");
       setBusy(false);
     }
   };
 
-  const brandChip = (
-    <span
-      className="sf-print-exact flex h-11 w-11 items-center justify-center rounded-xl text-white"
-      style={{
-        backgroundImage:
-          "linear-gradient(to right, rgb(var(--sf-primary)), rgb(var(--sf-primary-gradient-to)))",
-      }}
-    >
-      <GraduationCap className="size-6" strokeWidth={2} />
-    </span>
-  );
+  if (screen === "forgot") {
+    return (
+      <AuthShell>
+        <h2 className="text-xl font-bold text-slate-900">Recuperar contraseña</h2>
+        <p className="mt-1 text-center text-sm text-slate-500">
+          Te enviaremos un enlace de restablecimiento.
+        </p>
+        <form onSubmit={submitForgot} className="mt-5 w-full space-y-4">
+          <AuthInput
+            id="forgot-email"
+            type="email"
+            label="Email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            icon={<Mail className="h-4 w-4 text-slate-400" />}
+            required
+          />
+          <Button
+            type="submit"
+            disabled={busy}
+            className="w-full bg-indigo-600 text-white hover:bg-indigo-600/90"
+          >
+            {busy ? "Enviando…" : "Enviar enlace"}
+          </Button>
+        </form>
+        <button
+          type="button"
+          onClick={() => setScreen("login")}
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
+        >
+          <ArrowLeft className="h-4 w-4" /> Volver a iniciar sesión
+        </button>
+        {error ? <AuthError message={error} /> : null}
+      </AuthShell>
+    );
+  }
 
-  const backToSignIn = (
-    <button
-      type="button"
-      className="block text-center text-sm font-medium text-sf-primary-strong outline-none focus-visible:ring-2 focus-visible:ring-sf-primary/40 dark:text-sf-primary-strong-dark"
-      onClick={() => {
-        setError("");
-        setStatus("");
-        setView("signin");
-      }}
-    >
-      Back to sign in
-    </button>
-  );
+  if (screen === "reset") {
+    return (
+      <AuthShell>
+        <h2 className="text-xl font-bold text-slate-900">Nueva contraseña</h2>
+        <form onSubmit={submitReset} className="mt-5 w-full space-y-4">
+          <AuthInput
+            id="reset-token"
+            type="text"
+            label="Código de restablecimiento"
+            value={resetToken}
+            onChange={(event) => setResetToken(event.target.value)}
+            icon={<Lock className="h-4 w-4 text-slate-400" />}
+            required
+          />
+          <AuthInput
+            id="reset-password"
+            type="password"
+            label="Nueva contraseña"
+            value={newPassword}
+            onChange={(event) => setNewPassword(event.target.value)}
+            placeholder="••••••••"
+            icon={<Lock className="h-4 w-4 text-slate-400" />}
+            required
+          />
+          <Button
+            type="submit"
+            disabled={busy}
+            className="w-full bg-indigo-600 text-white hover:bg-indigo-600/90"
+          >
+            {busy ? "Guardando…" : "Actualizar contraseña"}
+          </Button>
+        </form>
+        {error ? <AuthError message={error} /> : null}
+      </AuthShell>
+    );
+  }
+
+  if (screen === "sent") {
+    return (
+      <AuthShell>
+        <h2 className="text-xl font-bold text-slate-900">Revisa tu correo</h2>
+        <p className="mt-2 text-center text-sm text-slate-500">
+          Si {email} tiene una cuenta, encontrarás el enlace de
+          restablecimiento ahí.
+        </p>
+        <button
+          type="button"
+          onClick={() => setScreen("login")}
+          className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+        >
+          <ArrowLeft className="h-4 w-4" /> Volver a iniciar sesión
+        </button>
+      </AuthShell>
+    );
+  }
 
   return (
-    // main, not div — the auth surface is a standalone page (no shell) and
-    // needs the one-main landmark (Lighthouse landmark-one-main, session 61).
-    <main className="sf-canvas flex min-h-dvh items-center justify-center p-4">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white/95 p-8 shadow-2xl backdrop-blur-xs dark:bg-slate-900/95">
-        <div
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-1"
-          style={{
-            backgroundImage: "linear-gradient(to right, #e2e8f0, #cbd5e1, #e2e8f0)",
-          }}
+    <AuthShell>
+      {/* The reference's dark circular logo badge (a violet cube glyph). */}
+      <span
+        aria-hidden
+        className="mb-5 flex h-24 w-24 items-center justify-center rounded-full shadow-[0_10px_30px_rgba(30,27,75,0.25)]"
+        style={{ background: "#221f45" }}
+      >
+        <svg viewBox="0 0 24 24" className="h-11 w-11" fill="none" stroke="url(#vx-cube)" strokeWidth="1.6" strokeLinejoin="round">
+          <defs>
+            <linearGradient id="vx-cube" x1="0" y1="0" x2="24" y2="24">
+              <stop offset="0%" stopColor="#a78bfa" />
+              <stop offset="100%" stopColor="#22d3ee" />
+            </linearGradient>
+          </defs>
+          <path d="M12 2.5 21 7v10l-9 4.5L3 17V7l9-4.5Z" />
+          <path d="M3 7l9 4.5L21 7M12 11.5V21.5" />
+          <path d="M7.5 4.75 16.5 9.25" />
+        </svg>
+      </span>
+      <h1 className="text-center text-3xl font-bold tracking-tight text-slate-900">
+        Welcome to VeloxPOS
+      </h1>
+      <p className="mt-2 text-center text-slate-500">Sign in to continue</p>
+
+      <div className="mt-6 w-full space-y-3">
+        <SocialButton provider="Google" glyph="G" onUse={social} />
+        <SocialButton provider="Microsoft" glyph="M" onUse={social} />
+        <SocialButton provider="Facebook" glyph="f" onUse={social} />
+        <SocialButton provider="Apple" glyph="" onUse={social} />
+      </div>
+
+      <div className="my-6 flex w-full items-center gap-4" aria-hidden>
+        <span className="h-px flex-1 bg-slate-200" />
+        <span className="text-xs font-medium text-slate-400">OR</span>
+        <span className="h-px flex-1 bg-slate-200" />
+      </div>
+
+      <form onSubmit={submitLogin} className="w-full space-y-4" data-testid="login-form">
+        <AuthInput
+          id="login-email"
+          type="email"
+          label="Email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="you@example.com"
+          icon={<Mail className="h-4 w-4 text-slate-400" />}
+          autoComplete="email"
+          required
         />
-        {view === "signin" && (
-          <>
-            <div className="flex flex-col items-center text-center">
-              {/* 96px circle logo with the white ring (the measured S4-F chrome) */}
-              <span
-                className="sf-print-exact flex size-20 items-center justify-center rounded-full text-white ring-4 ring-white sm:size-24"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(to right, rgb(var(--sf-primary)), rgb(var(--sf-primary-gradient-to)))",
-                }}
-              >
-                <GraduationCap className="size-10" strokeWidth={2} />
-              </span>
-              <h1 className="mt-4 text-2xl font-bold text-slate-800 sm:text-3xl dark:text-slate-100">
-                Welcome to StudyFlow
-              </h1>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Sign in to continue
-              </p>
-            </div>
+        <AuthInput
+          id="login-password"
+          type="password"
+          label="Password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="••••••••"
+          icon={<Lock className="h-4 w-4 text-slate-400" />}
+          autoComplete="current-password"
+          required
+        />
+        {error ? <AuthError message={error} /> : null}
+        {notice ? (
+          <p
+            role="status"
+            data-testid="social-notice"
+            className="rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-700"
+          >
+            {notice}
+          </p>
+        ) : null}
+        <Button
+          type="submit"
+          disabled={busy}
+          data-testid="login-submit"
+          className="w-full bg-indigo-600 text-white hover:bg-indigo-600/90"
+        >
+          {busy ? "Signing in…" : "Sign in"}
+        </Button>
+      </form>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-6 h-[54px] w-full rounded-xl"
-              disabled
-              title="Google sign-in is not available in this deployment"
-            >
-              <Chrome className="size-4" strokeWidth={2} />
-              Continue with Google
-            </Button>
+      <button
+        type="button"
+        onClick={() => {
+          setNotice("");
+          setScreen("forgot");
+        }}
+        data-testid="forgot-password-link"
+        className="mt-4 w-full text-sm font-medium text-slate-500 hover:text-slate-700"
+      >
+        Forgot password?
+      </button>
 
-            <div className="my-5 flex items-center gap-3" aria-hidden>
-              <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
-              <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-slate-300">or</span>
-              <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
-            </div>
+      <p className="mt-4 text-center text-sm text-slate-500">
+        Need an account?{" "}
+        <a href="/signup" className="font-semibold text-indigo-600 hover:text-indigo-700">
+          Sign up
+        </a>
+      </p>
+    </AuthShell>
+  );
+}
 
-            <form onSubmit={submitSignIn} className="flex flex-col gap-4" noValidate>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="auth-email">Email</Label>
-                <Input
-                  id="auth-email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@school.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-11 rounded-xl bg-slate-50/50 sm:h-12"
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="auth-password">Password</Label>
-                <Input
-                  id="auth-password"
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="Min. 8 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-11 rounded-xl bg-slate-50/50 sm:h-12"
-                  required
-                />
-              </div>
-              {error && <InlineError message={error} />}
-              {status && !error && <InlineStatus message={status} />}
-              <Button
-                type="submit"
-                variant="gradient"
-                className="sf-gradient-shadow h-11 w-full rounded-xl sm:h-12"
-                disabled={busy}
-              >
-                {busy ? (
-                  <>
-                    <Spinner className="size-4" />
-                    Signing in…
-                  </>
-                ) : (
-                  "Sign in"
-                )}
-              </Button>
-            </form>
+// ---- shared pieces -----------------------------------------------------------
 
-            <div className="mt-5 flex items-center justify-between text-sm">
-              <button
-                type="button"
-                className="font-medium text-sf-primary-strong outline-none focus-visible:ring-2 focus-visible:ring-sf-primary/40 dark:text-sf-primary-strong-dark"
-                onClick={() => {
-                  setError("");
-                  setStatus("");
-                  setView("signup");
-                }}
-              >
-                Need an account? Sign up
-              </button>
-              <button
-                type="button"
-                className="font-medium text-sf-primary-strong outline-none focus-visible:ring-2 focus-visible:ring-sf-primary/40 dark:text-sf-primary-strong-dark"
-                onClick={() => {
-                  setError("");
-                  setStatus("");
-                  setResetEmail(email);
-                  setView("forgot");
-                }}
-              >
-                Forgot password?
-              </button>
-            </div>
-          </>
-        )}
-
-        {view === "signup" && (
-          <>
-            <div className="flex flex-col items-center text-center">
-              {brandChip}
-              {/* h2 — the sub-screen REPLACES the brand block (no h1, S15 pin) */}
-              <h2 className="mt-2 text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl sm:mt-4">
-                Create your account
-              </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Your study companion — tasks, schedule, notes, and focus.
-              </p>
-            </div>
-
-            <form onSubmit={submitSignUp} className="mt-6 flex flex-col gap-4" noValidate>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="auth-email">Email</Label>
-                <Input
-                  id="auth-email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@school.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="auth-password">Password</Label>
-                <Input
-                  id="auth-password"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Min. 8 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="auth-confirm">Confirm Password</Label>
-                <Input
-                  id="auth-confirm"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Re-enter password"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  required
-                />
-              </div>
-              {error && <InlineError message={error} />}
-              <Button
-                type="submit"
-                variant="gradient"
-                className="sf-gradient-shadow h-9 w-full"
-                disabled={busy}
-              >
-                {busy ? (
-                  <>
-                    <Spinner className="size-4" />
-                    Creating account…
-                  </>
-                ) : (
-                  "Create account"
-                )}
-              </Button>
-            </form>
-
-            <div className="mt-5 text-center text-sm">{backToSignIn}</div>
-          </>
-        )}
-
-        {view === "verify" && (
-          <>
-            {/* S16 geometry: Back-bottom→h2-top 76px = container mt-3 (12)
-                + circle 44 + circle mb-3 (12) + h2 mt-2 (8). */}
-            <div className="text-center">{backToSignIn}</div>
-            <div className="mt-3 flex flex-col items-center text-center">
-              <span className="sf-print-exact mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-sf-primary-soft text-sf-primary-strong dark:bg-sf-primary-soft-dark/40 dark:text-sf-primary-strong-dark">
-                <ShieldCheck className="size-6" strokeWidth={2} />
-              </span>
-              <h2 className="mt-2 text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl sm:mt-4">
-                Verify your email
-              </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                We&apos;ve sent a 6-digit code to <span className="font-medium">{email}</span>
-              </p>
-            </div>
-
-            <form onSubmit={submitVerify} className="mt-6 flex flex-col gap-4" noValidate>
-              <div className="flex justify-between gap-2">
-                {code.map((digit, i) => (
-                  <Input
-                    key={i}
-                    ref={(el) => {
-                      boxRefs.current[i] = el;
-                    }}
-                    inputMode="numeric"
-                    autoComplete={i === 0 ? "one-time-code" : "off"}
-                    maxLength={1}
-                    className="h-12 text-center text-lg font-semibold"
-                    aria-label={`Digit ${i + 1}`}
-                    value={digit}
-                    onChange={(e) => setBox(i, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Backspace" && !code[i] && i > 0) {
-                        boxRefs.current[i - 1]?.focus();
-                      }
-                    }}
-                  />
-                ))}
-              </div>
-
-              {surfacedCode && (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                  <p className="font-medium">Dev delivery (no SMTP in this deployment)</p>
-                  {/* lowercase "your code is" — the auth-flows spec's regex is case-sensitive */}
-                  <p>your code is <span className="font-mono font-semibold">{surfacedCode}</span></p>
-                </div>
-              )}
-              {error && <InlineError message={error} />}
-              {status && !error && <InlineStatus message={status} />}
-
-              <Button
-                type="submit"
-                variant="gradient"
-                className="sf-gradient-shadow h-9 w-full"
-                disabled={busy}
-              >
-                {busy ? (
-                  <>
-                    <Spinner className="size-4" />
-                    Verifying…
-                  </>
-                ) : (
-                  "Verify email"
-                )}
-              </Button>
-              <Button type="button" variant="ghost" className="h-9 w-full" onClick={resend}>
-                Resend code
-              </Button>
-            </form>
-          </>
-        )}
-
-        {view === "forgot" && (
-          <>
-            {/* S16 geometry: Back-top→h2-top 28px = back link 20px + h2 mt-2
-                (8). The sub-screen replaces the brand block (S15). */}
-            <div className="text-center">{backToSignIn}</div>
-            <div className="flex flex-col items-center text-center">
-              <h2 className="mt-2 text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl sm:mt-4">
-                {forgotDone ? "Check your email" : "Reset your password"}
-              </h2>
-              {!forgotDone && (
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Enter your email and we&apos;ll send you a link to reset your password
-                </p>
-              )}
-            </div>
-
-            {forgotDone ? (
-              <div className="mt-6 flex flex-col gap-4">
-                <div
-                  role="alert"
-                  className="sf-alert-emerald rounded-xl px-3 py-2 text-sm"
-                >
-                  Please check your email for the password reset link. It may take a few minutes to arrive.
-                </div>
-                {resetUrl && (
-                  <a
-                    href={resetUrl}
-                    className="text-sm font-medium text-sf-primary-strong underline outline-none focus-visible:ring-2 focus-visible:ring-sf-primary/40 dark:text-sf-primary-strong-dark"
-                  >
-                    Open your reset link
-                  </a>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-9 w-full"
-                  onClick={() => {
-                    setForgotDone(false);
-                    setView("signin");
-                  }}
-                >
-                  Back to sign in
-                </Button>
-              </div>
-            ) : (
-              <form onSubmit={submitForgot} className="mt-6 flex flex-col gap-4" noValidate>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="auth-email">Email</Label>
-                  <Input
-                    id="auth-email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@school.edu"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                {error && <InlineError message={error} />}
-                <Button
-                  type="submit"
-                  variant="gradient"
-                  className="sf-gradient-shadow h-9 w-full"
-                  disabled={busy}
-                >
-                  {busy ? (
-                    <>
-                      <Spinner className="size-4" />
-                      Sending…
-                    </>
-                  ) : (
-                    "Send reset link"
-                  )}
-                </Button>
-              </form>
-            )}
-          </>
-        )}
-
-        {view === "reset" && (
-          <>
-            <div className="flex flex-col items-center text-center">
-              {brandChip}
-              <h2 className="mt-2 text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl sm:mt-4">
-                Reset your password
-              </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Your reset link is valid for 30 minutes and works once.
-              </p>
-            </div>
-
-            <form onSubmit={submitReset} className="mt-6 flex flex-col gap-4" noValidate>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="auth-password">Password</Label>
-                <Input
-                  id="auth-password"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Min. 8 characters"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="auth-confirm">Confirm Password</Label>
-                <Input
-                  id="auth-confirm"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Re-enter password"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  required
-                />
-              </div>
-              {error && <InlineError message={error} />}
-              {status && !error && <InlineStatus message={status} />}
-              <Button
-                type="submit"
-                variant="gradient"
-                className="sf-gradient-shadow h-9 w-full"
-                disabled={busy || !params.get("token")}
-              >
-                {busy ? (
-                  <>
-                    <Spinner className="size-4" />
-                    Updating…
-                  </>
-                ) : (
-                  "Reset password"
-                )}
-              </Button>
-              {backToSignIn}
-            </form>
-          </>
-        )}
+export function AuthShell({ children }: { children: React.ReactNode }) {
+  return (
+    <main
+      className="vx-auth-page flex min-h-dvh items-center justify-center p-4"
+      data-testid="auth-page"
+    >
+      <div className="w-full max-w-md rounded-3xl border border-slate-200/70 bg-white p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-10">
+        <div className="flex flex-col items-center">{children}</div>
       </div>
     </main>
   );
 }
 
-export default LoginSurface;
+function SocialButton({
+  provider,
+  glyph,
+  onUse,
+}: {
+  provider: string;
+  glyph: string;
+  onUse: (provider: string) => void;
+}) {
+  const color =
+    provider === "Google"
+      ? "#4285F4"
+      : provider === "Microsoft"
+        ? "#00A4EF"
+        : provider === "Facebook"
+          ? "#1877F2"
+          : "#111111";
+  return (
+    <button
+      type="button"
+      onClick={() => onUse(provider)}
+      data-testid={`social-${provider.toLowerCase()}`}
+      className="vx-focus flex w-full items-center justify-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+    >
+      <span
+        aria-hidden
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full text-sm font-bold text-white"
+        style={{ background: color }}
+      >
+        {glyph}
+      </span>
+      Continue with {provider}
+    </button>
+  );
+}
+
+function AuthInput({
+  id,
+  label,
+  icon,
+  ...props
+}: {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+} & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-center text-sm font-medium text-slate-700"
+      >
+        {label}
+      </label>
+      <div className="relative">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+          {icon}
+        </span>
+        <Input
+          id={id}
+          {...props}
+          className="h-11 rounded-xl border-slate-300 bg-white pl-9 text-slate-900 placeholder:text-slate-400"
+        />
+      </div>
+    </div>
+  );
+}
+
+function AuthError({ message }: { message: string }) {
+  return (
+    <p
+      role="alert"
+      data-testid="auth-error"
+      className="mt-4 w-full rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
+    >
+      {message}
+    </p>
+  );
+}

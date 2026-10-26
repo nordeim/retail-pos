@@ -1,45 +1,30 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// The app + theme Zustand stores (§6). No React Context anywhere — views
+// The app + POS data Zustand stores. No React Context anywhere — views
 // subscribe with selectors; the stores are the only mutation path.
 //
-// useAppStore  — SPA view state + chrome (sidebar collapse, mobile drawer).
-// useThemeStore — mode/accent/avatar/identity applied to <html> as RGB
-//                 triplet CSS vars via accentCssVars (the COMPLETE set).
+// useAppStore — SPA view state + chrome (sidebar collapse, mobile drawer).
+// usePosStore — the retail collections + the ticket being built at the
+//               Terminal. Mutations go through the API seam and settle back
+//               into this store; views never fetch bare-handed.
 // ---------------------------------------------------------------------------
 
 import { create } from "zustand";
 
-import {
-  accentCssVars,
-  isAccent,
-  isThemeMode,
-  resolveMode,
-  themeCachePayload,
-  THEME_CACHE_KEY,
-  type Accent,
-  type ThemeMode,
-} from "./theme";
+import { apiGet, apiSend, ApiError } from "./api";
 import { pathForView, viewFromPath, type ViewId } from "./router";
+import { lineTotalCents, ticketTotals } from "./money";
+import type { TicketLineInput } from "./pos-types";
 
-const SIDEBAR_COLLAPSED_KEY = "sf-sidebar-collapsed";
+const SIDEBAR_COLLAPSED_KEY = "vx-sidebar-collapsed";
 
-// ---- the authenticated user's /api/auth/me shape (camelCase User row) ------
+// ---- the authenticated user's /api/auth/me shape ----------------------------
 
 export type AppUser = {
   id: string;
   email: string;
-  /** The API's public field (publicUser() maps the DB's fullName → name). */
   name: string;
-  avatarEmoji: string;
-  themeMode: string;
-  accentColor: string;
-  notificationsEnabled: boolean;
-  schoolName: string;
-  gradeLevel: string;
-  studyGoalHours: number;
-  emailVerified: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -50,7 +35,7 @@ type AppStore = {
   view: ViewId;
   sidebarCollapsed: boolean;
   mobileMenuOpen: boolean;
-  /** SPA navigation: pushes the canonical PascalCase path + flips the view. */
+  /** SPA navigation: pushes the canonical path + flips the view. */
   navigate: (view: ViewId) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
@@ -59,170 +44,303 @@ type AppStore = {
   hydrate: () => void;
 };
 
-let popstateBound = false;
-
 export const useAppStore = create<AppStore>((set, get) => ({
-  view: "dashboard",
+  view: "terminal",
   sidebarCollapsed: false,
   mobileMenuOpen: false,
-
   navigate: (view) => {
-    try {
-      window.history.pushState({}, "", pathForView(view));
-    } catch {
-      // history unavailable (SSR/tests) — the view flip still happens
-    }
+    const current = get().view;
     set({ view, mobileMenuOpen: false });
+    if (view !== current && typeof window !== "undefined") {
+      window.history.pushState(null, "", pathForView(view));
+    }
   },
-
   setSidebarCollapsed: (collapsed) => {
     set({ sidebarCollapsed: collapsed });
-    try {
-      window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "true" : "false");
-    } catch {
-      // private mode — the preference just doesn't persist
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "1" : "0");
     }
   },
-
-  toggleSidebar: () => {
-    get().setSidebarCollapsed(!get().sidebarCollapsed);
-  },
-
+  toggleSidebar: () => get().setSidebarCollapsed(!get().sidebarCollapsed),
   setMobileMenu: (open) => set({ mobileMenuOpen: open }),
-
   hydrate: () => {
+    if (typeof window === "undefined") return;
     set({ view: viewFromPath(window.location.pathname) });
-    try {
-      set({ sidebarCollapsed: window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true" });
-    } catch {
-      // ignore — default expanded
-    }
-    if (!popstateBound) {
-      popstateBound = true;
-      window.addEventListener("popstate", () => {
-        useAppStore.setState({ view: viewFromPath(window.location.pathname) });
-      });
-    }
+    const stored = window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+    if (stored !== null) set({ sidebarCollapsed: stored === "1" });
   },
 }));
 
-// ---- useThemeStore ----------------------------------------------------------
+// ---- the POS entity shapes (the API's JSON boundary) -------------------------
 
-type ThemeStore = {
-  mode: ThemeMode;
-  accent: Accent;
-  avatar: string;
-  userName: string;
-  email: string;
-  setMode: (mode: ThemeMode) => void;
-  setAccent: (accent: Accent) => void;
-  setEmail: (email: string) => void;
-  setAvatar: (avatar: string) => void;
-  setUserName: (userName: string) => void;
-  /** Hydrate from the /api/auth/me user row, then apply to the document. */
-  loadFromUser: (user: AppUser) => void;
-  /** Stamp the --sf-* vars + dark class + theme-color meta + the cache. */
-  applyToDocument: () => void;
-  /** Re-apply on OS scheme changes while mode === "system". */
-  installSystemThemeTracking: () => void;
-  /** Sign-out: drop the localStorage cache (the boot script re-defaults). */
-  clearThemeCache: () => void;
+export type Category = { id: string; name: string };
+
+export type Product = {
+  id: string;
+  name: string;
+  barcode: string;
+  categoryId: string | null;
+  categoryName: string | null;
+  price: number; // cents, IVA-exclusive
+  cost: number;
+  stock: number;
+  minStock: number;
+  ivaRate: number;
+  unit: string;
+  imageUrl: string | null;
+  active: boolean;
 };
 
-function systemPrefersDark(): boolean {
-  return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
+export type Register = {
+  id: string;
+  name: string;
+  location: string;
+  status: "closed" | "open";
+};
+
+export type Cashier = {
+  id: string;
+  name: string;
+  email: string;
+  active: boolean;
+};
+
+export type Shift = {
+  id: string;
+  registerId: string;
+  registerName: string;
+  cashierId: string;
+  cashierName: string;
+  openingFloat: number;
+  closingAmount: number | null;
+  openedAt: string;
+  closedAt: string | null;
+  status: "open" | "closed";
+  salesTotal: number; // cents, IVA-inclusive
+  salesCount: number;
+};
+
+export type SaleItem = {
+  id: string;
+  productId: string | null;
+  name: string;
+  qty: number;
+  unitPrice: number;
+  ivaRate: number;
+  lineTotal: number;
+};
+
+export type Sale = {
+  id: string;
+  ticketNo: string;
+  method: "efectivo" | "tarjeta";
+  status: string;
+  subtotal: number;
+  tax: number;
+  total: number;
+  clientName: string;
+  cashierName: string;
+  registerName: string;
+  registerId: string | null;
+  shiftId: string | null;
+  createdAt: string;
+  items: SaleItem[];
+};
+
+export type StoreSettings = {
+  updatedAt?: string;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  fiscalId: string;
+  currency: string;
+  primaryColor: string;
+  secondaryColor: string;
+  ticketFooter: string;
+  cardProvider: string;
+};
+
+export type DashboardData = {
+  salesToday: number;
+  transactionsToday: number;
+  productCount: number;
+  lowStockCount: number;
+  weekly: { label: string; total: number }[];
+  byCategory: { name: string; count: number }[];
+  lowStock: { id: string; name: string; stock: number; minStock: number }[];
+};
+
+export type ReportData = {
+  totalRevenue: number;
+  transactions: number;
+  averageTicket: number;
+  daily: { date: string; label: string; total: number }[];
+  byMethod: { method: string; total: number; count: number }[];
+};
+
+// ---- the ticket (Terminal state) ---------------------------------------------
+
+export type TicketLine = {
+  product: Product;
+  qty: number;
+};
+
+function ticketFromLines(lines: TicketLine[]): TicketLineInput[] {
+  return lines.map((line) => ({
+    product: line.product,
+    qty: line.qty,
+    lineTotal: lineTotalCents(line.product.price, line.qty, line.product.ivaRate),
+  }));
 }
 
-function updateThemeColorMeta(dark: boolean): void {
-  const metas = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]:not([media])');
-  const trailing = metas.length > 0 ? metas[metas.length - 1] : null;
-  const content = dark ? "#020617" : "#ffffff";
-  if (trailing) {
-    trailing.setAttribute("content", content);
-    return;
-  }
-  const meta = document.createElement("meta");
-  meta.name = "theme-color";
-  meta.content = content;
-  document.head.appendChild(meta);
+export function computeTicketTotals(lines: TicketLine[]) {
+  return ticketTotals(
+    lines.map((l) => ({
+      unitPrice: l.product.price,
+      qty: l.qty,
+      ivaRate: l.product.ivaRate,
+    })),
+  );
 }
 
-let systemTrackingInstalled = false;
+// ---- usePosStore --------------------------------------------------------------
 
-export const useThemeStore = create<ThemeStore>((set, get) => ({
-  mode: "system",
-  accent: "violet",
-  avatar: "",
-  userName: "",
-  email: "",
+type PosCollections = {
+  products: Product[];
+  categories: Category[];
+  registers: Register[];
+  cashiers: Cashier[];
+  shifts: Shift[];
+  sales: Sale[];
+  settings: StoreSettings | null;
+};
 
-  setMode: (mode) => {
-    set({ mode });
-    get().applyToDocument();
+export type LoadedKey = keyof Omit<PosCollections, "settings"> | "settings";
+
+type PosStore = PosCollections & {
+  ticket: TicketLine[];
+  activeShift: Shift | null;
+  loaded: Record<LoadedKey, boolean>;
+  ticketAdd: (product: Product, qty?: number) => void;
+  ticketSetQty: (productId: string, qty: number) => void;
+  ticketRemove: (productId: string) => void;
+  ticketClear: () => void;
+  loadCollections: (keys: LoadedKey[]) => Promise<void>;
+  loadAll: () => Promise<void>;
+  setActiveShiftFrom: (shifts: Shift[]) => void;
+  reset: () => void;
+};
+
+const EMPTY: PosCollections = {
+  products: [],
+  categories: [],
+  registers: [],
+  cashiers: [],
+  shifts: [],
+  sales: [],
+  settings: null,
+};
+
+const FETCHERS: Record<Exclude<LoadedKey, never>, () => Promise<unknown>> = {
+  products: () => apiGet<Product[]>("/api/products"),
+  categories: () => apiGet<Category[]>("/api/categories"),
+  registers: () => apiGet<Register[]>("/api/registers"),
+  cashiers: () => apiGet<Cashier[]>("/api/cashiers"),
+  shifts: () => apiGet<Shift[]>("/api/shifts"),
+  sales: () => apiGet<Sale[]>("/api/sales"),
+  settings: () => apiGet<StoreSettings>("/api/settings"),
+};
+
+/** The active shift: the OPEN one for the store (the reference gates the
+ *  Terminal on "a turn is active", singular). */
+export function pickActiveShift(shifts: Shift[]): Shift | null {
+  return shifts.find((s) => s.status === "open") ?? null;
+}
+
+export const usePosStore = create<PosStore>((set, get) => ({
+  ...EMPTY,
+  ticket: [],
+  activeShift: null,
+  loaded: {
+    products: false,
+    categories: false,
+    registers: false,
+    cashiers: false,
+    shifts: false,
+    sales: false,
+    settings: false,
   },
-
-  setAccent: (accent) => {
-    set({ accent });
-    get().applyToDocument();
+  ticketAdd: (product, qty = 1) => {
+    const lines = [...get().ticket];
+    const hit = lines.find((l) => l.product.id === product.id);
+    if (hit) {
+      hit.qty += qty;
+      set({ ticket: lines });
+    } else {
+      set({ ticket: [...lines, { product, qty }] });
+    }
   },
-
-  setEmail: (email) => set({ email }),
-  setAvatar: (avatar) => set({ avatar }),
-  setUserName: (userName) => set({ userName }),
-
-  loadFromUser: (user) => {
+  ticketSetQty: (productId, qty) => {
+    if (qty <= 0) {
+      set({ ticket: get().ticket.filter((l) => l.product.id !== productId) });
+      return;
+    }
     set({
-      mode: isThemeMode(user.themeMode) ? user.themeMode : "system",
-      accent: isAccent(user.accentColor) ? user.accentColor : "violet",
-      avatar: typeof user.avatarEmoji === "string" ? user.avatarEmoji : "",
-      userName: typeof user.name === "string" ? user.name : "",
-      email: typeof user.email === "string" ? user.email : "",
-    });
-    get().applyToDocument();
-  },
-
-  applyToDocument: () => {
-    if (typeof document === "undefined") return;
-    const { mode, accent } = get();
-    const dark = resolveMode(mode, systemPrefersDark()) === "dark";
-    const root = document.documentElement;
-    root.classList.toggle("dark", dark);
-    // S81/AH9 (the audit-tools repair): restore the S27 doctrine attribute
-    // — ~16 standing accent sweeps read
-    // document.documentElement.dataset.accent as their mode proof, and a
-    // refactor that dropped it left every accent sweep failing its
-    // precondition (data-accent=undefined) silently.
-    root.dataset.accent = accent;
-    const style = root.style;
-    for (const [name, value] of Object.entries(accentCssVars(accent))) {
-      style.setProperty(name, value);
-    }
-    try {
-      window.localStorage.setItem(THEME_CACHE_KEY, themeCachePayload(mode, accent));
-    } catch {
-      // private mode — the cache just doesn't persist
-    }
-    updateThemeColorMeta(dark);
-  },
-
-  installSystemThemeTracking: () => {
-    if (typeof window === "undefined" || systemTrackingInstalled) return;
-    systemTrackingInstalled = true;
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    media.addEventListener("change", () => {
-      // Explicit light/dark are user intent — never OS-followed; system
-      // mode re-resolves (and re-applies) whenever the OS flips.
-      if (useThemeStore.getState().mode === "system") {
-        useThemeStore.getState().applyToDocument();
-      }
+      ticket: get().ticket.map((l) =>
+        l.product.id === productId ? { ...l, qty } : l,
+      ),
     });
   },
-
-  clearThemeCache: () => {
-    try {
-      window.localStorage.removeItem(THEME_CACHE_KEY);
-    } catch {
-      // ignore
-    }
+  ticketRemove: (productId) =>
+    set({ ticket: get().ticket.filter((l) => l.product.id !== productId) }),
+  ticketClear: () => set({ ticket: [] }),
+  loadCollections: async (keys) => {
+    const results = await Promise.allSettled(
+      keys.map((key) => FETCHERS[key]()),
+    );
+    const patch: Partial<PosStore> = {};
+    const loadedPatch: Partial<Record<LoadedKey, boolean>> = {};
+    results.forEach((result, index) => {
+      const key = keys[index];
+      if (result.status !== "fulfilled") return;
+      if (key === "settings") patch.settings = result.value as StoreSettings;
+      else (patch as Record<string, unknown>)[key] = result.value;
+      loadedPatch[key] = true;
+    });
+    const nextState: Partial<PosStore> = {
+      ...patch,
+      loaded: { ...get().loaded, ...loadedPatch } as Record<LoadedKey, boolean>,
+    };
+    if (patch.shifts) nextState.activeShift = pickActiveShift(patch.shifts);
+    set(nextState as PosStore);
   },
+  loadAll: async () => {
+    await get().loadCollections([
+      "products",
+      "categories",
+      "registers",
+      "cashiers",
+      "shifts",
+      "sales",
+      "settings",
+    ]);
+  },
+  setActiveShiftFrom: (shifts) =>
+    set({ shifts, activeShift: pickActiveShift(shifts) }),
+  reset: () => set({ ...EMPTY, ticket: [], activeShift: null }),
 }));
+
+// ---- logout -------------------------------------------------------------------
+
+/** Full-reload logout: the login page re-defaults the chrome from scratch. */
+export async function logout(): Promise<void> {
+  try {
+    await apiSend("POST", "/api/auth/logout");
+  } catch (err: unknown) {
+    if (!(err instanceof ApiError)) throw err;
+    // The cookie may already be gone — clearing locally is still the goal.
+  }
+  usePosStore.getState().reset();
+  window.location.replace("/login");
+}

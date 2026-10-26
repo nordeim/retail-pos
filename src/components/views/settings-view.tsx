@@ -1,48 +1,17 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// SettingsView — the five reference tabs (Appearance / Profile / Subjects /
-// Holidays / Notifications) plus the documented supersets on the Profile tab
-// (S26 Email address → S24 Change password → S25 Danger zone, additive cards
-// BELOW the pinned S17 surfaces). Every write rides /api/settings/preferences
-// or the auth-rotation endpoints; the theme store applies + persists locally.
+// The Ajustes view (/StoreSettings): Información del Negocio,
+// Personalización (the two color pickers write the runtime accent vars —
+// the theme IS the store settings), Ticket/Recibo footer, Proveedor de
+// Pagos, Categorías de Producto, Guardar Cambios.
 // ---------------------------------------------------------------------------
 
 import * as React from "react";
-import {
-  Monitor,
-  Moon,
-  Pencil,
-  Plus,
-  Save,
-  Settings as SettingsIcon,
-  Sun,
-  Trash2,
-  Bell,
-  BookOpen,
-  Calendar,
-  Palette,
-  User,
-} from "lucide-react";
+import { Store, Palette, ReceiptText, CreditCard, Tags, Plus, X } from "lucide-react";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { PageHeading, SectionCard } from "@/components/pos/shared";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -52,1118 +21,327 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/toast";
-import { apiGet, apiSend } from "@/lib/api";
-import { mutations, useDataStore, type HolidayRow, type SubjectRow } from "@/lib/data";
-import { formatLongDate } from "@/lib/date";
-import { ACCENTS, ACCENT_TOKENS, AVATAR_EMOJIS, type Accent, type ThemeMode } from "@/lib/theme";
-import type { AppUser } from "@/lib/store";
-import { useThemeStore } from "@/lib/store";
-import { Spinner, ViewHeader } from "@/components/views/shared";
-import { cn } from "@/lib/utils";
+import { apiSend, ApiError } from "@/lib/api";
+import { usePosStore } from "@/lib/store";
+import { CARD_PROVIDERS, CURRENCIES } from "@/lib/validation";
 
-const GRADE_LEVELS = [
-  "6th Grade",
-  "7th Grade",
-  "8th Grade",
-  "9th Grade",
-  "10th Grade",
-  "11th Grade",
-  "12th Grade",
-  "College Freshman",
-  "College Sophomore",
-  "College Junior",
-  "College Senior",
-  "Graduate",
-];
-
-const SUBJECT_COLORS = [
-  "#8b5cf6",
-  "#3b82f6",
-  "#10b981",
-  "#f59e0b",
-  "#ec4899",
-  "#ef4444",
-  "#14b8a6",
-  "#6366f1",
-];
-
-function errorMessage(err: unknown, fallback: string): string {
-  return err instanceof Error && err.message ? err.message : fallback;
-}
-
-function isEmailShape(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-async function patchPreferences(patch: Record<string, unknown>): Promise<void> {
-  await apiSend("PATCH", "/api/settings/preferences", patch);
-}
-
-function InlineError({ message }: { message: string | null }) {
-  if (!message) return null;
-  return (
-    <p role="alert" className="text-sm text-red-600 dark:text-red-400">
-      {message}
-    </p>
-  );
-}
-
-function InlineStatus({ message }: { message: string | null }) {
-  if (!message) return null;
-  return (
-    <p role="status" className="text-sm text-emerald-600 dark:text-emerald-400">
-      {message}
-    </p>
-  );
-}
-
-// ---- APPEARANCE (S11-7, the s69 re-measure) ----------------------------------------
-// The reference's Appearance tab is ONE shadcn card (max-w-4xl centered)
-// containing the Theme / Accent Color / Avatar sections and a Save
-// Preferences gradient button — not the three sf-cards the S11-era build
-// shipped. The pickers keep their immediate-PATCH behavior (the
-// settings-roundtrip contract); Save re-PATCHes the current triple.
-
-function AppearanceCard() {
-  const mode = useThemeStore((s) => s.mode);
-  const setMode = useThemeStore((s) => s.setMode);
-  const accent = useThemeStore((s) => s.accent);
-  const setAccent = useThemeStore((s) => s.setAccent);
-  const avatar = useThemeStore((s) => s.avatar);
-  const setAvatar = useThemeStore((s) => s.setAvatar);
-  const { toast } = useToast();
-
-  const options: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
-    { value: "light", label: "Light", icon: Sun },
-    { value: "dark", label: "Dark", icon: Moon },
-    { value: "system", label: "System", icon: Monitor },
-  ];
-
-  const pickTheme = (next: ThemeMode) => {
-    setMode(next);
-    patchPreferences({ themeMode: next }).catch((err: unknown) =>
-      toast.error(errorMessage(err, "Could not save the theme preference.")),
-    );
-  };
-
-  const pickAccent = (next: Accent) => {
-    setAccent(next);
-    patchPreferences({ accentColor: next }).catch((err: unknown) =>
-      toast.error(errorMessage(err, "Could not save the accent color.")),
-    );
-  };
-
-  const pickAvatar = (emoji: string) => {
-    setAvatar(emoji);
-    patchPreferences({ avatarEmoji: emoji }).catch((err: unknown) =>
-      toast.error(errorMessage(err, "Could not save the avatar.")),
-    );
-  };
-
-  const saveAll = () => {
-    patchPreferences({ themeMode: mode, accentColor: accent, avatarEmoji: avatar })
-      .then(() => toast.success("Preferences saved."))
-      .catch((err: unknown) =>
-        toast.error(errorMessage(err, "Could not save your preferences.")),
-      );
-  };
-
-  return (
-    <div className="mx-auto w-full max-w-4xl rounded-xl border bg-card text-card-foreground shadow dark:bg-card">
-      <div className="p-6">
-        <h2 className="text-base font-semibold tracking-tight text-foreground">Appearance</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Customize how StudyFlow looks</p>
-      </div>
-      <div className="px-6 pb-6">
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Theme</p>
-        <div className="mt-3 flex gap-2">
-          {options.map(({ value, label, icon: Icon }) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={mode === value}
-              onClick={() => pickTheme(value)}
-              className={cn(
-                "flex h-[88px] flex-1 flex-col items-center justify-center gap-2 rounded-xl border-2 p-4 text-sm font-medium transition-colors",
-                mode === value
-                  ? "sf-selected-tint border-sf-primary text-white dark:text-slate-100"
-                  : "border-slate-200 bg-transparent text-foreground hover:bg-accent dark:border-slate-700",
-              )}
-            >
-              <Icon className="size-6" strokeWidth={2} aria-hidden />
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <p className="mt-9 text-sm font-medium text-slate-700 dark:text-slate-300">Accent Color</p>
-        <div className="mt-3 flex flex-wrap gap-3">
-          {ACCENTS.map((a) => (
-            <button
-              key={a}
-              type="button"
-              aria-label={`${a.charAt(0).toUpperCase()}${a.slice(1)} accent`}
-              aria-pressed={accent === a}
-              onClick={() => pickAccent(a)}
-              className={cn(
-                "size-12 rounded-xl transition-shadow",
-                accent === a ? "ring-2 ring-sf-primary ring-offset-2 ring-offset-background" : "hover:scale-110",
-              )}
-              style={{ backgroundColor: `rgb(${ACCENT_TOKENS[a].primary})` }}
-            />
-          ))}
-        </div>
-
-        <p className="mt-9 text-sm font-medium text-slate-700 dark:text-slate-300">Avatar</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {AVATAR_EMOJIS.map((emoji) => (
-            <button
-              key={emoji}
-              type="button"
-              aria-label={`Choose avatar ${emoji}`}
-              aria-pressed={avatar === emoji}
-              onClick={() => pickAvatar(emoji)}
-              className={cn(
-                "flex size-12 items-center justify-center rounded-xl text-xl transition-colors",
-                avatar === emoji
-                  // sf-chip-dark: the dark-mode wash is rgb(76 29 149 / .3) —
-                  // the S11-2..5 pin polls it (the light value violet-100 is
-                  // the reference's measured active fill).
-                  ? "sf-chip-dark bg-sf-primary-soft"
-                  : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700",
-              )}
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
-
-        <Button variant="gradient" className="sf-gradient-shadow mt-6 self-start" onClick={saveAll}>
-          <Save className="size-4" strokeWidth={2} aria-hidden /> Save Preferences
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// ---- PROFILE ----------------------------------------------------------------------
-
-function DisplayNameCard({ user }: { user: AppUser | null }) {
-  const { toast } = useToast();
-  const userName = useThemeStore((s) => s.userName);
-  const setUserName = useThemeStore((s) => s.setUserName);
-  // State initializes from the hydrated user (parent key-remounts on user
-  // arrival — no populate-on-hydrate effect).
-  const [value, setValue] = React.useState(userName || user?.name || "");
-  const [error, setError] = React.useState<string | null>(null);
-  const [saving, setSaving] = React.useState(false);
-
-  const save = async () => {
-    setError(null);
-    if (value.trim() === "") {
-      setError("Your display name cannot be empty.");
-      return;
-    }
-    setSaving(true);
-    try {
-      const trimmed = value.trim();
-      await patchPreferences({ displayName: trimmed });
-      setUserName(trimmed);
-      toast.success("Display name updated");
-    } catch (err: unknown) {
-      setError(errorMessage(err, "Could not update the display name."));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <section className="sf-card p-6">
-      <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Display name</h2>
-      <div className="mt-4 flex flex-col gap-3">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="display-name">Name</Label>
-          <Input
-            id="display-name"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Your name"
-          />
-        </div>
-        <InlineError message={error} />
-        <Button variant="gradient" className="sf-gradient-shadow self-start" onClick={() => void save()} disabled={saving}>
-          {saving ? <Spinner className="size-4" /> : null} Save name
-        </Button>
-      </div>
-    </section>
-  );
-}
-
-function StudyProfileCard({ user, onRefreshed }: { user: AppUser | null; onRefreshed: (u: AppUser) => void }) {
-  const { toast } = useToast();
-  // State initializes from the hydrated user (parent key-remounts on user
-  // arrival — no populate-on-hydrate effect).
-  const [school, setSchool] = React.useState(user?.schoolName ?? "");
-  const [grade, setGrade] = React.useState<string>(user?.gradeLevel || "none");
-  const [goal, setGoal] = React.useState(user && user.studyGoalHours > 0 ? user.studyGoalHours : 4);
-  const [saving, setSaving] = React.useState(false);
-
-  const save = async () => {
-    if (!user) return;
-    setSaving(true);
-    try {
-      const response = await apiSend<{ ok: true; user: AppUser }>("PATCH", "/api/settings/preferences", {
-        schoolName: school.trim(),
-        gradeLevel: grade === "none" ? undefined : grade,
-        studyGoalHours: goal,
-      });
-      onRefreshed(response.user);
-      toast.success("Study profile saved");
-    } catch (err: unknown) {
-      toast.error(errorMessage(err, "Could not save the study profile."));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <section className="sf-card p-6">
-      <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Study profile</h2>
-      <div className="mt-4 flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="school-name">School name</Label>
-          <Input
-            id="school-name"
-            value={school}
-            onChange={(e) => setSchool(e.target.value)}
-            placeholder="Your school..."
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="grade-level">Grade level</Label>
-          <Select value={grade} onValueChange={setGrade}>
-            <SelectTrigger id="grade-level" aria-label="Grade level">
-              <SelectValue placeholder="Choose a grade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Not set</SelectItem>
-              {GRADE_LEVELS.map((level) => (
-                <SelectItem key={level} value={level}>
-                  {level}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="study-goal">Daily study goal</Label>
-          <div className="flex items-center gap-4">
-            <Slider
-              id="study-goal"
-              min={1}
-              max={12}
-              step={1}
-              value={[goal]}
-              onValueChange={(values) => setGoal(values[0] ?? goal)}
-              className="flex-1"
-              aria-label="Daily study goal in hours"
-            />
-            <span className="whitespace-nowrap text-right text-sm font-medium text-slate-600 dark:text-slate-300">
-              Daily Study Goal: {goal} {goal === 1 ? "hour" : "hours"}
-            </span>
-          </div>
-        </div>
-        <Button variant="gradient" className="sf-gradient-shadow self-start" onClick={() => void save()} disabled={saving || !user}>
-          {saving ? <Spinner className="size-4" /> : null} Save profile
-        </Button>
-      </div>
-    </section>
-  );
-}
-
-function EmailCard({ user, onEmailChanged }: { user: AppUser | null; onEmailChanged: (u: AppUser) => void }) {
-  const { toast } = useToast();
-  const setEmail = useThemeStore((s) => s.setEmail);
-  const [newEmail, setNewEmail] = React.useState("");
-  const [confirmEmail, setConfirmEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [error, setError] = React.useState<string | null>(null);
-  const [success, setSuccess] = React.useState<string | null>(null);
-  const [busy, setBusy] = React.useState(false);
-
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError(null);
-    setSuccess(null);
-    if (!newEmail.trim() || !confirmEmail.trim() || !password) {
-      setError("Fill in every field to change your email.");
-      return;
-    }
-    if (!isEmailShape(newEmail.trim())) {
-      setError("Enter a valid email address.");
-      return;
-    }
-    if (newEmail.trim().toLowerCase() !== confirmEmail.trim().toLowerCase()) {
-      setError("The email addresses do not match.");
-      return;
-    }
-    if (password.length < 8) {
-      setError("Your password must be at least 8 characters.");
-      return;
-    }
-    setBusy(true);
-    try {
-      const response = await apiSend<{ ok: true; email: string; user: AppUser }>(
-        "POST",
-        "/api/auth/change-email",
-        { password, newEmail: newEmail.trim(), confirmEmail: confirmEmail.trim() },
-      );
-      setSuccess("Email address updated.");
-      setNewEmail("");
-      setConfirmEmail("");
-      setPassword("");
-      setEmail(response.email);
-      onEmailChanged(response.user);
-      toast.success("Email address updated");
-    } catch (err: unknown) {
-      setError(errorMessage(err, "Could not change the email address."));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <section aria-label="Email address" className="sf-card p-6">
-      <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Email address</h2>
-      <div className="mt-1 text-sm text-slate-500">
-        Update the address you use to sign in. Currently{" "}
-        <span className="font-medium text-slate-700 dark:text-slate-200">{user?.email ?? "…"}</span>.
-      </div>
-      <form className="mt-4 flex flex-col gap-3" onSubmit={(e) => void submit(e)}>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="new-email">New email</Label>
-          <Input
-            id="new-email"
-            type="email"
-            autoComplete="email"
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="confirm-email">Confirm new email</Label>
-          <Input
-            id="confirm-email"
-            type="email"
-            autoComplete="email"
-            value={confirmEmail}
-            onChange={(e) => setConfirmEmail(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email-password">Current password</Label>
-          <Input
-            id="email-password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <InlineError message={error} />
-        <InlineStatus message={success} />
-        <Button type="submit" variant="gradient" className="sf-gradient-shadow self-start" disabled={busy}>
-          {busy ? <Spinner className="size-4" /> : null} Update email address
-        </Button>
-      </form>
-    </section>
-  );
-}
-
-function PasswordCard() {
-  const [current, setCurrent] = React.useState("");
-  const [next, setNext] = React.useState("");
-  const [confirm, setConfirm] = React.useState("");
-  const [error, setError] = React.useState<string | null>(null);
-  const [success, setSuccess] = React.useState<string | null>(null);
-  const [busy, setBusy] = React.useState(false);
-
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError(null);
-    setSuccess(null);
-    if (!current || !next || !confirm) {
-      setError("Fill in every field to change your password.");
-      return;
-    }
-    if (next.length < 8) {
-      setError("The new password must be at least 8 characters.");
-      return;
-    }
-    if (next !== confirm) {
-      setError("The new passwords do not match.");
-      return;
-    }
-    if (next === current) {
-      setError("The new password must be different from your current password.");
-      return;
-    }
-    setBusy(true);
-    try {
-      await apiSend("POST", "/api/auth/change-password", { currentPassword: current, newPassword: next });
-      setSuccess("Password updated — your session continues as usual.");
-      setCurrent("");
-      setNext("");
-      setConfirm("");
-    } catch (err: unknown) {
-      setError(errorMessage(err, "Could not change the password."));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <section aria-label="Change password" className="sf-card p-6">
-      <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Change password</h2>
-      <form className="mt-4 flex flex-col gap-3" onSubmit={(e) => void submit(e)}>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="current-password">Current password</Label>
-          <Input
-            id="current-password"
-            type="password"
-            autoComplete="current-password"
-            value={current}
-            onChange={(e) => setCurrent(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="next-password">New password</Label>
-          <Input
-            id="next-password"
-            type="password"
-            autoComplete="new-password"
-            value={next}
-            onChange={(e) => setNext(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="confirm-password">Confirm new password</Label>
-          <Input
-            id="confirm-password"
-            type="password"
-            autoComplete="new-password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-          />
-        </div>
-        <InlineError message={error} />
-        <InlineStatus message={success} />
-        <Button type="submit" variant="gradient" className="sf-gradient-shadow self-start" disabled={busy}>
-          {busy ? <Spinner className="size-4" /> : null} Update password
-        </Button>
-      </form>
-    </section>
-  );
-}
-
-function DangerZoneCard() {
-  const clearThemeCache = useThemeStore((s) => s.clearThemeCache);
-  const [revealed, setRevealed] = React.useState(false);
-  const [password, setPassword] = React.useState("");
-  const [confirmation, setConfirmation] = React.useState("");
-  const [error, setError] = React.useState<string | null>(null);
-  const [busy, setBusy] = React.useState(false);
-
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError(null);
-    if (password.length < 8) {
-      setError("Your password must be at least 8 characters.");
-      return;
-    }
-    if (confirmation !== "DELETE") {
-      setError("Type DELETE to confirm.");
-      return;
-    }
-    setBusy(true);
-    try {
-      await apiSend("POST", "/api/auth/delete-account", { password, confirmation });
-      // The redirect IS the feedback — no success note (S25).
-      clearThemeCache();
-      window.location.replace("/login");
-    } catch (err: unknown) {
-      setError(errorMessage(err, "Could not delete the account."));
-      setBusy(false);
-    }
-  };
-
-  return (
-    <section aria-label="Danger zone" className="sf-card border-red-200 p-6 dark:border-red-900">
-      <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">Danger zone</h2>
-      <p className="mt-1 text-sm text-slate-500">
-        Permanently delete your account and every study record in it. Consider downloading a backup
-        from the export page first.
-      </p>
-      {!revealed ? (
-        <Button variant="destructive" className="mt-4 self-start" onClick={() => setRevealed(true)}>
-          Delete account…
-        </Button>
-      ) : (
-        <form className="mt-4 flex flex-col gap-3" onSubmit={(e) => void submit(e)}>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="delete-password">Password</Label>
-            <Input
-              id="delete-password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="delete-confirmation">Confirmation</Label>
-            <Input
-              id="delete-confirmation"
-              value={confirmation}
-              onChange={(e) => setConfirmation(e.target.value)}
-              placeholder="Type DELETE"
-            />
-          </div>
-          <InlineError message={error} />
-          <div className="flex items-center gap-2">
-            <Button type="submit" variant="destructive" disabled={busy}>
-              {busy ? <Spinner className="size-4" /> : null} Permanently delete my account
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setRevealed(false);
-                setPassword("");
-                setConfirmation("");
-                setError(null);
-              }}
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
-      )}
-    </section>
-  );
-}
-
-// ---- SUBJECTS -----------------------------------------------------------------------
-
-function SubjectDialog({
-  open,
-  onOpenChange,
-  subject,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  subject: SubjectRow | null;
-}) {
-  const { toast } = useToast();
-  // State initializes from props per open session (parent key-remount).
-  const [name, setName] = React.useState(subject?.name ?? "");
-  const [color, setColor] = React.useState(subject?.color ?? SUBJECT_COLORS[0]);
-  const [saving, setSaving] = React.useState(false);
-
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!name.trim() || saving) return;
-    setSaving(true);
-    try {
-      if (subject) {
-        await mutations.updateSubject(subject.id, { name: name.trim(), color });
-        toast.success("Subject updated");
-      } else {
-        await mutations.createSubject({ name: name.trim(), color });
-        toast.success("Subject created");
-      }
-      onOpenChange(false);
-    } catch (err: unknown) {
-      toast.error(errorMessage(err, "Could not save the subject."));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{subject ? "Edit Subject" : "Add Subject"}</DialogTitle>
-        </DialogHeader>
-        <form className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="subject-name">Name</Label>
-            <Input
-              id="subject-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Biology"
-              required
-              autoFocus
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>Color</Label>
-            <div className="flex flex-wrap items-center gap-2">
-              {SUBJECT_COLORS.map((hex) => (
-                <button
-                  key={hex}
-                  type="button"
-                  aria-label={`Color ${hex}`}
-                  aria-pressed={color === hex}
-                  onClick={() => setColor(hex)}
-                  className={cn(
-                    "size-7 rounded-full",
-                    color === hex ? "ring-2 ring-sf-primary ring-offset-2 ring-offset-background" : "",
-                  )}
-                  style={{ backgroundColor: hex }}
-                />
-              ))}
-              <label className="flex items-center gap-2 text-sm text-slate-500">
-                Custom
-                <input
-                  type="color"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  aria-label="Custom subject color"
-                  className="h-7 w-9 cursor-pointer rounded border border-input bg-transparent"
-                />
-              </label>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="gradient" disabled={saving}>
-              {saving ? <Spinner className="size-4" /> : null}
-              {subject ? "Save changes" : "Add Subject"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function SubjectsTab() {
-  const { toast } = useToast();
-  const subjects = useDataStore((s) => s.subjects);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [editing, setEditing] = React.useState<SubjectRow | null>(null);
-  const [deleting, setDeleting] = React.useState<SubjectRow | null>(null);
-
-  return (
-    <section className="sf-card p-6">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Subjects</h2>
-        <Button
-          variant="gradient"
-          size="sm"
-          className="sf-gradient-shadow"
-          onClick={() => {
-            setEditing(null);
-            setDialogOpen(true);
-          }}
-        >
-          <Plus className="size-4" strokeWidth={2} /> Add Subject
-        </Button>
-      </div>
-      <p className="mt-1 text-sm text-slate-500">Manage your subjects and classes</p>
-      {subjects.length === 0 ? (
-        <p className="py-8 text-center text-sm text-slate-500">
-          No subjects yet. Add your first subject to get started!
-        </p>
-      ) : (
-        <ul className="mt-4 flex flex-col gap-2">
-          {subjects.map((subject) => (
-            <li
-              key={subject.id}
-              className="flex items-center gap-3 rounded-xl border border-slate-100 p-3 dark:border-slate-800"
-            >
-              <span aria-hidden className="size-3 rounded-full" style={{ backgroundColor: subject.color }} />
-              <span className="flex-1 font-medium text-slate-700 dark:text-slate-200">{subject.name}</span>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  aria-label={`Edit ${subject.name}`}
-                  onClick={() => {
-                    setEditing(subject);
-                    setDialogOpen(true);
-                  }}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-sf-primary dark:hover:bg-slate-800"
-                >
-                  <Pencil className="size-4" strokeWidth={2} />
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Delete ${subject.name}`}
-                  onClick={() => setDeleting(subject)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
-                >
-                  <Trash2 className="size-4" strokeWidth={2} />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <SubjectDialog
-        key={dialogOpen ? `open-${editing?.id ?? "new"}` : "closed"}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        subject={editing}
-      />
-
-      <AlertDialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this subject?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleting?.name} will be removed and every task, exam, and note in it becomes
-              unassigned. This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 text-white hover:bg-red-700"
-              onClick={() => {
-                if (!deleting) return;
-                const target = deleting;
-                setDeleting(null);
-                mutations
-                  .deleteSubject(target.id)
-                  .catch((err: unknown) => toast.error(errorMessage(err, "Could not delete the subject.")));
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </section>
-  );
-}
-
-// ---- HOLIDAYS -------------------------------------------------------------------------
-
-function HolidayDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const { toast } = useToast();
-  const [name, setName] = React.useState("");
-  const [date, setDate] = React.useState("");
-  const [saving, setSaving] = React.useState(false);
-
-  // Plain initializers — the parent key-remounts per open session, so the
-  // form always starts empty without a reset-on-close effect.
-
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!name.trim() || !date || saving) return;
-    setSaving(true);
-    try {
-      await mutations.createHoliday({ name: name.trim(), date: new Date(`${date}T12:00:00`).toISOString() });
-      toast.success("Holiday added");
-      onOpenChange(false);
-    } catch (err: unknown) {
-      toast.error(errorMessage(err, "Could not add the holiday."));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add Holiday</DialogTitle>
-        </DialogHeader>
-        <form className="flex flex-col gap-4" onSubmit={(e) => void submit(e)}>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="holiday-name">Name</Label>
-            <Input
-              id="holiday-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Spring break"
-              required
-              autoFocus
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="holiday-date">Date</Label>
-            <Input
-              id="holiday-date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="gradient" disabled={saving}>
-              {saving ? <Spinner className="size-4" /> : null} Add Holiday
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function HolidaysTab() {
-  const { toast } = useToast();
-  const holidays = useDataStore((s) => s.holidays);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-
-  const sorted = [...holidays].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
-
-  const remove = (holiday: HolidayRow) => {
-    mutations
-      .deleteHoliday(holiday.id)
-      .then(() => toast.success("Holiday removed"))
-      .catch((err: unknown) => toast.error(errorMessage(err, "Could not delete the holiday.")));
-  };
-
-  return (
-    <section className="sf-card p-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Holidays &amp; Breaks</h2>
-          <p className="mt-1 text-sm text-slate-500">Set your school holidays and breaks</p>
-        </div>
-        <Button variant="gradient" size="sm" className="sf-gradient-shadow" onClick={() => setDialogOpen(true)}>
-          <Plus className="size-4" strokeWidth={2} /> Add Holiday
-        </Button>
-      </div>
-      {sorted.length === 0 ? (
-        <p className="py-8 text-center text-sm text-slate-500">
-          No holidays set. Add your school holidays!
-        </p>
-      ) : (
-        <ul className="mt-4 flex flex-col gap-2">
-          {sorted.map((holiday) => (
-            <li
-              key={holiday.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 p-3 dark:border-slate-800"
-            >
-              <div>
-                <p className="font-medium text-slate-700 dark:text-slate-200">{holiday.name}</p>
-                <p className="text-xs text-slate-500">{formatLongDate(new Date(holiday.date))}</p>
-              </div>
-              <button
-                type="button"
-                aria-label={`Delete ${holiday.name}`}
-                onClick={() => remove(holiday)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
-              >
-                <Trash2 className="size-4" strokeWidth={2} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <HolidayDialog
-        key={dialogOpen ? "open" : "closed"}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
-    </section>
-  );
-}
-
-// ---- NOTIFICATIONS ---------------------------------------------------------------------
-
-function NotificationsTab({ user, onRefreshed }: { user: AppUser | null; onRefreshed: (u: AppUser) => void }) {
-  const { toast } = useToast();
-  // Initialized from the server snapshot; the parent remounts this card via
-  // key= when the user record loads/changes, so no resync effect is needed.
-  const [enabled, setEnabled] = React.useState(user?.notificationsEnabled ?? false);
-  const [saving, setSaving] = React.useState(false);
-
-  const save = () => {
-    setSaving(true);
-    apiSend<{ ok: true; user: AppUser }>("PATCH", "/api/settings/preferences", { notificationsEnabled: enabled })
-      .then((response) => {
-        onRefreshed(response.user);
-        toast.success("Preferences saved.");
-      })
-      .catch((err: unknown) => toast.error(errorMessage(err, "Could not save your preferences.")))
-      .finally(() => setSaving(false));
-  };
-
-  return (
-    <section className="sf-card p-6">
-      <p className="text-sm text-slate-500 dark:text-slate-400">Manage your notification preferences</p>
-      <div className="mt-4 flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Enable Notifications</h2>
-          <p className="mt-1 text-sm text-slate-500">Receive reminders for tasks and assignments</p>
-        </div>
-        <Switch checked={enabled} onCheckedChange={setEnabled} aria-label="Enable Notifications" />
-      </div>
-      <Button variant="gradient" className="sf-gradient-shadow mt-6 self-start" onClick={save} disabled={saving}>
-        {saving ? <Spinner className="size-4" /> : null} Save Preferences
-      </Button>
-      <p className="mt-6 text-sm text-slate-400 dark:text-slate-500">
-        More notification settings arrive with the mobile companion.
-      </p>
-    </section>
-  );
-}
-
-// ---- the view ----------------------------------------------------------------------
+const DEFAULTS = {
+  name: "",
+  address: "",
+  phone: "",
+  email: "",
+  fiscalId: "",
+  currency: "MXN - Peso Mexicano",
+  primaryColor: "#6366f1",
+  secondaryColor: "#8b5cf6",
+  ticketFooter: "",
+  cardProvider: "Ninguno",
+};
 
 export function SettingsView() {
-  const [user, setUser] = React.useState<AppUser | null>(null);
+  const settings = usePosStore((s) => s.settings);
+  const loadCollections = usePosStore((s) => s.loadCollections);
 
   React.useEffect(() => {
-    let cancelled = false;
-    apiGet<{ user: AppUser }>("/api/auth/me")
-      .then((response) => {
-        if (!cancelled) setUser(response.user);
-      })
-      .catch(() => {
-        // the shell's auth gate owns redirecting anonymous visitors
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    void loadCollections(["settings", "categories"]);
+  }, [loadCollections]);
 
-  return (
-    <div className="flex flex-col gap-6">
-      <ViewHeader title="Settings" subtitle="Customize your StudyFlow experience" icon={SettingsIcon} />
-
-      <Tabs defaultValue="appearance">
-        <TabsList
-          aria-label="Settings sections"
-          className="h-auto flex-wrap justify-start gap-1 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-card"
-        >
-          <TabsTrigger value="appearance">
-            <Palette className="size-4" strokeWidth={2} aria-hidden />
-            Appearance
-          </TabsTrigger>
-          <TabsTrigger value="profile">
-            <User className="size-4" strokeWidth={2} aria-hidden />
-            Profile
-          </TabsTrigger>
-          <TabsTrigger value="subjects">
-            <BookOpen className="size-4" strokeWidth={2} aria-hidden />
-            Subjects
-          </TabsTrigger>
-          <TabsTrigger value="holidays">
-            <Calendar className="size-4" strokeWidth={2} aria-hidden />
-            Holidays
-          </TabsTrigger>
-          <TabsTrigger value="notifications">
-            <Bell className="size-4" strokeWidth={2} aria-hidden />
-            Notifications
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="appearance" aria-label="Appearance" className="mt-6">
-          <AppearanceCard />
-        </TabsContent>
-
-        <TabsContent value="profile" aria-label="Profile" className="mt-6">
-          <div className="mx-auto flex max-w-2xl flex-col gap-6">
-            <section className="sf-card p-6">
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Account</h2>
-              <p className="mt-1 text-sm text-slate-500">Your account and study information.</p>
-              <p className="mt-2 text-sm text-slate-500">
-                {user ? (
-                  <>
-                    {user.email} · Member since {formatLongDate(new Date(user.createdAt))}
-                  </>
-                ) : (
-                  "Loading your account…"
-                )}
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                {user ? `Account created: ${formatLongDate(new Date(user.createdAt))}` : "Account created: —"}
-              </p>
-            </section>
-            <DisplayNameCard key={user ? `dn-${user.id}` : "dn-loading"} user={user} />
-            <StudyProfileCard key={user ? `sp-${user.id}` : "sp-loading"} user={user} onRefreshed={setUser} />
-            <SignOutCard />
-            <EmailCard user={user} onEmailChanged={setUser} />
-            <PasswordCard />
-            <DangerZoneCard />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="subjects" aria-label="Subjects" className="mt-6">
-          <div className="mx-auto max-w-2xl">
-            <SubjectsTab />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="holidays" aria-label="Holidays" className="mt-6">
-          <div className="mx-auto max-w-2xl">
-            <HolidaysTab />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="notifications" aria-label="Notifications" className="mt-6">
-          <div className="mx-auto max-w-2xl">
-            <NotificationsTab key={user ? `nt-${user.id}-${user.notificationsEnabled ? "1" : "0"}` : "nt-loading"} user={user} onRefreshed={setUser} />
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+  // The form mounts ONCE per store-load state (key-remount — no
+  // effect-driven state writes; the react-hooks/set-state-in-effect rule).
+  // The key is the loaded/defaults STATE, not the snapshot identity: a save
+  // refreshes the store without remounting, so the "saved" status survives.
+  // The store pre-warms settings before the shell flips ready, so the
+  // loaded branch is the ordinary path; the default branch is the
+  // cold-store fallback only.
+  if (!settings) {
+    return <SettingsForm key="defaults" initial={DEFAULTS} />;
+  }
+  return <SettingsForm key="loaded" initial={settings} />;
 }
 
-// ---------------------------------------------------------------------------
-// Sign out (the reference's Settings → Profile affordance): clears the
-// session server-side + the theme cache client-side, then a FULL reload to
-// /login so the boot script re-defaults the theme.
-// ---------------------------------------------------------------------------
+function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
+  const categories = usePosStore((s) => s.categories);
+  const loadCollections = usePosStore((s) => s.loadCollections);
+  const [form, setForm] = React.useState(initial);
+  const [newCategory, setNewCategory] = React.useState("");
+  const [status, setStatus] = React.useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [error, setError] = React.useState("");
 
-function SignOutCard() {
-  const [busy, setBusy] = React.useState(false);
+  const set = <K extends keyof typeof DEFAULTS>(key: K, value: (typeof DEFAULTS)[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
 
-  const signOut = async () => {
-    if (busy) return;
-    setBusy(true);
+  const save = async () => {
+    setStatus("saving");
+    setError("");
     try {
-      await apiSend("POST", "/api/auth/logout");
-    } catch {
-      // clearing the cookie client-side still ends the session UX
-    } finally {
-      useThemeStore.getState().clearThemeCache();
-      window.location.replace("/login");
+      await apiSend("PATCH", "/api/settings", form);
+      await loadCollections(["settings"]);
+      setStatus("saved");
+      window.setTimeout(() => setStatus("idle"), 2500);
+    } catch (err: unknown) {
+      setStatus("error");
+      setError(err instanceof ApiError ? err.message : "No se pudo guardar.");
+    }
+  };
+
+  const addCategory = async () => {
+    const name = newCategory.trim();
+    if (!name) return;
+    try {
+      await apiSend("POST", "/api/categories", { name });
+      setNewCategory("");
+      await loadCollections(["categories"]);
+    } catch (err: unknown) {
+      setError(err instanceof ApiError ? err.message : "No se pudo agregar la categoría.");
+    }
+  };
+
+  const removeCategory = async (id: string) => {
+    try {
+      await apiSend("DELETE", `/api/categories/${id}`);
+      await loadCollections(["categories"]);
+    } catch (err: unknown) {
+      void err;
     }
   };
 
   return (
-    <section className="sf-card flex items-center justify-between gap-4 p-6">
-      <div>
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Session</h2>
-        <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-          Sign out of StudyFlow on this device.
-        </p>
+    <div>
+      <PageHeading title="Ajustes de la Tienda" subtitle="Personaliza tu negocio" />
+
+      <div className="max-w-3xl space-y-6">
+        <SectionCard
+          title="Información del Negocio"
+          icon={<Store className="h-4.5 w-4.5 text-violet-400" />}
+          testId="settings-business-card"
+        >
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="settings-name" className="text-slate-200">Nombre de la tienda *</Label>
+              <Input
+                id="settings-name"
+                value={form.name}
+                onChange={(event) => set("name", event.target.value)}
+                data-testid="settings-name-input"
+                className="mt-1.5 bg-[#0d0f1a]"
+              />
+            </div>
+            <div>
+              <Label htmlFor="settings-logo" className="text-slate-200">Logotipo</Label>
+              <Input
+                id="settings-logo"
+                type="file"
+                accept="image/*"
+                className="mt-1.5 max-w-xs bg-[#0d0f1a] text-slate-400"
+              />
+            </div>
+            <div>
+              <Label htmlFor="settings-address" className="text-slate-200">Dirección</Label>
+              <Input
+                id="settings-address"
+                value={form.address}
+                onChange={(event) => set("address", event.target.value)}
+                className="mt-1.5 bg-[#0d0f1a]"
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="settings-phone" className="text-slate-200">Teléfono</Label>
+                <Input
+                  id="settings-phone"
+                  value={form.phone}
+                  onChange={(event) => set("phone", event.target.value)}
+                  className="mt-1.5 bg-[#0d0f1a]"
+                />
+              </div>
+              <div>
+                <Label htmlFor="settings-email" className="text-slate-200">Email</Label>
+                <Input
+                  id="settings-email"
+                  type="email"
+                  value={form.email}
+                  onChange={(event) => set("email", event.target.value)}
+                  className="mt-1.5 bg-[#0d0f1a]"
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="settings-fiscal" className="text-slate-200">RFC / ID Fiscal</Label>
+                <Input
+                  id="settings-fiscal"
+                  value={form.fiscalId}
+                  onChange={(event) => set("fiscalId", event.target.value)}
+                  className="mt-1.5 bg-[#0d0f1a]"
+                />
+              </div>
+              <div>
+                <Label className="text-slate-200">Moneda</Label>
+                <Select value={form.currency} onValueChange={(value) => set("currency", value)}>
+                  <SelectTrigger className="mt-1.5 w-full bg-[#0d0f1a]" data-testid="settings-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
+                    {CURRENCIES.map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        {currency}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          title="Personalización"
+          icon={<Palette className="h-4.5 w-4.5 text-violet-400" />}
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="settings-primary" className="text-slate-200">Color primario</Label>
+              <div className="mt-1.5 flex items-center gap-3">
+                <input
+                  id="settings-primary"
+                  type="color"
+                  value={form.primaryColor}
+                  onChange={(event) => set("primaryColor", event.target.value)}
+                  data-testid="settings-primary-color"
+                  className="h-10 w-14 cursor-pointer rounded-lg border border-[#262a36] bg-transparent"
+                />
+                <span className="text-sm text-slate-400">{form.primaryColor}</span>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="settings-secondary" className="text-slate-200">Color secundario</Label>
+              <div className="mt-1.5 flex items-center gap-3">
+                <input
+                  id="settings-secondary"
+                  type="color"
+                  value={form.secondaryColor}
+                  onChange={(event) => set("secondaryColor", event.target.value)}
+                  data-testid="settings-secondary-color"
+                  className="h-10 w-14 cursor-pointer rounded-lg border border-[#262a36] bg-transparent"
+                />
+                <span className="text-sm text-slate-400">{form.secondaryColor}</span>
+              </div>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            Los colores tiñen la barra lateral y los botones principales al guardar.
+          </p>
+        </SectionCard>
+
+        <SectionCard
+          title="Ticket / Recibo"
+          icon={<ReceiptText className="h-4.5 w-4.5 text-violet-400" />}
+        >
+          <div>
+            <Label htmlFor="settings-footer" className="text-slate-200">Pie del ticket</Label>
+            <textarea
+              id="settings-footer"
+              value={form.ticketFooter}
+              onChange={(event) => set("ticketFooter", event.target.value)}
+              rows={3}
+              className="mt-1.5 w-full rounded-xl border border-[#262a36] bg-[#0d0f1a] px-3 py-2.5 text-sm text-slate-100 outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/45"
+              placeholder="¡Gracias por su compra!"
+            />
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          title="Proveedor de Pagos con Tarjeta"
+          icon={<CreditCard className="h-4.5 w-4.5 text-violet-400" />}
+        >
+          <div>
+            <Label className="text-slate-200">Proveedor</Label>
+            <Select value={form.cardProvider} onValueChange={(value) => set("cardProvider", value)}>
+              <SelectTrigger className="mt-1.5 w-full max-w-xs bg-[#0d0f1a]" data-testid="settings-card-provider">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
+                {CARD_PROVIDERS.map((provider) => (
+                  <SelectItem key={provider} value={provider}>
+                    {provider}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          title="Categorías de Producto"
+          icon={<Tags className="h-4.5 w-4.5 text-violet-400" />}
+          testId="settings-categories-card"
+        >
+          <div className="mb-4 flex gap-2">
+            <Input
+              value={newCategory}
+              onChange={(event) => setNewCategory(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  void addCategory();
+                }
+              }}
+              placeholder="Nueva categoría"
+              data-testid="settings-new-category"
+              className="max-w-xs bg-[#0d0f1a]"
+            />
+            <Button
+              variant="outline"
+              onClick={() => void addCategory()}
+              disabled={newCategory.trim().length === 0}
+              data-testid="settings-add-category"
+              className="border-[#262a36] bg-transparent text-slate-200 hover:bg-white/5 hover:text-white"
+            >
+              <Plus className="h-4 w-4" /> Agregar
+            </Button>
+          </div>
+          <ul className="flex flex-wrap gap-2" data-testid="settings-category-chips">
+            {categories.map((category) => (
+              <li
+                key={category.id}
+                className="flex items-center gap-1.5 rounded-full border border-[#262a36] bg-[#12141f] px-3 py-1.5 text-xs font-semibold text-slate-200"
+              >
+                {category.name}
+                <button
+                  type="button"
+                  aria-label={`Eliminar categoría ${category.name}`}
+                  onClick={() => void removeCategory(category.id)}
+                  className="vx-focus rounded-full p-0.5 text-slate-500 hover:text-red-400"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </SectionCard>
+
+        {error ? (
+          <p role="alert" className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+            {error}
+          </p>
+        ) : null}
+
+        <div className="flex items-center gap-3">
+          <Button
+            data-testid="settings-save"
+            disabled={form.name.trim().length === 0 || status === "saving"}
+            onClick={() => void save()}
+            className="vx-gradient border-0 px-6 text-white"
+          >
+            {status === "saving" ? "Guardando…" : "Guardar Cambios"}
+          </Button>
+          {status === "saved" ? (
+            <p role="status" data-testid="settings-saved" className="text-sm text-emerald-400">
+              Cambios guardados.
+            </p>
+          ) : null}
+        </div>
       </div>
-      <Button type="button" variant="outline" className="h-9" onClick={signOut} disabled={busy}>
-        {busy ? "Signing out…" : "Sign out"}
-      </Button>
-    </section>
+    </div>
   );
 }
