@@ -104,6 +104,9 @@ export const settingsSchema = z.object({
   secondaryColor: hexColor.optional().default("#8b5cf6"),
   ticketFooter: z.string().max(300).optional().default(""),
   cardProvider: z.enum(CARD_PROVIDERS).optional().default("Ninguno"),
+  // V6/F2b: the "Subir logo" control's data-URL storage (src/lib/image.ts
+  // resizes client-side). Same ceiling as imageUrl.
+  logoUrl: z.string().max(600_000).optional().nullable(),
 });
 
 // ---- categories ---------------------------------------------------------------
@@ -114,7 +117,17 @@ export const categorySchema = z.object({
 
 // ---- products -------------------------------------------------------------------
 
-export const UNITS = ["Pieza", "Kilogramo", "Litro", "Paquete", "Servicio"] as const;
+// V6/F1: the reference's six Unidad options (live-probed from its product
+// modal dropdown) plus the clone's own "Servicio" — the documented superset.
+export const UNITS = [
+  "Pieza",
+  "Kilogramo",
+  "Litro",
+  "Metro",
+  "Caja",
+  "Paquete",
+  "Servicio",
+] as const;
 
 export const productCreateSchema = z.object({
   name: z.string().min(1).max(200),
@@ -126,7 +139,10 @@ export const productCreateSchema = z.object({
   minStock: nonNegativeInt.optional().default(5),
   ivaRate: percentInt.optional().default(16),
   unit: z.enum(UNITS).optional().default("Pieza"),
-  imageUrl: z.string().max(500).optional(),
+  // V6/F2: data-URL product photos (canvas-resized client-side to ~30-80KB;
+  // see src/lib/image.ts). 600k chars ≈ a 450KB image — the client guard
+  // rejects anything past 300KB of source bytes anyway.
+  imageUrl: z.string().max(600_000).optional(),
   active: z.boolean().optional().default(true),
 });
 

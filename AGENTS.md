@@ -160,6 +160,36 @@ rules:
     only bright H1 (`PageHeading tone="bright"` → white/90); its summary
     chips are TINTED (15% bg + 30% border + 400-tone icon), while the
     dashboard KPI chips stay gradient (different element families).
+14. Dialog buttons (v6, live-measured): the reference's dialog footer is
+    42px — submit `glass-button-primary h-auto rounded-xl px-4 py-2.5
+    text-sm font-medium` with a VISIBLE `Save` icon; cancel `glass-button
+    h-auto rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700`.
+    The cva Button ships a dedicated EMPTY `glass` variant for this: the
+    glass-button* utilities carry the fill/hairline, so NO other variant
+    (the default's `bg-violet-600 text-white` and the outline's
+    `bg-transparent border` both CLOBBER the flat glass fills — the F6
+    bug). Page-level CTAs stay 36px (`h-9`) — the reference's own page
+    buttons measure 36px. The settings Agregar is the 34px card-action
+    (`glass-button h-auto rounded-lg px-3 py-1.5`).
+15. The document head (v6): title is EXACTLY "VeloxPOS", the reference's
+    description verbatim, the full openGraph + twitter cards
+    (summary_large_image, og:image = the 1200x630 `/og-image.png` render),
+    `appleWebApp { capable, statusBarStyle: "black", title }`, and a
+    WORKING `/manifest.json` (the reference's own manifest link 302s).
+    The tab icon rides the app-router `src/app/icon.png` convention (the
+    VeloxPOS logo — the same asset the reference's favicon serves); the
+    study-app favicon.svg is deleted. Assets regenerate via
+    `scripts/generate-head-assets.py` (repo scripts/).
+16. Media + failures (v6): product photos and the store logo are stored as
+    DATA URLs (`src/lib/image.ts` — canvas resize to 512px, JPEG q0.85,
+    300KB source guard; schema ceiling 600k chars). The Unidad options are
+    the reference's six (Pieza/Kilogramo/Litro/Metro/Caja/Paquete) plus
+    Servicio (superset). Every mutation failure toasts through
+    `useToast().toast.error(...)` — `void err` catches are FORBIDDEN. The
+    Ventas mail action opens a `mailto:` with the full ticket body
+    (`src/lib/ticket-mail.ts` — no SMTP channel, disclosed). UI primitives
+    reference NO class that is absent from globals.css (the sf-* purge is
+    total; the checked Switch fills with the measured `#7f62f4`).
 
 ## The mobile drawer contract
 

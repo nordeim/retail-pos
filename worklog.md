@@ -257,3 +257,64 @@ Stage Summary:
   channel; image upload storage URL-based; donut palette + populated
   legend design unobservable (reference renders empty); terminal product
   grid card design = superset decision (unobservable).
+
+---
+Task ID: V6-FULL
+Agent: general-purpose (session V6, 2026-10-26)
+Task: Full remediation-plan-v6 cycle for retail-pos (audit → plan → TDD
+  execute → ship → push) — the functional-superset completion.
+
+Work Log:
+- Pulled to main @ 67ceea8 (the session-4 log commit); re-read all docs
+  (AGENTS contracts 1-13, CLAUDE, README, PAD v1.3.0, SKILL v1.1.0,
+  session_4, remediation-plan-v5, worklog).
+- Baseline gates green (lint 0 · tsc 0 · 277/277 unit · build ✓ · 83/83
+  e2e) — the v5 close state verified intact.
+- Live audit both apps (fresh named agent-browser session): reference
+  UNCHANGED vs the v5 ledger (shell/tables/badges/inputs/rail/reports all
+  byte-identical); clone mobile drawer contract fully green (288px, 8
+  links, 44px pitch, scroll-lock, focus lifecycle); sidebar collapse
+  identical both sides.
+- Findings (docs/remediation-plan-v6.md, 18-item ledger): UNITS enum
+  missing Metro/Caja; product image input a no-op (void imageFile);
+  settings logo the same; FOUR silent void-err deletes; the Ventas mail
+  button dead (no onClick); dialog buttons 36px vs the reference's 42px
+  (cva h-9) with a hidden Upload icon; sidebar tile missing the violet
+  glow; 3 input fills + 0.00 placeholders (v5 misses); the ENTIRE head
+  suite absent (title/OG/Twitter/apple/manifest/icon — the favicon was an
+  orphaned study-app mark).
+- Mid-execution discoveries: MORE dead sf-* tokens (switch rendered its
+  checked state HOLLOW — live-caused the VLM's "toggle off" note; toast
+  ramps, badge/card/skeleton/progress/checkbox/slider) — F5, purged to
+  real tokens (switch → the measured #7f62f4); the F6 clobber — every
+  glass Button site carried variant="outline"/default whose
+  bg-transparent/bg-violet-600 utilities KILLED the glass fill/hairline
+  → new EMPTY cva `glass` variant + all 21 sites converted; settings
+  logoUrl must be .nullable() (the column boots NULL — caught by the
+  settings e2e).
+- TDD: 34 unit pins + 9 e2e pins written RED first
+  (tests/functional-parity-v6.test.ts + tests/e2e/functional-parity-v6
+  .spec.ts); new libs src/lib/image.ts + src/lib/ticket-mail.ts.
+- Final gate: lint 0 · tsc 0 · build ✓ · 311/311 unit · 91/91 e2e.
+- Screenshots regenerated ×2 (after the button fix); VLM modal pair →
+  MATCH; head assets generated (scripts/generate-head-assets.py →
+  icon.png/apple-icon.png/icon-192/icon-512/og-image.png/manifest.json).
+- Docs lockstep: AGENTS.md contracts 14-16, CLAUDE.md + README counts,
+  PAD v1.4.0 + ADR-016, retail-pos_SKILL.md v6 block, .env.example
+  re-verified (no change).
+
+Stage Summary:
+- v6 closed the dead-control class of gap entirely: every rendered
+  control now does something real (unit select, image/logo data-URL
+  storage, error toasts, ticket mailto:), the dialog chrome matches the
+  reference's 42px glass pair, and the shipped head/site identity is
+  complete (favicon, cards, manifest, og-image).
+- Probe lessons recorded: VLM claims need computed-style confirmation
+  (three false positives caught by probes; one real F6 bug found);
+  Tailwind v4 serializes palette alphas as oklab()/ — pin geometry, not
+  serialization; window.location is unforgeable — e2e wiring proofs ride
+  the network layer instead.
+- Known-open (unchanged): in-memory limiter single-instance; no SMTP
+  channel (mailto: is the local-first equivalent); donut palette +
+  populated legend unobservable; terminal product-grid design = superset
+  decision.

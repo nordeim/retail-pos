@@ -31,8 +31,10 @@ import {
 import { apiSend, ApiError } from "@/lib/api";
 import { formatMoney } from "@/lib/money";
 import { usePosStore, type Register } from "@/lib/store";
+import { useToast } from "@/components/ui/toast";
 
 export function RegistersView() {
+  const { toast } = useToast();
   const registers = usePosStore((s) => s.registers);
   const cashiers = usePosStore((s) => s.cashiers);
   const shifts = usePosStore((s) => s.shifts);
@@ -59,7 +61,8 @@ export function RegistersView() {
       setDeleting(null);
       await refresh();
     } catch (err: unknown) {
-      void err; // the confirm dialog closes only on success
+      // V6/F3: surface the failure — the dialog stays open, the user sees why.
+      toast.error(err instanceof ApiError ? err.message : `No se pudo eliminar ${register.name}.`);
     } finally {
       setBusy(false);
     }
@@ -73,7 +76,8 @@ export function RegistersView() {
         actions={
           <Button
             data-testid="new-register-button"
-            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
             onClick={() => setCreating(true)}
           >
             <Plus className="h-4 w-4" /> Nueva Caja
@@ -130,7 +134,8 @@ export function RegistersView() {
                 {openShift ? (
                   <Button
                     data-testid={`close-shift-${register.id}`}
-                    className="glass-button-warning flex-1 rounded-lg px-3 py-1.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-warning flex-1 rounded-lg px-3 py-1.5 text-sm font-medium"
                     onClick={() => setClosing(register)}
                   >
                     <LogOut className="h-4 w-4" /> Cerrar Turno
@@ -138,7 +143,8 @@ export function RegistersView() {
                 ) : (
                   <Button
                     data-testid={`open-shift-${register.id}`}
-                    className="glass-button-success flex-1 rounded-lg px-3 py-1.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-success flex-1 rounded-lg px-3 py-1.5 text-sm font-medium"
                     onClick={() => setOpening(register)}
                   >
                     <LogIn className="h-4 w-4" /> Abrir Turno
@@ -205,9 +211,9 @@ export function RegistersView() {
           </p>
           <DialogFooter className="gap-2">
             <Button
-              variant="outline"
               onClick={() => setDeleting(null)}
-              className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700"
             >
               Cancelar
             </Button>
@@ -288,9 +294,9 @@ function NewRegisterDialog({
         </div>
         <DialogFooter className="gap-2">
           <Button
-            variant="outline"
+            variant="glass"
             onClick={onClose}
-            className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
+            className="glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700"
           >
             Cancelar
           </Button>
@@ -298,7 +304,8 @@ function NewRegisterDialog({
             data-testid="register-submit"
             disabled={name.trim().length === 0 || saving}
             onClick={() => void submit()}
-            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-primary h-auto rounded-xl px-4 py-2.5 text-sm font-medium"
           >
             Crear
           </Button>
@@ -390,9 +397,9 @@ function OpenShiftDialog({
         </div>
         <DialogFooter className="gap-2">
           <Button
-            variant="outline"
             onClick={onClose}
-            className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700"
           >
             Cancelar
           </Button>
@@ -400,7 +407,8 @@ function OpenShiftDialog({
             data-testid="shift-submit"
             disabled={cashierId === "" || saving}
             onClick={() => void submit()}
-            className="glass-button-success rounded-xl px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-success h-auto rounded-xl px-4 py-2.5 text-sm font-medium"
           >
             <LogIn className="h-4 w-4" /> Iniciar Turno
           </Button>
@@ -494,9 +502,9 @@ function CloseShiftDialog({
         </div>
         <DialogFooter className="gap-2">
           <Button
-            variant="outline"
             onClick={onClose}
-            className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700"
           >
             Cancelar
           </Button>
@@ -504,7 +512,8 @@ function CloseShiftDialog({
             data-testid="shift-close-submit"
             disabled={saving}
             onClick={() => void submit()}
-            className="glass-button-warning rounded-xl px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-warning h-auto rounded-xl px-4 py-2.5 text-sm font-medium"
           >
             Cerrar Turno
           </Button>

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 // globals.css). Real variants only:
 //   · default   — the plain solid token button (violet, the brand primary);
 //   · outline   — the dark-native outline (border-input, transparent);
+//   · glass     — no utilities of its own: pairs with .glass-button*;
 //   · destructive — red, for delete confirms;
 //   · ghost / link — quiet affordances.
 // The page's real CTAs do not use these variants — they compose the
@@ -24,6 +25,11 @@ const buttonVariants = cva(
         default: "bg-violet-600 text-white shadow-sm hover:bg-violet-500",
         outline:
           "border border-input bg-transparent text-foreground hover:bg-white/5",
+        // V6/F6: the glass channel — the .glass-button* utilities carry the
+        // fill/hairline/text at the call site, so this variant ships NONE of
+        // its own (the default's bg-violet-600/text-white and the outline's
+        // bg-transparent were clobbering the flat glass fills).
+        glass: "",
         destructive: "bg-destructive text-white shadow-sm hover:bg-destructive/90",
         ghost: "hover:bg-white/5 hover:text-foreground",
         link: "text-violet-400 underline-offset-4 hover:underline",

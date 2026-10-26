@@ -160,6 +160,8 @@ export type StoreSettings = {
   secondaryColor: string;
   ticketFooter: string;
   cardProvider: string;
+  /** V6/F2b: the "Subir logo" upload, stored as a data URL (may be ""). */
+  logoUrl?: string | null;
 };
 
 export type DashboardData = {

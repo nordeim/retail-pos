@@ -9,7 +9,7 @@
 // ---------------------------------------------------------------------------
 
 import * as React from "react";
-import { Package, Pencil, Plus, Search, Trash2, Upload } from "lucide-react";
+import { Package, Pencil, Plus, Save, Search, Trash2 } from "lucide-react";
 
 import { PageHeading, StatusPill } from "@/components/pos/shared";
 import { Button } from "@/components/ui/button";
@@ -31,15 +31,18 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { apiSend, ApiError } from "@/lib/api";
+import { fileToDataUrl } from "@/lib/image";
 import { formatMoney } from "@/lib/money";
 import { UNITS } from "@/lib/validation";
 import { usePosStore, type Product } from "@/lib/store";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 export function InventoryView() {
   const products = usePosStore((s) => s.products);
   const categories = usePosStore((s) => s.categories);
   const loadCollections = usePosStore((s) => s.loadCollections);
+  const { toast } = useToast();
 
   const [query, setQuery] = React.useState("");
   const [category, setCategory] = React.useState("Todos");
@@ -66,8 +69,9 @@ export function InventoryView() {
       setDeleting(null);
       await refresh();
     } catch (err: unknown) {
-      // Surfaced inline; the row stays.
-      void err;
+      // V6/F3: the failure is TOASTED (the dialog stays open, the row stays);
+      // the old `void err` left the user with zero feedback.
+      toast.error(err instanceof ApiError ? err.message : `No se pudo eliminar ${product.name}.`);
     } finally {
       setBusy(false);
     }
@@ -81,7 +85,8 @@ export function InventoryView() {
         actions={
           <Button
             data-testid="new-product-button"
-            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
             onClick={() => setEditing("new")}
           >
             <Plus className="h-4 w-4" /> Nuevo Producto
@@ -232,9 +237,9 @@ export function InventoryView() {
           </p>
           <DialogFooter className="gap-2">
             <Button
-              variant="outline"
               onClick={() => setDeleting(null)}
-              className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium"
             >
               Cancelar
             </Button>
@@ -274,7 +279,10 @@ function ProductDialog({
   const [minStock, setMinStock] = React.useState(product ? String(product.minStock) : "5");
   const [ivaRate, setIvaRate] = React.useState(product ? String(product.ivaRate) : "16");
   const [unit, setUnit] = React.useState(product?.unit ?? "Pieza");
-  const [imageFile, setImageFile] = React.useState<File | null>(null);
+  // V6/F2: the picked image's data URL (canvas-resized by src/lib/image.ts);
+  // null = untouched, "" = cleared, otherwise the stored data URL.
+  const [imageUrl, setImageUrl] = React.useState(product?.imageUrl ?? "");
+  const [imageError, setImageError] = React.useState("");
   const [active, setActive] = React.useState(product?.active ?? true);
   const [error, setError] = React.useState("");
   const [saving, setSaving] = React.useState(false);
@@ -295,6 +303,7 @@ function ProductDialog({
         minStock: Number(minStock) || 0,
         ivaRate: Number(ivaRate) || 0,
         unit,
+        imageUrl: imageUrl === "" ? undefined : imageUrl,
         active,
       };
       if (product) {
@@ -302,7 +311,6 @@ function ProductDialog({
       } else {
         await apiSend("POST", "/api/products", payload);
       }
-      void imageFile; // the reference stores the upload; the clone keeps the field UI-complete
       onSaved();
     } catch (err: unknown) {
       setError(
@@ -328,7 +336,7 @@ function ProductDialog({
               value={name}
               onChange={(event) => setName(event.target.value)}
               data-testid="product-name-input"
-              className="mt-1.5 bg-[#0d0f1a]"
+              className="mt-1.5"
             />
           </div>
 
@@ -340,7 +348,7 @@ function ProductDialog({
                 value={barcode}
                 onChange={(event) => setBarcode(event.target.value)}
                 data-testid="product-barcode-input"
-                className="mt-1.5 bg-[#0d0f1a]"
+                className="mt-1.5"
               />
             </div>
             <div>
@@ -349,7 +357,10 @@ function ProductDialog({
                 value={categoryId || undefined}
                 onValueChange={setCategoryId}
               >
-                <SelectTrigger className="mt-1.5 w-full bg-[#0d0f1a]" data-testid="product-category-select">
+                <SelectTrigger
+                className="mt-1.5 w-full"
+                data-testid="product-category-select"
+              >
                   <SelectValue placeholder="Seleccionar" />
                 </SelectTrigger>
                 <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
@@ -372,9 +383,8 @@ function ProductDialog({
                 inputMode="decimal"
                 value={price}
                 onChange={(event) => setPrice(event.target.value)}
-                placeholder="0.00"
                 data-testid="product-price-input"
-                className="mt-1.5 bg-[#0d0f1a]"
+                className="mt-1.5"
               />
             </div>
             <div>
@@ -384,8 +394,7 @@ function ProductDialog({
                 inputMode="decimal"
                 value={cost}
                 onChange={(event) => setCost(event.target.value)}
-                placeholder="0.00"
-                className="mt-1.5 bg-[#0d0f1a]"
+                className="mt-1.5"
               />
             </div>
           </div>
@@ -398,7 +407,7 @@ function ProductDialog({
                 inputMode="numeric"
                 value={stock}
                 onChange={(event) => setStock(event.target.value)}
-                className="mt-1.5 bg-[#0d0f1a]"
+                className="mt-1.5"
               />
             </div>
             <div>
@@ -408,7 +417,7 @@ function ProductDialog({
                 inputMode="numeric"
                 value={minStock}
                 onChange={(event) => setMinStock(event.target.value)}
-                className="mt-1.5 bg-[#0d0f1a]"
+                className="mt-1.5"
               />
             </div>
           </div>
@@ -421,13 +430,13 @@ function ProductDialog({
                 inputMode="numeric"
                 value={ivaRate}
                 onChange={(event) => setIvaRate(event.target.value)}
-                className="mt-1.5 bg-[#0d0f1a]"
+                className="mt-1.5"
               />
             </div>
             <div>
               <Label className="text-slate-200">Unidad</Label>
               <Select value={unit} onValueChange={setUnit}>
-                <SelectTrigger className="mt-1.5 w-full bg-[#0d0f1a]">
+                <SelectTrigger className="mt-1.5 w-full" data-testid="product-unit-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="border-[#262a36] bg-[#12141f] text-slate-100">
@@ -443,13 +452,53 @@ function ProductDialog({
 
           <div>
             <Label htmlFor="product-image" className="text-slate-200">Imagen del producto</Label>
+            {/* V6/F2: the picked file is resized to a data URL client-side
+                and STORED (imageUrl) — a real upload, no longer a no-op. */}
             <Input
               id="product-image"
               type="file"
               accept="image/*"
-              onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
-              className="mt-1.5 bg-[#0d0f1a] text-slate-400"
+              onChange={(event) => {
+                const file = event.target.files?.[0] ?? null;
+                setImageError("");
+                if (!file) {
+                  setImageUrl("");
+                  return;
+                }
+                void fileToDataUrl(file).then((result) => {
+                  if (result.ok) {
+                    setImageUrl(result.dataUrl);
+                  } else {
+                    setImageUrl("");
+                    setImageError(
+                      result.reason === "too-large"
+                        ? "La imagen supera 300 KB."
+                        : "No se pudo leer la imagen.",
+                    );
+                  }
+                });
+              }}
+              className="mt-1.5 text-slate-400"
             />
+            {imageError ? (
+              <p role="alert" className="mt-1 text-xs text-red-400">{imageError}</p>
+            ) : null}
+            {imageUrl ? (
+              <span className="mt-2 flex items-center gap-2" data-testid="product-image-preview">
+                <img src={imageUrl} alt="Vista previa" className="h-10 w-10 rounded-lg object-cover" />
+                <button
+                  type="button"
+                  className="vx-focus rounded-lg p-1 text-xs text-slate-400 hover:text-red-400"
+                  onClick={() => {
+                    setImageUrl("");
+                    const input = document.getElementById("product-image") as HTMLInputElement | null;
+                    if (input) input.value = "";
+                  }}
+                >
+                  Quitar
+                </button>
+              </span>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-3">
@@ -466,19 +515,23 @@ function ProductDialog({
 
         <DialogFooter className="gap-2">
           <Button
-            variant="outline"
+            variant="glass"
             onClick={onClose}
-            className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
+            className="glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700"
           >
             Cancelar
           </Button>
+          {/* V6/V1: the reference's 42px dialog submit — glass-button-primary
+              + h-auto (the cva h-9 base was clamping it to 36px) with a
+              VISIBLE lucide-save icon (the hidden study-app remnant is gone). */}
           <Button
             data-testid="product-submit"
             disabled={!valid || saving}
             onClick={() => void submit()}
-            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-primary h-auto rounded-xl px-4 py-2.5 text-sm font-medium"
           >
-            <Upload className="mr-1 hidden" />
+            <Save className="h-4 w-4" />
             {product ? "Guardar" : "Crear"}
           </Button>
         </DialogFooter>

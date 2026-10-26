@@ -36,8 +36,8 @@ export function Sidebar() {
         )}
         style={{ borderColor: "#1e2235" }}
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow">
-          <Zap className="h-4 w-4" strokeWidth={2.5} />
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/30">
+          <Zap className="h-4 w-4" strokeWidth={2} />
         </span>
         {!collapsed && (
           <p className="truncate text-sm font-bold text-white/90 tracking-wide">{storeName}</p>

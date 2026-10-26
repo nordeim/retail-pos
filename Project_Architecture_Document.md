@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.3.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v1.4.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -33,6 +33,20 @@
 > bright H1, the reference dashboard grids, settings parity (max-w-4xl,
 > 54px Guardar, glass category chips), and the button.tsx study-remnant
 > purge; ADR-015 added.
+>
+> v1.4.0 (2026-10-26): the remediation-plan-v6 execution — the
+> functional-superset completion + document-head suite: the Unidad options
+> completed to the reference's six (+ Servicio superset), product photos
+> and the store logo stored as client-resized data URLs
+> (`src/lib/image.ts`), every mutation failure surfaced through the
+> toaster (the four silent `void err` deletes), the Ventas mail action as
+> a fully-formed `mailto:` (`src/lib/ticket-mail.ts`), the 42px dialog
+> button contract with the cva `glass` variant (F6 — the variant utilities
+> were clobbering the glass fills), the sidebar tile's violet glow, the
+> reference's head suite (title/description/OG/Twitter/apple/manifest +
+> the app-router icon convention + the generated og-image), and the total
+> sf-* token purge across the remaining UI primitives (switch, toast,
+> badge, card, skeleton, progress, checkbox, slider); ADR-016 added.
 
 ## Table of Contents
 
@@ -86,6 +100,7 @@ lowest-risk path. **Verified.**
 | ADR-013 | The remediation contract set: guarded in-transaction stock decrement + server-side cash gate (422), duplicate-open 409 via ConflictError, raw ZodError → 400, 413/415 body gates, OTP 6-strike lockout, proxy-hop-aware client IP, drawer focus contract (latched rAF + Tab wrap + focus return) | Accepted — Verified (213 unit + 70 e2e) |
 | ADR-014 | The v4 visual-parity contract set: native Tailwind radius scale (shadcn `--radius` remap removed — the reference's own shadcn runs native), the reference card system on `vx-card` (translucent `rgba(16,18,32,.9)` + white-alpha hairline + elevation shadow), the `glass-button-primary/success/warning` gradient action system (135° ramps + colored hairline + glow + hover lift, CSS extracted live), the translucent-violet active nav pill on a RING (never a border — layout-neutral), StatCard blob anatomy, the icon-left reports summary cards, and the official social brand marks + hosted logo PNG on the auth surface | Accepted — Verified (238 unit + 74 e2e, live probe parity) |
 | ADR-015 | The v5 view-internals contract set: the flush shell gutter (`lg:ml-[220px]`/`[68px]` — the view's own padding provides the 24px gutter, H1 at x=244); the Terminal as the ONE full-bleed view (`lg:h-screen` two-pane, ticket panel as the `rounded-none border-l bg-[#0d0f1a]` RAIL with the transient "Agregado" banner and ShoppingBag COBRAR); the reference table system (slate-50 hairlines, `hover:bg-white/40`, `text-slate-600` body, mono indigo ticket cells, per-column header alignment, the dense cajeros shifts variant); the two-shape StatusPill (6px soft table badges `green-100/green-700` + `slate-100/slate-500`, vs the register-card `rounded-full` pill); 12px-radius transparent form controls; the reference's neutral `--secondary` token (`33 37 49`); tinted reports chips (15%/30%/400-tone, NOT gradient) + the Reports-only bright H1 (`tone="bright"`) | Accepted — Verified (277 unit + 83 e2e, live probe parity) |
+| ADR-016 | The v6 functional-superset contract set: dialog footer buttons are the reference's 42px glass pair, and the cva Button ships a dedicated EMPTY `glass` variant because the default/outline variants' bg/text utilities clobber the flat `.glass-button` fill (F6); product photos + the store logo persist as data URLs (canvas-resized ≤512px, JPEG q0.85, 300KB guard, 600k schema ceiling) with NO infrastructure dependency; the Unidad enum is the reference's six + Servicio; all mutation failures toast (`void err` forbidden); the Ventas mail row action opens a `mailto:` carrying the full ticket (no SMTP — disclosed); the document head mirrors the reference (title "VeloxPOS", its description, OG/Twitter cards, appleWebApp, a WORKING manifest, the app-router icon.png convention, the generated 1200x630 og-image); the UI primitives carry zero dead study-app classes (the checked Switch fills with the live-measured `#7f62f4`) | Accepted — Verified (311 unit + 91 e2e, live probe parity) |
 
 ---
 

@@ -325,7 +325,8 @@ export function TerminalView() {
           {ticket.length > 0 ? (
             <Button
               data-testid="cobrar-button"
-              className="glass-button-success h-auto w-full rounded-2xl px-8 py-5 text-xl font-black"
+          variant="glass"
+          className="glass-button-success h-auto w-full rounded-2xl px-8 py-5 text-xl font-black"
               onClick={() => setPayOpen(true)}
             >
               <ShoppingBag className="h-6 w-6" />
@@ -335,7 +336,8 @@ export function TerminalView() {
             <Button
               disabled
               data-testid="cobrar-button"
-              className="glass-button-success pointer-events-none h-auto w-full rounded-2xl px-8 py-5 text-xl font-black opacity-50"
+          variant="glass"
+          className="glass-button-success pointer-events-none h-auto w-full rounded-2xl px-8 py-5 text-xl font-black opacity-50"
             >
               <ShoppingBag className="h-6 w-6" />
               COBRAR {formatMoney(0)}
@@ -520,9 +522,9 @@ function PaymentDialog({
             <MethodPill method={method} />
             <div className="flex gap-2">
               <Button
-                variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium"
               >
                 Cancelar
               </Button>
@@ -533,7 +535,8 @@ function PaymentDialog({
                   (method === "efectivo" && (cashShort || cashInput.trim() === ""))
                 }
                 onClick={() => void submit()}
-                className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
               >
                 {submitting ? "Procesando..." : "Confirmar"}
               </Button>

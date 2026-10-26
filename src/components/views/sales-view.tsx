@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { apiGet } from "@/lib/api";
+import { buildTicketMailto } from "@/lib/ticket-mail";
 import { formatMediumSpanish, formatSlashShort } from "@/lib/date";
 import { formatMoney } from "@/lib/money";
 import { usePosStore, type Sale } from "@/lib/store";
@@ -51,6 +52,18 @@ export function SalesView() {
       setDetail(fresh);
     } catch {
       setDetail(sale);
+    }
+  };
+
+  // V6/F4: the row's "Enviar ticket" — the reference emails via its platform
+  // API; the clone's local-first equivalent opens the operator's mail client
+  // with the complete ticket pre-filled (no SMTP channel — disclosed).
+  const sendByEmail = async (sale: Sale) => {
+    try {
+      const fresh = await apiGet<Sale>(`/api/sales/${sale.id}`);
+      window.location.href = buildTicketMailto(fresh);
+    } catch {
+      window.location.href = buildTicketMailto(sale);
     }
   };
 
@@ -138,6 +151,8 @@ export function SalesView() {
                         <button
                           type="button"
                           aria-label={`Enviar ticket ${sale.ticketNo} por correo`}
+                          data-testid={`mail-sale-${sale.ticketNo}`}
+                          onClick={() => void sendByEmail(sale)}
                           className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
                         >
                           <Mail className="h-4 w-4" />

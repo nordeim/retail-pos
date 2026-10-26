@@ -25,9 +25,11 @@ import { apiSend, ApiError } from "@/lib/api";
 import { formatMoney, } from "@/lib/money";
 import { formatShiftStamp } from "@/lib/date";
 import { usePosStore, type Cashier } from "@/lib/store";
+import { useToast } from "@/components/ui/toast";
 
 export function CashiersView() {
   const cashiers = usePosStore((s) => s.cashiers);
+  const { toast } = useToast();
   const shifts = usePosStore((s) => s.shifts);
   const loadCollections = usePosStore((s) => s.loadCollections);
 
@@ -47,7 +49,8 @@ export function CashiersView() {
       setDeleting(null);
       await refresh();
     } catch (err: unknown) {
-      void err;
+      // V6/F3: surface the failure (the old `void err` was silent).
+      toast.error(err instanceof ApiError ? err.message : `No se pudo eliminar ${cashier.name}.`);
     } finally {
       setBusy(false);
     }
@@ -61,7 +64,8 @@ export function CashiersView() {
         actions={
           <Button
             data-testid="new-cashier-button"
-            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
             onClick={() => setEditing("new")}
           >
             <Plus className="h-4 w-4" /> Nuevo Cajero
@@ -220,9 +224,9 @@ export function CashiersView() {
           </p>
           <DialogFooter className="gap-2">
             <Button
-              variant="outline"
               onClick={() => setDeleting(null)}
-              className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700"
             >
               Cancelar
             </Button>
@@ -313,9 +317,9 @@ function CashierDialog({
         </div>
         <DialogFooter className="gap-2">
           <Button
-            variant="outline"
+            variant="glass"
             onClick={onClose}
-            className="glass-button rounded-xl border-0 px-4 py-2.5 text-sm font-medium"
+            className="glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700"
           >
             Cancelar
           </Button>
@@ -323,7 +327,8 @@ function CashierDialog({
             data-testid="cashier-submit"
             disabled={name.trim().length === 0 || saving}
             onClick={() => void submit()}
-            className="glass-button-primary rounded-xl px-4 py-2.5 text-sm font-medium"
+          variant="glass"
+          className="glass-button-primary h-auto rounded-xl px-4 py-2.5 text-sm font-medium"
           >
             {cashier ? "Guardar" : "Crear"}
           </Button>

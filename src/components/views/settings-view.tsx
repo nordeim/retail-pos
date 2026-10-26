@@ -22,7 +22,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { apiSend, ApiError } from "@/lib/api";
-import { usePosStore } from "@/lib/store";
+import { fileToDataUrl } from "@/lib/image";
+import { usePosStore, type StoreSettings } from "@/lib/store";
+import { useToast } from "@/components/ui/toast";
 import { CARD_PROVIDERS, CURRENCIES } from "@/lib/validation";
 
 const DEFAULTS = {
@@ -36,6 +38,7 @@ const DEFAULTS = {
   secondaryColor: "#8b5cf6",
   ticketFooter: "",
   cardProvider: "Ninguno",
+  logoUrl: "",
 };
 
 export function SettingsView() {
@@ -59,15 +62,19 @@ export function SettingsView() {
   return <SettingsForm key="loaded" initial={settings} />;
 }
 
-function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
+function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS }) {
   const categories = usePosStore((s) => s.categories);
   const loadCollections = usePosStore((s) => s.loadCollections);
-  const [form, setForm] = React.useState(initial);
+  const { toast } = useToast();
+  const [form, setForm] = React.useState<StoreSettings | typeof DEFAULTS>(initial);
   const [newCategory, setNewCategory] = React.useState("");
   const [status, setStatus] = React.useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = React.useState("");
-  // V5: the styled Subir-logo control's filename feedback.
   const [logoName, setLogoName] = React.useState("");
+  // V6/F2b: the picked logo (data URL) — stored via settings.logoUrl on save.
+  // The filename chip below the control shows the pick; the preview shows the
+  // stored/pending image (the reference keeps its sidebar a gradient tile, so
+  // the clone renders the logo HERE only — parity with its observable UI).
 
   const set = <K extends keyof typeof DEFAULTS>(key: K, value: (typeof DEFAULTS)[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -103,7 +110,8 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
       await apiSend("DELETE", `/api/categories/${id}`);
       await loadCollections(["categories"]);
     } catch (err: unknown) {
-      void err;
+      // V6/F3: surface the failure (categories with products stay put).
+      toast.error(err instanceof ApiError ? err.message : "No se pudo eliminar la categoría.");
     }
   };
 
@@ -151,9 +159,23 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
                 accept="image/*"
                 data-testid="settings-logo-input"
                 className="hidden"
-                onChange={(event) =>
-                  setLogoName(event.target.files?.[0]?.name ?? "")
-                }
+                onChange={(event) => {
+                  const file = event.target.files?.[0] ?? null;
+                  setLogoName(file?.name ?? "");
+                  if (!file) return;
+                  // V6/F2b: resize client-side and ride the PATCH payload.
+                  void fileToDataUrl(file).then((result) => {
+                    if (result.ok) {
+                      set("logoUrl", result.dataUrl);
+                    } else {
+                      toast.error(
+                        result.reason === "too-large"
+                          ? "El logotipo supera 300 KB."
+                          : "No se pudo leer el logotipo.",
+                      );
+                    }
+                  });
+                }}
               />
             </div>
             <div>
@@ -312,11 +334,11 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
               className="max-w-xs"
             />
             <Button
-              variant="outline"
               onClick={() => void addCategory()}
               disabled={newCategory.trim().length === 0}
               data-testid="settings-add-category"
-              className="glass-button rounded-lg border-0 px-3 py-1.5 text-sm font-medium text-slate-700"
+          variant="glass"
+          className="glass-button h-auto rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700"
             >
               <Plus className="h-4 w-4" /> Agregar
             </Button>
@@ -354,7 +376,8 @@ function SettingsForm({ initial }: { initial: typeof DEFAULTS }) {
             data-testid="settings-save"
             disabled={form.name.trim().length === 0 || status === "saving"}
             onClick={() => void save()}
-            className="glass-button-primary h-auto rounded-xl px-6 py-3.5 text-base font-medium"
+          variant="glass"
+          className="glass-button-primary h-auto rounded-xl px-6 py-3.5 text-base font-medium"
           >
             {status === "saving" ? "Guardando…" : "Guardar Cambios"}
           </Button>

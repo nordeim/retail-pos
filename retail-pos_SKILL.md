@@ -25,8 +25,8 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v5 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 277/277 unit · 83/83 e2e**. Evidence labels:
+> template), validated against the codebase at the v6 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 311/311 unit · 91/91 e2e**. Evidence labels:
 > **Verified** (executed here), **Reasoned** (inference), **Assumed**
 > (decision).
 
@@ -160,6 +160,27 @@ The five Tailwind v3→v4 traps (each has a source pin in
 5. The `h-dvh` class is NOT needed here: the drawer overlay is
    `fixed inset-0` (viewport-anchored, no vh units) — neo-crm's dvh fix
    targets a different drawer construction.
+
+The v6 contract additions (AGENTS.md 14-16, all live-measured):
+- Dialog footers are the 42px glass pair — `glass-button-primary h-auto
+  rounded-xl px-4 py-2.5 text-sm font-medium` + a visible `Save` icon for
+  submit, `glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium
+  text-slate-700` for cancel — and the Button component ships an EMPTY
+  `glass` variant for them: any other variant's bg/text utilities clobber
+  the flat `.glass-button` fill (the F6 bug). Page CTAs stay `h-9` (36px —
+  the reference's own page buttons).
+- The document head mirrors the reference: title "VeloxPOS", its
+  description, OG/Twitter cards, appleWebApp, a WORKING manifest, and the
+  app-router `src/app/icon.png` (the logo). Regenerate the assets with
+  `scripts/generate-head-assets.py`.
+- Media are data URLs (`src/lib/image.ts`: canvas ≤512px, JPEG q0.85,
+  300KB guard) — product `imageUrl` + settings `logoUrl`; schema ceiling
+  600k chars, `logoUrl` nullable (the column boots NULL).
+- Unidad = the reference's six options + Servicio (superset). Mutation
+  failures toast (`useToast().toast.error` — `void err` is forbidden).
+  The Ventas mail action builds a `mailto:` from `src/lib/ticket-mail.ts`.
+- Zero dead study-app classes: the checked Switch fills `#7f62f4` (the
+  reference's live-measured violet).
 
 ## §5 Component Architecture & Patterns
 

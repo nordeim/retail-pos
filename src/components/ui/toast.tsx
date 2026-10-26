@@ -67,8 +67,11 @@ export function Toaster() {
           onClick={() => dismiss(t.id)}
           className={cn(
             "pointer-events-auto w-full rounded-lg border px-4 py-3 text-left text-sm shadow-lg transition-all",
-            t.kind === "error" && "sf-alert-red",
-            t.kind === "success" && "sf-alert-emerald",
+            // V6/F5: real token ramps (the study-app alert classes never existed).
+            t.kind === "error" &&
+              "border-red-500/40 bg-red-950/90 text-red-200",
+            t.kind === "success" &&
+              "border-emerald-500/40 bg-emerald-950/90 text-emerald-200",
             t.kind === "info" &&
               "border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200",
           )}

@@ -2,13 +2,13 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-// Reference card geometry: white surface, slate-100 hairline, radius 16px
-// (v3 rounded-2xl), v3 shadow-sm — all carried by the .sf-card utility so
-// the dark token reroute stays live (S10 trap 13).
+// The app's real card system is the vx-card utility (AGENTS.md trap 7);
+// this primitive rides the same utility (the old study-app card class
+// never existed in globals.css).
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("sf-card text-card-foreground", className)} {...props} />
+    <div ref={ref} className={cn("vx-card text-card-foreground", className)} {...props} />
   ),
 );
 Card.displayName = "Card";
