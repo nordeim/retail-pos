@@ -156,6 +156,63 @@ describe("standaloneRepoRoot (the Next standalone chdir trap)", () => {
   });
 });
 
+describe("the v3 hardening: the mangled sibling-db form", () => {
+  it("prefers the schema-owning repo's db when Turbopack's mangled <elsewhere>/db/custom.db EXISTS", () => {
+    // next dev pre-resolves .env's relative file: URL to
+    // <project>/../db/custom.db and creates that stray file on boot; the
+    // moment it exists, the old exists-fallback loses. The repo that owns
+    // prisma/schema.prisma must win.
+    const repo = mkRepo();
+    const elsewhere = mkdtempSync(path.join(tmpdir(), "dbpath-stray-"));
+    try {
+      mkdirSync(path.join(elsewhere, "db"));
+      writeFileSync(path.join(elsewhere, "db", "custom.db"), "stray");
+      const out = resolveDatabaseUrl(
+        `file:${path.join(elsewhere, "db", "custom.db")}`,
+        [repo],
+      );
+      expect(toPosix(out)).toBe(`file:${toPosix(path.join(repo, "db", "custom.db"))}`);
+    } finally {
+      rmSync(elsewhere, { recursive: true, force: true });
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
+  it("still passes through a genuinely deployed absolute URL", () => {
+    const repo = mkRepo();
+    try {
+      const deployed = mkdtempSync(path.join(tmpdir(), "dbpath-prod-"));
+      const target = path.join(deployed, "production.sqlite");
+      writeFileSync(target, "prod");
+      const out = resolveDatabaseUrl(`file:${target}`, [repo]);
+      expect(toPosix(out)).toBe(`file:${toPosix(target)}`);
+      rmSync(deployed, { recursive: true, force: true });
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
+  it("keeps the original v2.3 rule: a missing absolute target falls back to the repo db", () => {
+    const repo = mkRepo();
+    try {
+      const out = resolveDatabaseUrl("file:/nonexistent/nowhere/custom.db", [repo]);
+      expect(toPosix(out)).toBe(`file:${toPosix(path.join(repo, "db", "custom.db"))}`);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+});
+
+/** A minimal repo fixture: <root>/prisma/schema.prisma + <root>/db. */
+function mkRepo(): string {
+  const repo = mkdtempSync(path.join(tmpdir(), "dbpath-repo-"));
+  mkdirSync(path.join(repo, "prisma"));
+  writeFileSync(path.join(repo, "prisma", "schema.prisma"), "// x");
+  mkdirSync(path.join(repo, "db"));
+  writeFileSync(path.join(repo, "db", "custom.db"), "repo");
+  return repo;
+}
+
 describe("anchor validation", () => {
   it("the repo anchor layout used by the tests actually exists", () => {
     // Sanity for the fixture itself — guards against a broken test setup
