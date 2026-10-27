@@ -588,7 +588,7 @@ rules:
     (`VIEW_LOADERS[activeView]().catch(() => undefined)`) — the lazy
     mount owns the surfaced error.
 
-## The account UI contract (v22)
+## The account UI contract (v22 + v23)
 
 The reference has NO account surface (its sidebar bottom is the collapse
 chevron alone — live-verified). The clone's superset lives in THREE places,
@@ -599,12 +599,16 @@ all pinned by `tests/account-ui.test.ts` + `tests/e2e/account-ui.spec.ts`:
   sections leave free; the v10 icon pin counts SIX). It owns its
   /api/auth/me fetch (the async-then setState shape — never
   synchronous-in-effect), renders the email + "Verificada" badge +
-  member-since, and drives change-password / change-email (Dialog family,
-  key-remount, 42px footer) + delete-account (a plain Dialog + the
-  `glass-button-danger` utility — the warning-ramp extension precedent;
-  NEVER the AlertDialog primitive, whose cva defaults clobber glass fills
-  — the F6 trap). Settings-view inputs stay TRANSPARENT (the v5 pin
-  fails on any `bg-[#0d0f1a]` fill there).
+  member-since, and drives change-password / change-email / change-name
+  (v23: `POST /api/auth/update-profile` — the dialog PREFILLS the current
+  name and patches the readout through the `onChanged` seam; the route
+  deliberately carries NO password proof: `fullName` is a benign display
+  field, the store-settings-PATCH posture, ADR-032) + delete-account (a
+  plain Dialog + the `glass-button-danger` utility — the warning-ramp
+  extension precedent; NEVER the AlertDialog primitive, whose cva
+  defaults clobber glass fills — the F6 trap). The action row is FOUR
+  buttons with the destructive exit LAST. Settings-view inputs stay
+  TRANSPARENT (the v5 pin fails on any `bg-[#0d0f1a]` fill there).
 - **The signup verify stage** (`signup-surface.tsx`): the register
   response's `code` IS the delivery (no SMTP) — `issuedCode` state +
   the slate-Alert note (`signup-code-note`). Never discard it again.

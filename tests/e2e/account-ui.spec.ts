@@ -166,6 +166,52 @@ test.describe("F1 — the Mi Cuenta section (Ajustes)", () => {
     await expect(page.getByTestId("account-verified-badge")).toBeVisible();
   });
 
+  // V23/F1 — the profile/name-edit round-trip (SD-93..SD-96): the prefilled
+  // dialog, the must-differ 400, the happy path, the readout update, and
+  // the SERVER state moved (a storageState-free /api/auth/me read).
+  test("change-name: must-differ 400, then the happy path updates the readout", async ({
+    page,
+  }) => {
+    const before = await page.getByTestId("account-section").innerText();
+    expect(before).toContain("Account UI Pin");
+
+    await page.getByTestId("account-change-name-button").click();
+    const dialog = page.getByTestId("change-name-dialog");
+    await expect(dialog).toBeVisible();
+    // The input is PREFILLED with the current name.
+    await expect(dialog.getByTestId("name-input")).toHaveValue("Account UI Pin");
+
+    // Must-differ: posting the current name (server state, not a body field).
+    await dialog.getByTestId("change-name-submit").click();
+    await expect(dialog.getByTestId("change-name-error")).toContainText(
+      /already your name/i,
+    );
+
+    // The happy path: the readout re-points to the new name.
+    await dialog.getByTestId("name-input").fill("Account UI Pin Renamed");
+    await dialog.getByTestId("change-name-submit").click();
+    await expect(dialog.getByTestId("change-name-success")).toBeVisible();
+    await expect(page.getByTestId("account-section")).toContainText(
+      "Account UI Pin Renamed",
+    );
+
+    // The server state moved: a fresh context's /api/auth/me reflects the
+    // new name (the account-security spec's no-storageState discipline).
+    const fresh = await playwrightRequest.newContext();
+    try {
+      const login = await fresh.post("/api/auth/login", {
+        data: { email: SCRATCH_EMAIL, password: SCRATCH_PASSWORD },
+      });
+      expect(login.status()).toBe(200);
+      const me = await fresh.get("/api/auth/me");
+      const body = (await me.json()) as { user: { name: string } };
+      expect(me.status()).toBe(200);
+      expect(body.user.name).toBe("Account UI Pin Renamed");
+    } finally {
+      await fresh.dispose();
+    }
+  });
+
   test("change-password: the wrong-current 400 surfaces inside the dialog", async ({
     page,
   }) => {

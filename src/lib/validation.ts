@@ -77,6 +77,12 @@ export const deleteAccountSchema = z.object({
   password: passwordField,
 });
 
+// V23/SD-95: the profile name edit. Trim-then-validate (a whitespace-only
+// name IS empty); the ceiling matches the register schema's fullName cap.
+export const updateProfileSchema = z.object({
+  fullName: z.string().trim().min(1).max(100),
+});
+
 // ---- store settings ----------------------------------------------------------
 
 export const CARD_PROVIDERS = [

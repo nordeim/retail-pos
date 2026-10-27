@@ -473,7 +473,9 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
 function AccountSection() {
   const [me, setMe] = React.useState<AppUser | null>(null);
   const [failed, setFailed] = React.useState(false);
-  const [dialog, setDialog] = React.useState<"password" | "email" | "delete" | null>(null);
+  const [dialog, setDialog] = React.useState<
+    "name" | "password" | "email" | "delete" | null
+  >(null);
 
   // Self-contained identity read (SD-90): /api/auth/me through the api
   // seam — the async resolution is the sanctioned setState shape (the
@@ -531,9 +533,12 @@ function AccountSection() {
             </p>
           </div>
 
-          {/* The three actions — the settings card-action family (glass
+          {/* The four actions — the settings card-action family (glass
               buttons at the 34px size). The exit carries the destructive
-              red text; its dialog owns the cascade warning. */}
+              red text; its dialog owns the cascade warning. V23: the name
+              edit joins between the email rotation and the destructive
+              exit (SD-96 — the benign edit never precedes the credentials,
+              the destructive stays last). */}
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="glass"
@@ -550,6 +555,14 @@ function AccountSection() {
               className="glass-button h-auto rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700"
             >
               Cambiar correo
+            </Button>
+            <Button
+              variant="glass"
+              onClick={() => setDialog("name")}
+              data-testid="account-change-name-button"
+              className="glass-button h-auto rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700"
+            >
+              Cambiar nombre
             </Button>
             <Button
               variant="glass"
@@ -570,6 +583,15 @@ function AccountSection() {
 
       {/* Key-remount per dialog open (the React-conventions rule — no
           effect-driven form resets). */}
+      {dialog === "name" ? (
+        <ChangeNameDialog
+          currentName={me?.name ?? ""}
+          onClose={() => setDialog(null)}
+          onChanged={(name) =>
+            setMe((prev) => (prev ? { ...prev, name } : prev))
+          }
+        />
+      ) : null}
       {dialog === "password" ? (
         <ChangePasswordDialog onClose={() => setDialog(null)} />
       ) : null}
@@ -584,6 +606,117 @@ function AccountSection() {
       ) : null}
       {dialog === "delete" ? <DeleteAccountDialog onClose={() => setDialog(null)} /> : null}
     </SectionCard>
+  );
+}
+
+// V23/ADR-032 (SD-96): the profile name edit — the account-surface
+// family's last read-only field gains its dialog. The measured Dialog
+// grammar (max-w-lg, the 42px glass-button footer, key-remount), the
+// TRANSPARENT settings-view input (measured trap 13), the prefilled
+// current name, and the onChanged seam (the change-email precedent).
+function ChangeNameDialog({
+  currentName,
+  onClose,
+  onChanged,
+}: {
+  currentName: string;
+  onClose: () => void;
+  /** SD-96: the readout re-points from the route's response. */
+  onChanged: (name: string) => void;
+}) {
+  const { toast } = useToast();
+  const [fullName, setFullName] = React.useState(currentName);
+  const [error, setError] = React.useState("");
+  const [saved, setSaved] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+
+  const submit = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      // SD-93/94: session-gated, rate-limited, NO password proof (the
+      // benign-field family split — fullName carries no auth semantics).
+      const res = await apiSend<{ ok: boolean; name: string }>(
+        "POST",
+        "/api/auth/update-profile",
+        { fullName },
+      );
+      setSaved(true);
+      if (typeof res?.name === "string") {
+        onChanged(res.name);
+      }
+      toast.success("Nombre actualizado.");
+      window.setTimeout(onClose, 900);
+    } catch (err: unknown) {
+      setError(err instanceof ApiError ? err.message : "No se pudo cambiar el nombre.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(value) => !value && onClose()}>
+      <DialogContent
+        data-testid="change-name-dialog"
+        className="border-[#262a36] bg-[#0f121a] text-[#e7e9ef]"
+      >
+        <DialogHeader>
+          <DialogTitle>Cambiar nombre</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="full-name" className="text-slate-200">Nombre completo *</Label>
+            <Input
+              id="full-name"
+              type="text"
+              autoComplete="name"
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
+              data-testid="name-input"
+              className="mt-1"
+              maxLength={100}
+              required
+            />
+          </div>
+          {error ? (
+            <p
+              role="alert"
+              data-testid="change-name-error"
+              className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400"
+            >
+              {error}
+            </p>
+          ) : null}
+          {saved ? (
+            <p
+              role="status"
+              data-testid="change-name-success"
+              className="rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400"
+            >
+              Nombre actualizado.
+            </p>
+          ) : null}
+        </div>
+        <DialogFooter className="gap-2">
+          <Button
+            variant="glass"
+            onClick={onClose}
+            className="glass-button h-auto rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700"
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="glass"
+            disabled={busy || saved || fullName.trim().length === 0}
+            onClick={() => void submit()}
+            data-testid="change-name-submit"
+            className="glass-button-primary h-auto rounded-xl px-4 py-2.5 text-sm font-medium"
+          >
+            {busy ? "Guardando…" : "Guardar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

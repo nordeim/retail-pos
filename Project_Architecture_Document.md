@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.9.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.10.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -235,6 +235,40 @@
 > precedent — the shared localhost verify budget runs at exactly
 > 10/15min). Gates: 542/542 unit (529+13, 38 files) + 196/196 e2e
 > (187+9, 3.5m). ADR-031 added; Known-Issue #7 CLOSED.
+>
+> v2.10.0 (2026-10-28): the remediation-plan-v23 execution — the
+> profile/name-edit superset, the account-surface family's completion.
+> The audit found the reference UNCHANGED for the 8th consecutive
+> cycle (every view's data state identical; at 390px still no
+> hamburger, 220px sidebar, main 170px, viewport-locked; no account
+> surface anywhere — its sidebar bottom is the collapse chevron
+> alone), the baseline green exactly as V22 closed it (542+196,
+> first-try), and the V22 additions verified LIVE end-to-end this
+> cycle (the signup code note → the login-403 verify card → the
+> resend → the verify journey into the app, plus the Mi Cuenta
+> readout at desktop and 390px — a scratch account, deleted after).
+> The ONE finding (the V22 session log's own suggested next step):
+> the account's `fullName` renders in the Mi Cuenta readout but
+> NOTHING can change it — no route accepts an update, no dialog
+> offers the edit. The fix (ADR-032): `POST /api/auth/update-profile`
+> (the change-email family shape — requireUser, per-user rate limit
+> 10/15min, Zod trim/min-1/max-100, the route-side must-differ 400,
+> the publicUser envelope — and DELIBERATELY no password proof:
+> fullName is a benign display field, the store-settings-PATCH
+> posture, not the credential-rotation posture) + the "Cambiar
+> nombre" dialog (the fourth Mi Cuenta action, between the email
+> rotation and the destructive exit; prefilled with the current name;
+> the onChanged seam patches the readout). The two V22 action pins
+> grew to the four-action superset (extend, never weaken). The
+> V21 route-count pin caught the new route exactly as designed —
+> DEPLOYMENT.md's count now reads 28 and §10 documents the fifth
+> endpoint. neo-crm UNCHANGED since the V22 review (HEAD `facdd56`
+> = the session-194 log commit on `6d655f9`). Pinned by
+> `tests/account-ui.test.ts` (8 new source pins, RED 9/21 pre-fix)
+> + `tests/e2e/account-ui.spec.ts` (1 new behavioral test — the name
+> round-trip with a fresh-context /api/auth/me assertion). Gates:
+> 550/550 unit (542+8, 38 files) + 197/197 e2e (196+1, 3.4m).
+> ADR-032 added.
 >
 > v2.8.0 (2026-10-27): the remediation-plan-v21 execution — the
 > deployment-surface truth pass, closing Known-Issue #6 for real. The
@@ -513,6 +547,8 @@ lowest-risk path. **Verified.**
 | ADR-030 | The v21 deployment-surface truth contract: the shipped deployment surfaces describe THIS app, mechanically. (1) The container identity: Dockerfile + docker-compose.yml carry the VeloxPOS identity (service `veloxpos`, image `veloxpos:latest`, `${VELOXPOS_PORT:-3000}`) — the scaffold's `studyflow` service and header rot retired with the last never-actioned Known-Issues row (#6). (2) `docs/DEPLOYMENT.md` tells the truth about the shipped app — the full env contract (every `.env.example` variable documented), the real verification commands (the gate ladder, no phantom smoke-test.sh), the route-handler count pinned to the LIVE filesystem count (27 — the count-the-things rule, mechanically), the renamed Docker walkthrough, and NO documentation of unshipped features (the scaffold's /rum diagnostics, /export + /import portability, and Settings→Profile UI never existed here); every `scripts/` reference must resolve to a real file. (3) The four scaffold account-security routes — `POST /api/auth/change-password` · `change-email` · `delete-account` · `resend-verification` — are KEPT as a disclosed API-only superset (real, rate-limited 10/15-min, password-verified PRE-WRITE, no-enumeration uniform 200s; the reference has none of them; no UI ships — a future feature cycle if the operator wants one), with their scaffold-colliding comments (S24/ADR-022-style citations that collide with THIS repo's ADR numbering; StudyFlow model names in the delete cascade prose) re-cited to ADR-030 and their contracts pinned end-to-end by `tests/e2e/account-security.spec.ts` (8 behavioral tests: the 400/409 ladders, the uniform no-enumeration 200, the rotation round-trips via fresh-context logins, the delete cascade + cookie clear + subsequent 401 — written with the fresh-context discipline so the demo owner's storageState cookie can never ride an authenticated scratch call). (4) Single lockfile: `bun.lock` — the vestigial npm `package-lock.json` (still named "omni-study") removed. All guarded by `tests/deployment-surfaces.test.ts` (16 source pins — raw scans where the finding lives IN comments, live fs checks for the script refs and route count). The e2e layer is NEW COVERAGE of already-correct behavior (the routes worked; they had zero tests) — the TDD RED→GREEN applied to the deployment-surface pins (15/16 failed pre-fix) | Accepted — Verified (529 unit + 187 e2e; the RED→GREEN pin evidence + the 10/10 live mobile probe + the v21 evidence set) |
 | ADR-031 | The v22 account-security UI contract: the four ADR-030 routes are UI-wired end-to-end — the loop the reference never ships (it has NO account surface: its sidebar bottom is the collapse chevron alone, its Ajustes is store settings only — live-verified). (1) **Ajustes → "Mi Cuenta"** (`settings-view.tsx`): a SIXTH SectionCard — ShieldCheck/rose-500 at the measured w-5 h-5 (the tone the five store sections leave free; the v10 icon pin counts SIX now) — owning a self-contained /api/auth/me fetch (the async-then setState shape) that renders the email + the "Verificada" emerald badge + member-since (es-MX); change-password and change-email ride the measured Dialog family (max-w-lg chrome, key-remount, the 42px glass-button footer, Spanish chrome with the routes' English errors passing through — the reference's own mixed convention, its login alert measured "Invalid email or password"); delete-account rides a plain Dialog + the NEW `glass-button-danger` @utility (the warning-ramp extension precedent — the reference's own button system one tone further; the AlertDialog primitive stays deliberately UNUSED: its cva `buttonVariants()` defaults clobber the glass fills, the F6 trap), with the cascade warning naming the retail domain's wipe and the logout() exit mechanics (store reset + /login redirect; the route clears the cookie). (2) **The signup verify stage displays the register response's code** (F2 — a REAL bug fixed: `submitForm` discarded the `code` the no-SMTP delivery model puts in the response body; the route's own comment named "the verify screen's self-hosted code note" as the delivery surface and it did not exist — signup verification was UI-unusable on a fresh self-hosted install); the note rides the auth slate-Alert family and hides for the uniform no-code 200 (the already-registered posture). (3) **The login 403 verify sub-card** (F3 — the dead-end closed: UNVERIFIED_COPY told the user to check an email that never arrives): the code entry + "Resend the code" + the delivered-code note (or the neutral no-enumeration copy) + "Verify and sign in" — verify-email sets the session cookie, so the journey completes without a second sign-in; the card is a plain DIV because HTML forbids a nested `<form>` and React hydration silently kills the inner submit (reproduced live: the browser console logged "In HTML, <form> cannot be a descendant of <form>"; Enter in the code field routes to submitVerify explicitly). (4) `AppUser` gains `emailVerified` (the API's publicUser already returned it — the type was stale). (5) The v5 form-control pin caught the first draft's solid input fills — settings-view inputs stay TRANSPARENT (measured trap 13). Pinned TDD-first: `tests/account-ui.test.ts` (13 source pins — RED 12/13 pre-fix, the one pass the trivially-true F5 docs guard) + `tests/e2e/account-ui.spec.ts` (9 behavioral tests, one scratch account deleted LAST; the verify-email bucket isolated via the H3 xff precedent — the shared localhost verify budget runs at exactly 10/15min and the 11th call would 429 M6). PAD Known-Issue #7 closed as a docs-truth row (the config sets no ignoreBuildErrors — the row described a flag retired earlier) | Accepted — Verified (542 unit + 196 e2e; RED→GREEN on both pin layers + the live manual probe of the full 403→resend→verify journey + the five v22 evidence captures) |
 
+| ADR-032 | The v23 profile/name-edit superset: the account-surface family's completion — the account's `fullName` (rendered in the Mi Cuenta readout since v22, set once by the register form or the seed) gains its route and its dialog. (1) **`POST /api/auth/update-profile`** — the change-email family shape (`requireUser()` → per-user rate limit `updateProfile:${user.id}` 10/15min → `parseWith(updateProfileSchema)` → the route-side must-differ guard (posting the current name → 400 "This is already your name." — server state via requireUser's SessionUser, no extra read) → ONE `db.user.update` → `{ ok, name, user: publicUser(updated) }`). The schema: `fullName: z.string().trim().min(1).max(100)` (trim-then-validate; the register ceiling). (2) **The deliberate no-password family split**: the three ADR-030 credential routes verify the password FIRST because they rotate credentials or destroy the account; `fullName` is a benign display field with zero auth-bearing semantics, so the matching posture is the store SETTINGS PATCH (session-gated, no password, rate-limited) — cargo-cult password prompts on benign fields are not security. Disclosed in DEPLOYMENT.md §10 (the five-endpoint table now). (3) **The "Cambiar nombre" dialog** (`settings-view.tsx`): the FOURTH Mi Cuenta action (between the email rotation and the destructive exit — the destructive stays last), the measured Dialog grammar (max-w-lg, key-remount, the 42px glass-button footer), the TRANSPARENT settings-view input (measured trap 13) PREFILLED with the current name, `onChanged(name)` patching the readout's `me.name` (the change-email `onChanged(email)` seam — the route response is the source of truth). (4) **The pins extend, never weaken**: the V22 "three actions" pin grew to the four-action superset; the wiring pin added `/api/auth/update-profile`; 8 new pins guard the route's family shape + the schema + the dialog seam; 1 new e2e behavioral test (the name round-trip: prefill → must-differ 400 → happy path → readout update → a fresh-context `/api/auth/me` reflecting the new name — the no-storageState discipline). (5) The V21 route-count pin caught the new route exactly as designed (the filesystem hit 28 while DEPLOYMENT.md claimed 27 — the count-the-things rule working); DEPLOYMENT.md updated in the same commit | Accepted — Verified (550 unit + 197 e2e; RED→GREEN on the pin layer (9/21 RED pre-fix) + the live manual round-trip: the four-button row, the prefilled dialog, the must-differ 400, the readout + server state update, the seeded name restored + the four v23 evidence captures) |
+
 ---
 
 ## 2. High-Level System Topology `[MANDATORY]`
@@ -700,8 +736,8 @@ Two layers, two runners, disjoint file globs:
 
 | Layer | Runner | Scope | Count |
 |---|---|---|---|
-| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 542 tests / 38 files — Verified |
-| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 196 specs — Verified |
+| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 550 tests / 38 files — Verified |
+| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 197 specs — Verified |
 
 - **Unit seams**: money (the verified ticket math), ticket (V-ID shape),
   router (8-view map + aliases), date (es-MX formatters), validation

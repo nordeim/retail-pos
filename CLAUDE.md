@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (542 tests / 38 files)
-bun run test:e2e       # playwright e2e layer (196 specs, boots standalone :3100)
+bun run test           # vitest unit layer (550 tests / 38 files)
+bun run test:e2e       # playwright e2e layer (197 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -275,10 +275,22 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   nested form — HTML forbids `<form>` in `<form>` and hydration
   rejects it; the resend's neutral branch never leaks account state).
   `AppUser` carries `emailVerified`. Pinned by `tests/account-ui.test.ts`
-  (13 source pins) + `tests/e2e/account-ui.spec.ts` (9 behavioral
-  tests — one scratch account, delete LAST, the verify bucket isolated
+  (13 source pins at v22) + `tests/e2e/account-ui.spec.ts` (9 behavioral
+  tests at v22 — one scratch account, delete LAST, the verify bucket isolated
   via the H3 xff precedent because the shared localhost verify budget
-  runs at exactly 10/15min).
+  runs at exactly 10/15min; v23 grew both to 21 pins + 10 tests).
+- The v23 contracts: the profile/name-edit superset — `POST
+  /api/auth/update-profile` (`{ fullName }` → `{ ok, name, user }`;
+  trim-validated 1–100 chars, must-differ 400, per-user rate limit
+  10/15min, and DELIBERATELY no password proof: `fullName` is a benign
+  display field — the store-settings-PATCH posture, not the
+  credential-rotation posture; ADR-032). The "Cambiar nombre" dialog
+  (the fourth Mi Cuenta action, between the email rotation and the
+  destructive exit) PREFILLS the current name and patches the readout
+  through the `onChanged` seam (the change-email precedent); the two
+  V22 action pins grew to the four-action superset (extend, never
+  weaken). The route-count pin in deployment-surfaces counts 28 route
+  handlers now — DEPLOYMENT.md §10 carries the update-profile row.
 - The v15 contracts: the hover micro-interaction families — every
   row-action icon button carries `rounded-lg p-2 text-slate-400
   transition-colors` + its per-action family (edit/detail indigo,

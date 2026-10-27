@@ -12,7 +12,7 @@ bun install
 bun run build          # next build + standalone assembly (.next/standalone)
 ```
 
-The build compiles the page shell and the 27 route handlers (auth,
+The build compiles the page shell and the 28 route handlers (auth,
 products, categories, registers, cashiers, shifts, sales, settings,
 dashboard, reports, health), then copies `.next/static` and `public/`
 into `.next/standalone/` (see the `build` script in `package.json`).
@@ -176,21 +176,26 @@ Notes:
 
 ## 10. Account security (the UI-wired superset)
 
-Alongside the login/register/verify/reset flows the app ships four
+Alongside the login/register/verify/reset flows the app ships five
 account-security endpoints the hosted reference lacks entirely. They are
-**UI-wired** (v22): Ajustes → **Mi Cuenta** drives change-password /
-change-email / delete-account through the app's dialogs, and the login
-403 / signup verify surfaces drive resend-verification — while the API
-remains scriptable for the owner (the curl examples below). All four are
-rate-limited (10 per 15 minutes per account/IP), verify the current
-password FIRST (a wrong password is rejected with 400 PRE-WRITE), and
-never enumerate. Pinned end-to-end by `tests/e2e/account-security.spec.ts`
+**UI-wired** (v22 + v23): Ajustes → **Mi Cuenta** drives change-password /
+change-email / update-profile / delete-account through the app's dialogs,
+and the login 403 / signup verify surfaces drive resend-verification —
+while the API remains scriptable for the owner (the curl examples
+below). All five are rate-limited (10 per 15 minutes per account/IP).
+The three credential-family routes (change-password, change-email,
+delete-account) verify the current password FIRST (a wrong password is
+rejected with 400 PRE-WRITE); update-profile deliberately does NOT (a
+benign display field — the store-settings PATCH posture, ADR-032).
+None of them enumerate. Pinned end-to-end by
+`tests/e2e/account-security.spec.ts`
 (the API contracts) + `tests/e2e/account-ui.spec.ts` (the UI journeys).
 
 | Endpoint | Contract |
 |---|---|
 | `POST /api/auth/change-password` | `{ currentPassword, newPassword }` → 200. The session SURVIVES the rotation (the cookie is an HMAC over `AUTH_SECRET`, not the password). |
 | `POST /api/auth/change-email` | `{ password, newEmail }` → 200 `{ email }`. Must-differ (400), uniqueness against ALL accounts (409). `emailVerified` stays true — the password proof is the verification. Sign in with the NEW address next time. |
+| `POST /api/auth/update-profile` | `{ fullName }` → 200 `{ name }` (v23). Trim-validated, 1–100 chars, must-differ (400). NO password proof — `fullName` carries no auth semantics (ADR-032's benign-field family split). |
 | `POST /api/auth/delete-account` | `{ password }` → 200. ONE cascade write removes every owned row (products, categories, registers, cashiers, shifts, sales, settings, tokens); the session cookie is cleared with the account. No undo — there is no export surface; back up the SQLite file first (§4). |
 | `POST /api/auth/resend-verification` | `{ email }` → uniform 200 for every caller; the 6-digit code rides the body only for an existing UNVERIFIED account (the no-SMTP self-hosted delivery). |
 

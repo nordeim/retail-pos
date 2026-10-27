@@ -1,6 +1,6 @@
 # VeloxPOS — Punto de venta, your store
 
-![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-542%20%2B%20196%20green-22c55e)
+![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-550%20%2B%20197%20green-22c55e)
 
 **VeloxPOS** is a production-ready, self-hosted clone (functional superset) of
 the [`veloxposretail.base44.app`](https://veloxposretail.base44.app/) point-of-sale
@@ -41,7 +41,7 @@ and pinned by tests rather than left to luck.
 | ⚙️ Ajustes | Store identity, live accent-color theming, ticket footer, card-payment provider, category management |
 | 📱 Mobile navigation | A working hamburger drawer (288px, 8 links, Esc/backdrop/route close, scroll lock) — the reference has none |
 | 🔐 Auth | Email/password with scrypt hashing, HMAC session cookies, rate limiting, register→verify→reset flows, deep-link return (`/login?from_url=…`) |
-| 🔑 Account security | Password rotation, email rotation, account deletion — the **Mi Cuenta** section in Ajustes (dialog-driven, password-verified-first) plus the signup verify stage's self-hosted code note and the login-403 verify/resend flow. The reference has no account surface at all; the four underlying API routes remain scriptable (`docs/DEPLOYMENT.md` §10) |
+| 🔑 Account security | Password rotation, email rotation, **profile name edit**, account deletion — the **Mi Cuenta** section in Ajustes (dialog-driven; the credential routes password-verified-first, the name edit session-gated) plus the signup verify stage's self-hosted code note and the login-403 verify/resend flow. The reference has no account surface at all; the five underlying API routes remain scriptable (`docs/DEPLOYMENT.md` §10) |
 | 🛟 Error recovery | A failed view load (transient blip or a stale build after redeploy) keeps the app shell alive: a Spanish "No se pudo cargar la vista" card with a working Reintentar, plus a one-per-10s guarded auto-reload for stale chunks (three error-boundary layers; the reference ships none). The cards announce to screen readers (`role="alert"` on the mounting card) |
 
 ## Architecture
@@ -72,7 +72,7 @@ flowchart TB
 | DB | Prisma 6 + SQLite | Zero-ops persistence at `<repo>/db/custom.db` |
 | Charts | Hand-rolled SVG | Zero dependencies, deterministic, pixel-controlled |
 | Views | React.lazy code-split registry behind a self-healing error boundary | Each surface ships only its own view; a failed chunk keeps the shell alive and heals (Reintentar re-imports fresh; stale chunks auto-reload once per 10s — see `docs/remediation-plan-v18.md`) |
-| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (542 + 196 green) |
+| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (550 + 197 green) |
 | Runtime | Bun 1.3 | Scripts, seed, and the standalone server |
 
 ## Quick start
@@ -145,7 +145,7 @@ conflict · 422 business rule.
 |---|---|---|
 | `/api/auth/login · logout · me · register · verify-email` | POST/GET | Session lifecycle |
 | `/api/auth/forgot-password · reset-password` | POST | The one-shot reset flow |
-| `/api/auth/change-password · change-email · delete-account · resend-verification` | POST | Account security (UI-wired in Ajustes → Mi Cuenta; API remains scriptable — `docs/DEPLOYMENT.md` §10) |
+| `/api/auth/change-password · change-email · update-profile · delete-account · resend-verification` | POST | Account security (UI-wired in Ajustes → Mi Cuenta; API remains scriptable — `docs/DEPLOYMENT.md` §10) |
 | `/api/products` · `/api/products/[id]` | GET/POST · PATCH/DELETE | Inventory (name+owner unique) |
 | `/api/categories` · `/api/categories/[id]` | GET/POST · PATCH/DELETE | Product categories |
 | `/api/registers` · `/api/registers/[id]` | GET/POST · PATCH/DELETE | Cajas (delete guarded while a shift is open) |

@@ -1690,3 +1690,93 @@ Stage Summary:
   react-dom boot floor; the reference's own broken flows (nothing to
   mirror); a profile/name-edit UI remains future work; every
   standing v8-v21 disclosure unchanged.
+
+---
+Task ID: V23
+Agent: Z.ai (main agent)
+Task: The V23 cycle — audit the codebase + the reference, surface the profile/name-edit UI (the account-surface family's completion: POST /api/auth/update-profile + the Cambiar nombre dialog), docs lockstep, commit + SSH push (main only).
+
+Work Log:
+- Baseline: the workspace refreshed via git pull (e411d06 -> 2feac28,
+  only docs/session_38.md — the V22 raw log — arrived); the locals
+  intact (.env with DATABASE_URL="file:../db/custom.db", db/ at the
+  repo root). Core docs re-read and validated against the code (AGENTS
+  contracts + Tailwind v4 traps, CLAUDE, README, PAD v2.9.0/ADR-031,
+  SKILL v1.16.0, session_37/38, the v22 plan, the worklog tail).
+- Baseline gates: lint 0 · tsc 0 · build ✓ · unit 542/542 · e2e
+  196/196 (3.5m) — first-try, zero code changes.
+- The audit (8th cycle): reference UNCHANGED (Terminal gated, both
+  cajas Cerrada, 12 products, 2 sales, Reports "Sin datos en este
+  período"); at 390px still NO hamburger (nav 219px, main 170px,
+  viewport-locked); no account surface anywhere (the sidebar bottom is
+  the collapse chevron alone; Ajustes = the five store sections). The
+  clone's mobile drawer re-verified LIVE at 390x844 (aria-expanded
+  cycle, scroll lock, 8 links at a uniform 44px pitch, Esc close +
+  focus return) — the TailwindCSS v4 mobile-menu trap is NOT present.
+- The V22 additions verified LIVE end-to-end with a scratch account
+  (register -> the code note displays 470303 -> the login-403 verify
+  card -> resend delivers 047530 -> entering the code lands in the
+  app; the account deleted via the API after, the dev-DB census
+  re-checked); the Mi Cuenta readout verified at desktop + 390px.
+  neo-crm UNCHANGED since the V22 review (HEAD facdd56 = the
+  session-194 log commit on 6d655f9).
+- F1 scoped (the V22 session log's own suggested next step): the
+  account's fullName renders in the Mi Cuenta readout but NOTHING can
+  change it — no route accepts an update, no dialog offers the edit.
+  No other real findings (Known-Issues clean, docs counts lockstep,
+  the process.exit dev warning is the pinned ADR-020 boot-guard).
+- TDD RED: the extended tests/account-ui.test.ts (21 pins — the two
+  V22 action pins grown to the four-action superset + 8 new) failed
+  9/21 pre-fix (the one pass the trivially-true no-verifyPassword
+  guard against the empty route string); the new e2e behavioral test
+  (the name round-trip) failed at the missing surfaces.
+- TDD GREEN (ADR-032): updateProfileSchema (trim/min-1/max-100); POST
+  /api/auth/update-profile in the change-email family shape
+  (requireUser, per-user rate limit 10/15min, the route-side
+  must-differ 400, the publicUser envelope) with the DELIBERATE
+  no-password split (fullName is a benign display field — the
+  store-settings-PATCH posture, not the credential-rotation posture);
+  the Cambiar nombre dialog (the FOURTH Mi Cuenta action, between the
+  email rotation and the destructive exit; the measured Dialog
+  grammar; the TRANSPARENT input trap-13; prefilled; the onChanged
+  seam patching the readout). Pins 21/21.
+- One execution-time catch: the V21 deployment-surfaces route-count
+  pin failed exactly as designed on the first full-suite run (the
+  filesystem hit 28 route handlers while DEPLOYMENT.md claimed 27 —
+  the count-the-things rule); DEPLOYMENT.md's count + §10 (the
+  five-endpoint table + the no-password split disclosure) updated in
+  the same commit. One design refinement: requireUser's SessionUser
+  already carries fullName, so the planned extra findUnique read was
+  dropped.
+- The implementation verified LIVE on the dev server (the four-button
+  row, the prefilled dialog, the must-differ 400 "This is already
+  your name.", the readout + server state update, the seeded name
+  restored via the API).
+- The evidence set: four v23-* captures under docs/screenshots/
+  (account-section, change-name-dialog, name-updated-readout,
+  mobile-drawer-open-390).
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 550/550 (38 files,
+  542+8) · e2e 197/197 (3.4m, 196+1).
+- Docs lockstep: README (badge 550+197, the feature row, the API row);
+  AGENTS (the account UI contract extended to v22+v23); CLAUDE (the
+  v23 contracts note + counts); PAD v2.10.0 (history + ADR-032 + the
+  testing table); DEPLOYMENT.md (28 route handlers + §10);
+  SKILL v1.17.0; docs/remediation-plan-v23.md (ledger L1-L12 +
+  execution results); docs/session_39.md; this entry.
+
+Stage Summary:
+- V23 closed the account-surface family's completion: the profile
+  name edit — POST /api/auth/update-profile (the change-email family
+  shape, deliberately password-free for the benign field) + the
+  Cambiar nombre dialog (prefilled, the onChanged seam) — pinned by
+  21 source pins (8 new, 2 grown) + 10 behavioral e2e tests (1 new).
+- The reference is unchanged for the 8th consecutive cycle; the
+  mobile drawer contract re-verified live (44px pitch, Esc/focus
+  return) with the v23 evidence set.
+- The V21 route-count pin caught the new route exactly as designed
+  (27 -> 28) — the mechanical docs-truth pins pay rent.
+- Gates: 550 unit + 197 e2e green; all counts bumped in the same
+  commit (542->550, 196->197 everywhere).
+- Known-open (disclosed): the F2 flake watch (clean this run); the
+  react-dom boot floor; the reference's own broken flows (nothing to
+  mirror); every standing v8-v22 disclosure unchanged.
