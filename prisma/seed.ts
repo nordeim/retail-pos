@@ -74,12 +74,29 @@ async function main() {
   // Bebidas — measured live: its donut maps the palette by this sequence).
   // Staggered createdAt keeps the ordering deterministic against ties.
   const categoryNames = ["Lácteos", "Limpieza", "Higiene Personal", "Alimentos", "Snacks", "Bebidas"];
+  // V16/F2: the reference's ENTITIES surfaces (Inventario chips + Ajustes
+  // categorías) render a DIFFERENT sequence (DOM-measured twice):
+  // Snacks, Lácteos, Higiene Personal, Limpieza, Alimentos, Bebidas —
+  // sortOrder carries it while createdAt keeps the donut order.
+  const CATEGORY_SORT_ORDER: Record<string, number> = {
+    Snacks: 1,
+    Lácteos: 2,
+    "Higiene Personal": 3,
+    Limpieza: 4,
+    Alimentos: 5,
+    Bebidas: 6,
+  };
   const categories = new Map<string, { id: string }>();
   for (const [i, name] of categoryNames.entries()) {
     const row = await db.category.upsert({
       where: { userId_name: { userId: owner.id, name } },
-      create: { userId: owner.id, name, createdAt: rowAt(i) },
-      update: {},
+      create: {
+        userId: owner.id,
+        name,
+        createdAt: rowAt(i),
+        sortOrder: CATEGORY_SORT_ORDER[name] ?? 0,
+      },
+      update: { sortOrder: CATEGORY_SORT_ORDER[name] ?? 0 },
     });
     categories.set(name, row);
   }

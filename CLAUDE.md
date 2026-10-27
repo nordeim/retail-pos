@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (470 tests / 31 files)
-bun run test:e2e       # playwright e2e layer (166 specs, boots standalone :3100)
+bun run test           # vitest unit layer (478 tests / 32 files)
+bun run test:e2e       # playwright e2e layer (173 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -178,6 +178,28 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   `titleClassName="mb-5"` (the 20px heading gap). The sidebar collapse is
   MEASURED AT PARITY (220↔68px, 300ms, labels conditionally removed) —
   do not re-audit.
+- The v16 contracts: **the Tailwind v4 default palette is NOT the
+  reference's palette** — the v4 engine re-derived every default color
+  in oklch and 17/22 spot-checked entries render beyond ±2 per channel
+  of the reference's v3 hexes (indigo-500 Δ56, red-500 Δ24,
+  green-700 Δ21, violet-600 Δ24 — pixel-read via
+  `scripts/palette-drift-v16.ts`); the `@theme` block in globals.css
+  pins every used entry (61) to its v3 hex, a NEW palette color
+  requires its pin in the same commit (class parity ≠ color parity;
+  the e2e v3-exactness pins read literal rgb(21,128,61) /
+  rgb(217,119,6) / rgb(79,70,229) + the pill's pixel bytes — the
+  color-mix /opacity modifiers serialize oklab even over hex vars,
+  pixel-reads carry those). The category ENTITIES order (Inventario
+  chips + Ajustes categorías) rides `Category.sortOrder` — seeded to
+  the reference's chip sequence (Snacks, Lácteos, Higiene, Limpieza,
+  Alimentos, Bebidas), server-managed (create = max+1, never
+  client-writable), while the donut's byCategory KEEPS its own
+  createdAt order (Lácteos first — the v10 pin; the reference renders
+  two different orders, both matched). The reference's pages are
+  VIEWPORT-LOCKED (no document scroll — its inventory rows 4-12 and
+  settings sections below the fold are unreachable at 1280×800); the
+  clone's flowing layout is the functional superset. Probe tooling: a
+  shift close must reset BOTH shift.status AND register.status.
 - The v15 contracts: the hover micro-interaction families — every
   row-action icon button carries `rounded-lg p-2 text-slate-400
   transition-colors` + its per-action family (edit/detail indigo,

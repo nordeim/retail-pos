@@ -26,12 +26,15 @@ import { NotFoundError, type EntityDelegate } from "./http";
 
 // ---- the minimal structural Prisma model --------------------------------------
 
+type OrderByClause = Record<string, "asc" | "desc">;
+
 type OwnedModel = {
   findMany(args: {
     where: { userId: string };
-    orderBy?: { createdAt?: "asc" | "desc"; id?: "asc" | "desc" }[];
+    orderBy?: OrderByClause[];
   }): Promise<unknown[]>;
   findFirst(args: { where: Record<string, unknown> }): Promise<unknown>;
+  findFirstOrThrow?(args: { where: Record<string, unknown> }): Promise<unknown>;
   create(args: { data: unknown }): Promise<unknown>;
   update(args: { where: { id: string }; data: unknown }): Promise<unknown>;
   delete(args: { where: { id: string } }): Promise<unknown>;
@@ -46,6 +49,13 @@ type OwnedConfig = {
   createSchema: ZodType<Row>;
   updateSchema: ZodType<Row>;
   orderBy?: "asc" | "desc";
+  // V16/F2: a delegate may override the list ordering (the category's
+  // entities surfaces order by sortOrder — the reference's measured chip
+  // sequence — while the default stays the v10 createdAt+id rule).
+  listOrderBy?: OrderByClause[];
+  // V16/F2: a delegate may enrich the create payload server-side (the
+  // category's sortOrder = max+1 so user-created rows append).
+  prepareCreate?: (userId: string, parsed: Row) => Promise<Row>;
 };
 
 export const sentKeysPatch = (input: unknown, parsed: Row): Row => {
@@ -74,15 +84,20 @@ function makeOwnedDelegate(config: OwnedConfig): EntityDelegate {
         // V10/F1h: createdAt ties (rows seeded in one tight loop) made
         // SQLite's order arbitrary — the id tiebreaker keeps every list
         // deterministic (the visible orders are pinned against the
-        // reference's own pages).
-        orderBy: [
-          { createdAt: config.orderBy ?? "asc" },
-          { id: "asc" },
-        ],
+        // reference's own pages). V16/F2: listOrderBy overrides the whole
+        // array when a delegate needs its own rule.
+        orderBy:
+          config.listOrderBy ?? [
+            { createdAt: config.orderBy ?? "asc" },
+            { id: "asc" },
+          ],
       }),
     create: async (userId, input) => {
       const parsed = config.createSchema.parse(input) as Row;
-      return config.model.create({ data: { ...parsed, userId } });
+      const data = config.prepareCreate
+        ? await config.prepareCreate(userId, parsed)
+        : parsed;
+      return config.model.create({ data: { ...data, userId } });
     },
     update: async (userId, id, input) => {
       await owned(userId, id);
@@ -104,6 +119,20 @@ export const categoryDelegate = makeOwnedDelegate({
   createSchema: categorySchema,
   updateSchema: categorySchema,
   orderBy: "asc",
+  // V16/F2: the ENTITIES display order (Inventario chips + Ajustes list)
+  // is the reference's measured chip sequence — sortOrder first, the v10
+  // createdAt+id rule breaking ties (rows that predate the column carry 0).
+  listOrderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+  // V16/F2: user-created categories append (sortOrder = max+1); the
+  // column is never client-writable (absent from categorySchema).
+  prepareCreate: async (userId, parsed) => {
+    const rows = (await db.category.findMany({
+      where: { userId },
+      select: { sortOrder: true },
+    })) as Array<{ sortOrder: number }>;
+    const max = rows.reduce((m, r) => Math.max(m, r.sortOrder), 0);
+    return { ...parsed, sortOrder: max + 1 };
+  },
 });
 
 export const registerDelegate = makeOwnedDelegate({

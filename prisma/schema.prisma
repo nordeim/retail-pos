@@ -98,6 +98,12 @@ model Category {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // V16/F2: the ENTITIES display order (Inventario chips + Ajustes list) —
+  // seeded to the reference's measured chip sequence (Snacks first). The
+  // donut's byCategory keeps its own createdAt order (the v10 pin); this
+  // column is server-managed only (create computes max+1 — never client-
+  // writable).
+  sortOrder Int      @default(0)
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   products Product[]

@@ -492,6 +492,40 @@ rules:
     hover screenshots ride Playwright's `page.mouse` (the v13 lesson),
     with the hover state verified before the shot.
 
+29. The palette pins + the category display order + the reference's
+    clipped scrolling (v16, live-measured on both apps): **Tailwind v4's
+    default palette is NOT the reference's palette** — the v4 engine
+    re-derived every default color in oklch and 17/22 spot-checked
+    entries render beyond ±2 per channel of the reference's v3 hexes
+    (indigo-500 Δ56, red-500 Δ24, green-700 Δ21, violet-600 Δ24,
+    amber-600 Δ8; pixel-read via `scripts/palette-drift-v16.ts`). The
+    `@theme` block in globals.css pins every palette entry the app uses
+    (61) to its v3 hex — the values the reference renders; utilities,
+    /opacity modifiers, ring/shadow/border consumers all inherit. RULE:
+    a NEW palette color in any component requires adding its v3 pin in
+    the same commit — class parity is NOT color parity on v4 (the
+    e2e v3-exactness pins in `tests/e2e/functional-parity-v16.spec.ts`
+    read literal `rgb(21,128,61)` / `rgb(217,119,6)` / `rgb(79,70,229)`
+    and the pill's pixel bytes). Chart literals (#6366f1,
+    DONUT_COLORS) and shadcn tokens (--primary 127 98 244) are exact by
+    construction and stay out of the block. The category ENTITIES
+    order (Inventario chips + Ajustes categorías) is `sortOrder` —
+    seeded to the reference's measured chip sequence (Snacks, Lácteos,
+    Higiene Personal, Limpieza, Alimentos, Bebidas) while the DONUT's
+    byCategory keeps its own createdAt order (Lácteos first — the v10
+    pin; the reference renders two different orders and both are now
+    matched); `sortOrder` is server-managed (create computes max+1,
+    never client-writable). The reference's pages are VIEWPORT-LOCKED —
+    its document never scrolls (scrollTop pinned to 0, no internal
+    scroll container): its inventory rows 4-12, its settings sections
+    below the fold, and its low-stock card bottom are PERMANENTLY
+    UNREACHABLE at 1280×800; the clone's flowing layout is the
+    functional superset — future pixel-diffs read full-page height
+    deltas against that fact. PROBE TOOLING: a shift close must reset
+    BOTH `shift.status` AND `register.status` (the close endpoint
+    writes both in one transaction — a direct DB write that skips the
+    register leaves phantom "Abierta" cards).
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content

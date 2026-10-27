@@ -1121,3 +1121,94 @@ Stage Summary:
   shift-gated terminal, empty cashier combobox) have nothing to mirror;
   the reports with-data skins stay unobservable; all standing v8-v14
   disclosures unchanged.
+
+---
+
+Task ID: v16-cycle
+Agent: Z.ai (main agent, session 25)
+Task: The V16 remediation cycle — the full-page pixel-diff pass, the
+login-surface hover sweep, the mobile drawer timing carry-over, the
+remediation plan, the TDD execution, the evidence, the docs lockstep,
+the commit + the SSH-wrapper push.
+
+Work Log:
+- Baseline: git pull (acquired the remote's session_24 transcript);
+  workspace intact; gates re-ran green (lint 0 · tsc 0 · build ✓ ·
+  470/470 unit · 166/166 e2e) before any probing.
+- The login sweep: CLEAN — the social/link/Sign-in hover classes match
+  the reference exactly (source-verified), the v12 geometry pins hold,
+  the card sections measure identical; the reference's /signup +
+  /forgot direct URLs 404 (SD-20 unchanged).
+- The mobile drawer carry-over CLOSED: the panel renders 288px with
+  `enter 0.2s` (the `animate-in slide-in-from-left duration-200` — the
+  disclosed 200ms slide), 8 links at the 44px pitch, zero horizontal
+  overflow; the reference keeps its squeezed plain sidebar (standing).
+- The pixel-diff pass (Playwright captures of both apps: 9 surfaces at
+  1280×800 + the 390px mobile pair; per-view diff bands; VLM reads;
+  computed-geometry verification of every VLM claim):
+  * F1 THE HEADLINE — Tailwind v4's default palette is NOT the
+    reference's palette: 17/22 spot-checked entries render beyond ±2
+    per channel of the reference's v3 hexes (indigo-500 Δ56, red-500
+    Δ24, green-700 Δ21, violet-600 Δ24, amber-600 Δ8; pixel-read in
+    Chromium via scripts/palette-drift-v16.ts). The reference renders
+    the v3 hexes; the class-pinning idiom had silently accepted the
+    drift (class parity ≠ color parity).
+  * F2 the category ENTITIES display order — the reference's chips +
+    Ajustes render Snacks, Lácteos, Higiene, Limpieza, Alimentos,
+    Bebidas (DOM-measured twice) while its donut renders another
+    order; the clone's chips/Ajustes rendered the donut order.
+  * F3 NEW EVIDENCE — the reference's pages are VIEWPORT-LOCKED (its
+    document never scrolls: inventory rows 4-12, the settings lower
+    sections, the low-stock card bottom are unreachable at 1280×800);
+    the clone's flowing layout is the superset. Explains every
+    full-page height delta the diff showed.
+  * F4 tooling — a shift close must reset BOTH shift.status AND
+    register.status (a direct DB write skipping the register leaves
+    phantom "Abierta" cards); the capture scripts hardened.
+  * Verified at parity (the L1-L24 ledger): the login surface, the
+    KPI cards, the dashboard section anchors (y243/y689 identical),
+    the reports KPI grid (x[244,587,929] gaps[16,16] exact), the
+    settings inputs, the zap chip, the low-stock family classes, the
+    donut legend; every VLM "difference" claim beyond the findings
+    resolved to a misread under computed-geometry verification.
+- The plan: docs/remediation-plan-v16.md (the L1-L24 verification
+  ledger, SD-63..66, the batches) — validated against the codebase
+  before execution.
+- TDD execution: 8 unit pins (5 red / 3 guards) + 7 e2e pins (red, the
+  auth setup + the donut guard green by design) → B1 the @theme
+  palette pin block (61 v3 hexes) → B2 the Category.sortOrder column +
+  the seed stamps + the delegate's listOrderBy/prepareCreate (max+1
+  append, never client-writable) → all green.
+- E2e authoring lessons (hardened): the /opacity modifiers serialize
+  oklab even over hex-pinned vars (color-mix — the pill pin reads the
+  sRGB pixel bytes, the v15 idiom); the Ajustes chips are <li> rows.
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 478/478 (470+8, 32
+  files) · e2e 173/173 (166+7).
+- Evidence: desktop-inventory-chips.png (the chip sequence verified
+  live + VLM-verified: Todos, Snacks, Lácteos, Higiene Personal,
+  Limpieza, Alimentos, Bebidas) + the full standard set refreshed
+  (the palette touches every surface).
+- Docs lockstep: AGENTS.md contract 29; CLAUDE.md counts + the v16
+  block; README badge (478+173); PAD v2.4.0 + ADR-026 + §8 counts;
+  retail-pos_SKILL.md v1.11.0; docs/session_25.md; the plan's §6
+  execution ledger; this entry.
+
+Stage Summary:
+- v16 made the clone's palette the reference's palette: the globals.css
+  @theme block pins all 61 used entries to their v3 hexes (one source —
+  utilities, /opacity modifiers, ring/shadow/border consumers inherit),
+  with e2e v3-exactness pins reading the literal reference values (the
+  badge text, the amber count, the ticket cell, the pill's pixel
+  bytes). The rule is recorded: a new palette color requires its v3
+  pin in the same commit.
+- The category entities order (chips + Ajustes) now rides a
+  server-managed sortOrder seeded to the reference's measured sequence,
+  while the donut keeps its own createdAt order — both reference
+  orders matched.
+- New evidence recorded: the reference's viewport-locked scrolling
+  (its long content unreachable below the fold) — the clone's scroll
+  is the functional superset; probe tooling hardened (the dual-status
+  shift close).
+- Known-open (disclosed): the reference's own broken flows have
+  nothing to mirror; the reports with-data skins stay unobservable;
+  all standing v8-v15 disclosures unchanged.

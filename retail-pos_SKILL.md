@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.10.0
+version: 1.11.0
 last_updated: "2026-10-27"
 tags:
   - pos
@@ -25,8 +25,19 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v15 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 470/470 unit · 166/166 e2e** (the v15 close:
+> template), validated against the codebase at the v16 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 478/478 unit · 173/173 e2e** (the v16 close:
+> the full-page pixel-diff pass found that **Tailwind v4's default palette
+> is not the reference's palette** — 17/22 spot-checked entries render
+> beyond ±2 per channel of the reference's v3 hexes (indigo-500 Δ56,
+> red-500 Δ24, green-700 Δ21, violet-600 Δ24); a globals.css `@theme`
+> block now pins all 61 used entries to their v3 hexes with e2e
+> v3-exactness pins; the category ENTITIES order (chips + Ajustes)
+> moved to a server-managed `Category.sortOrder` seeded to the
+> reference's chip sequence while the donut keeps its own createdAt
+> order; new evidence: the reference's pages are viewport-locked — its
+> long content is unreachable below the fold; the clone's flowing
+> layout is the functional superset). Previously v1.10.0 (the v15 close:
 > the hover micro-interaction families went reference-faithful — every
 > row-action icon button carries `transition-colors` + its per-action
 > family (edit/detail indigo, delete red, MAIL blue), the table badges
@@ -106,8 +117,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 470 tests / 31 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 166 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 478 tests / 32 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 173 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -137,8 +148,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 470/470
-bun run test:e2e           # playwright: 166/166 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 478/478
+bun run test:e2e           # playwright: 173/173 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -518,8 +529,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 470/470 vitest
-bun run test:e2e      # 166/166 playwright (production posture)
+bun run test          # 478/478 vitest
+bun run test:e2e      # 173/173 playwright (production posture)
 ```
 
 Verification beyond the gates:
