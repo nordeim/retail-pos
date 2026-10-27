@@ -29,17 +29,26 @@ export function SignupSurface() {
   const [code, setCode] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState("");
+  /** V22/F2: the register response's OTP — the no-SMTP self-hosted delivery
+   *  model puts the code IN the response (the register route's documented
+   *  contract), and this surface is its landing place. Previously discarded:
+   *  the verify stage told the user to check an email that never arrives. */
+  const [issuedCode, setIssuedCode] = React.useState("");
 
   const submitForm = async (event: React.FormEvent) => {
     event.preventDefault();
     setBusy(true);
     setError("");
     try {
-      await apiSend<{ ok: boolean; code?: string }>("POST", "/api/auth/register", {
+      const res = await apiSend<{ ok: boolean; code?: string }>("POST", "/api/auth/register", {
         fullName,
         email,
         password,
       });
+      // V22/F2: KEEP the delivered code — the verify stage's self-hosted
+      // code note renders it (a uniform 200 without a code is the
+      // already-registered posture; the note simply stays hidden).
+      setIssuedCode(typeof res?.code === "string" ? res.code : "");
       setStage("verify");
     } catch (err: unknown) {
       setError(err instanceof ApiError ? err.message : "Could not create the account.");
@@ -139,6 +148,29 @@ export function SignupSurface() {
           <div className="w-full">
             <form onSubmit={submitVerify} className="space-y-4 sm:space-y-5">
               <div className="space-y-3 sm:space-y-4">
+                {issuedCode ? (
+                  // V22/F2: the self-hosted code note — the auth surface's
+                  // shadcn-Alert slate family (V12/F5 grammar). The no-SMTP
+                  // install delivers the OTP in the register response; this
+                  // note IS the delivery. (A uniform register 200 without a
+                  // code leaves it hidden — the already-registered posture.)
+                  <div
+                    role="status"
+                    data-testid="signup-code-note"
+                    className="relative w-full rounded-xl border border-slate-200 bg-slate-50/70 p-4"
+                  >
+                    <div className="text-sm leading-relaxed text-slate-700">
+                      No email service is configured on this self-hosted
+                      install — your verification code is:{" "}
+                      <span
+                        data-testid="issued-code"
+                        className="font-mono text-base font-semibold tracking-widest text-slate-900"
+                      >
+                        {issuedCode}
+                      </span>
+                    </div>
+                  </div>
+                ) : null}
                 <TextField
                   id="signup-code"
                   label="Verification code"

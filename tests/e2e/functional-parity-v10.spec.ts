@@ -105,7 +105,7 @@ test.describe("functional parity (v10) — the low-stock header gap", () => {
 });
 
 test.describe("functional parity (v10) — the Ajustes header icons", () => {
-  test("the five sections carry the ref's per-section icon classes at 20px", async ({ page }) => {
+  test("the sections carry the ref's per-section icon classes at 20px", async ({ page }) => {
     await page.goto("/StoreSettings");
     // Wait for the settings view to render its sections.
     await expect(page.getByRole("heading", { name: "Información del Negocio" })).toBeVisible();
@@ -131,8 +131,12 @@ test.describe("functional parity (v10) — the Ajustes header icons", () => {
       "Ticket / Recibo": ["h-5 w-5 text-green-500", "20px"],
       "Proveedor de Pagos con Tarjeta": ["h-5 w-5 text-blue-500", "20px"],
       "Categorías de Producto": ["h-5 w-5 text-amber-500", "20px"],
+      // V22/F1: the superset's sixth section — the account-security UI the
+      // reference lacks (SD-86: ShieldCheck/rose-500, the tone the five
+      // store sections leave free, at the same measured 20px).
+      "Mi Cuenta": ["h-5 w-5 text-rose-500", "20px"],
     };
-    expect(icons.length).toBe(5);
+    expect(icons.length).toBe(6);
     for (const row of icons) {
       const [cls, size] = expected[row.text] ?? [];
       expect(cls, `icon class for ${row.text}`).toBeTruthy();

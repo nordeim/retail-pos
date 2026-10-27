@@ -26,6 +26,9 @@ export type AppUser = {
   id: string;
   email: string;
   name: string;
+  /** V22/F4: the API's publicUser returns it; the Mi Cuenta readout's
+   *  "Verificada" badge consumes it. */
+  emailVerified: boolean;
   createdAt: string;
   updatedAt: string;
 };

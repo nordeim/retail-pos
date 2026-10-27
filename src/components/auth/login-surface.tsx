@@ -41,6 +41,20 @@ export function LoginSurface() {
    *  (non-production, or RESET_INAPP_DELIVERY=1), the sent screen carries
    *  the link inside the green alert — the documented superset. */
   const [resetUrl, setResetUrl] = React.useState("");
+  /** V22/F3: the unverified-account 403 state — the login stops being a
+   *  dead end ("check your email" for an email that never arrives on a
+   *  no-SMTP install). The verify sub-card offers the code entry + the
+   *  resend right here; verify-email sets the session cookie, so the
+   *  journey completes without a second sign-in round-trip. */
+  const [needsVerification, setNeedsVerification] = React.useState(false);
+  const [verifyCode, setVerifyCode] = React.useState("");
+  const [verifyBusy, setVerifyBusy] = React.useState(false);
+  const [verifyError, setVerifyError] = React.useState("");
+  /** The delivered code (self-hosted delivery — the resend response carries
+   *  it for an existing UNVERIFIED account; the uniform 200 without one
+   *  renders the neutral copy instead). */
+  const [deliveredCode, setDeliveredCode] = React.useState("");
+  const [resentNeutral, setResentNeutral] = React.useState(false);
 
   const social = (provider: string) => {
     setNotice(
@@ -52,6 +66,9 @@ export function LoginSurface() {
     event.preventDefault();
     setBusy(true);
     setError("");
+    setNeedsVerification(false);
+    setDeliveredCode("");
+    setResentNeutral(false);
     try {
       await apiSend("POST", "/api/auth/login", { email, password });
       // V8/F1: return to the deep-linked route the 401 gate came from
@@ -61,8 +78,55 @@ export function LoginSurface() {
       window.location.replace(safeReturnTo(fromUrl, window.location.origin));
       // Full reload — the shell boots fresh with the session cookie.
     } catch (err: unknown) {
+      // V22/F3: the 403 is the UNVERIFIED-account posture — a state of its
+      //  own (the generic 401 stays the plain inline alert).
+      setNeedsVerification(err instanceof ApiError && err.status === 403);
       setError(err instanceof ApiError ? err.message : "Could not sign in.");
       setBusy(false);
+    }
+  };
+
+  // V22/F3: the resend — uniform 200 for every caller; only an existing
+  //  UNVERIFIED account's response carries a fresh code (the no-SMTP
+  //  self-hosted delivery). The neutral copy never leaks account state.
+  const resendCode = async () => {
+    setVerifyBusy(true);
+    setVerifyError("");
+    setDeliveredCode("");
+    setResentNeutral(false);
+    try {
+      const res = await apiSend<{ ok: boolean; code?: string }>(
+        "POST",
+        "/api/auth/resend-verification",
+        { email },
+      );
+      if (typeof res?.code === "string") {
+        setDeliveredCode(res.code);
+      } else {
+        setResentNeutral(true);
+      }
+    } catch (err: unknown) {
+      setVerifyError(err instanceof ApiError ? err.message : "Could not resend the code.");
+    } finally {
+      setVerifyBusy(false);
+    }
+  };
+
+  // V22/F3: the verify submit — verify-email sets the session cookie, so a
+  //  success lands in the app exactly like a successful sign-in (the
+  //  from_url round-trip included). Button-driven (NOT a nested form —
+  //  HTML forbids <form> inside the login form and React's hydration
+  //  rejects it; Enter in the code field routes here explicitly).
+  const submitVerify = async () => {
+    setVerifyBusy(true);
+    setVerifyError("");
+    try {
+      await apiSend("POST", "/api/auth/verify-email", { email, code: verifyCode });
+      const fromUrl = new URLSearchParams(window.location.search).get("from_url");
+      window.location.replace(safeReturnTo(fromUrl, window.location.origin));
+    } catch (err: unknown) {
+      setVerifyError(err instanceof ApiError ? err.message : "That code is not correct.");
+      setVerifyBusy(false);
     }
   };
 
@@ -276,6 +340,102 @@ export function LoginSurface() {
                 className="relative w-full rounded-xl border border-slate-200 bg-slate-50/70 p-4"
               >
                 <div className="text-sm leading-relaxed text-slate-700">{notice}</div>
+              </div>
+            ) : null}
+            {/* V22/F3: the verify sub-card — the 403 completes HERE. The code
+                entry (the user may still hold their original code), the
+                resend for the no-SMTP delivery, and the delivered-code note
+                ride the auth Alert family. A plain DIV (never a nested
+                form — HTML forbids <form> in <form> and hydration rejects
+                it); Enter in the code field routes to submitVerify. */}
+            {needsVerification ? (
+              <div
+                data-testid="login-verify-card"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-4"
+              >
+                <div className="space-y-3">
+                  {deliveredCode ? (
+                    <div
+                      role="status"
+                      data-testid="login-code-note"
+                      className="text-sm leading-relaxed text-slate-700"
+                    >
+                      No email service is configured on this self-hosted
+                      install — your new verification code is:{" "}
+                      <span
+                        data-testid="issued-code"
+                        className="font-mono text-base font-semibold tracking-widest text-slate-900"
+                      >
+                        {deliveredCode}
+                      </span>
+                    </div>
+                  ) : null}
+                  {resentNeutral ? (
+                    <div
+                      role="status"
+                      data-testid="login-code-note"
+                      className="text-sm leading-relaxed text-slate-700"
+                    >
+                      If that address still needs a verification code, a new one
+                      has been issued.
+                    </div>
+                  ) : null}
+                  <div>
+                    <label
+                      htmlFor="login-verify-code"
+                      className="mb-1.5 block text-center text-sm font-medium text-slate-700"
+                    >
+                      Verification code
+                    </label>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+                        <Lock className="h-4 w-4 text-slate-400" />
+                      </span>
+                      <Input
+                        id="login-verify-code"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        value={verifyCode}
+                        onChange={(event) => setVerifyCode(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            if (verifyCode.trim().length > 0 && !verifyBusy) {
+                              void submitVerify();
+                            }
+                          }
+                        }}
+                        placeholder="123456"
+                        data-testid="login-verify-code-input"
+                        className="h-10 rounded-xl border-slate-200 bg-white pl-10 text-base text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:ring-slate-400 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-11"
+                        required
+                      />
+                    </div>
+                  </div>
+                  {verifyError ? (
+                    <AuthError message={verifyError} />
+                  ) : null}
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      type="button"
+                      disabled={verifyBusy || verifyCode.trim().length === 0}
+                      onClick={() => void submitVerify()}
+                      data-testid="login-verify-submit"
+                      className="h-10 w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white sm:h-11"
+                    >
+                      {verifyBusy ? "Verifying…" : "Verify and sign in"}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => void resendCode()}
+                      disabled={verifyBusy}
+                      data-testid="login-resend-button"
+                      className="vx-focus text-sm font-medium text-slate-500 transition-colors hover:text-slate-700"
+                    >
+                      Resend the code
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : null}
           </div>

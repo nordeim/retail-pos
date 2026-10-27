@@ -1590,3 +1590,103 @@ Stage Summary:
   react-dom boot floor; the account-security routes remain UI-less by
   design; the reference's own broken flows (nothing to mirror); every
   standing v8-v20 disclosure unchanged.
+
+---
+Task ID: V22
+Agent: Z.ai (main agent)
+Task: The V22 cycle — audit the codebase + the reference, close the account-security loop end-to-end (the Mi Cuenta UI, the discarded-OTP signup bug, the login-403 dead-end), docs lockstep, commit + SSH push (main only).
+
+Work Log:
+- Baseline: fresh clone at b3439bb (the sandbox had been reset); the
+  locals recreated (.env from .env.example, db/ pushed + seeded);
+  one environment repair — the sandbox's Playwright cache held a
+  different chromium revision than the pinned @playwright/test 1.63.0
+  requires, so the first e2e run failed 168/187 at browser launch
+  (all 1ms infra failures, zero code failures); playwright install
+  chromium fixed it with zero code changes. Core docs re-read and
+  validated against the code (AGENTS 31 contracts, CLAUDE, README,
+  PAD v2.8.0/ADR-030, SKILL v1.15.0, session_35/36, the v21 plan,
+  the worklog tail).
+- Baseline gates: lint 0 · tsc 0 · build ✓ · unit 529/529 · e2e
+  187/187 (3.2m, first-try once the browser matched).
+- The audit (7th cycle): reference UNCHANGED (Terminal gated, both
+  cajas Cerrada, 12 products, 2 sales, Reports "Sin datos en este
+  período"); at 390px still NO hamburger (220px sidebar, main 170px,
+  viewport-locked); the reference's failed-login copy measured
+  English ("Invalid email or password"). The clone's mobile drawer
+  re-verified LIVE at 390x844 (aria-expanded cycle, scroll lock,
+  focus in, 8 links at a uniform 44px pitch, Esc close + focus
+  return). neo-crm HAS moved (HEAD 6d655f9a session-194, Oct 27;
+  docs through session_219) — the newest sessions reviewed are
+  neo-crm-specific parity cycles; no new pattern needed here.
+- F1 scoped: the four ADR-030 account-security routes remained
+  UI-less (the V21 session's own suggested next step; the reference
+  has NO account surface — its sidebar bottom is the collapse
+  chevron alone, its Ajustes is store settings only).
+- F2 scoped (a REAL bug): the signup verify stage DISCARDED the
+  register response's verification code — the no-SMTP self-hosted
+  delivery puts the OTP in the response body and the route's comment
+  names "the verify screen's self-hosted code note" as the delivery
+  surface, which did not exist: signup verification was UI-unusable
+  on a fresh install.
+- F3 scoped: the login 403 told an unverified user to check an email
+  that never arrives, with no resend affordance — a dead end whose
+  only escape (re-registering) was undiscoverable. F4: AppUser
+  lacked emailVerified. F5: PAD Known-Issue #7 described an
+  ignoreBuildErrors flag the config no longer sets.
+- TDD RED: tests/account-ui.test.ts (13 source pins) failed 12/13
+  pre-fix (the one pass the trivially-true F5 docs guard); one pin
+  corrected against the codebase's real slate-Alert class order
+  BEFORE counting as GREEN. tests/e2e/account-ui.spec.ts (9
+  behavioral tests) failed at the missing surfaces.
+- TDD GREEN (ADR-031): AppUser.emailVerified; the Mi Cuenta
+  SectionCard in Ajustes (sixth section, ShieldCheck/rose-500 at
+  the measured 20px; the /api/auth/me identity readout with the
+  Verificada badge + member-since; the change-password/change-email
+  dialogs in the measured Dialog family; the destructive delete via
+  a plain Dialog + the NEW glass-button-danger @utility — the
+  AlertDialog primitive deliberately unused, its cva defaults
+  clobber glass fills, the F6 trap); the signup code note; the
+  login 403 verify sub-card. Pins 13/13.
+- Three execution-time lessons: (1) the nested-form hydration kill —
+  the first verify card was a <form> inside the login <form>; React
+  logged "In HTML, form cannot be a descendant of form" and the
+  inner submit silently never fired (reproduced live); the card is
+  now a plain DIV with button-driven submit + explicit Enter route.
+  (2) the v5 form-control pin caught the first draft's solid input
+  fills (bg-[#0d0f1a] — settings-view inputs stay TRANSPARENT, trap
+  13). (3) the full-suite verify budget runs at exactly 10/15min on
+  the shared localhost bucket — the new spec's verify would 429 M6
+  (observed live); it isolates via the H3 xff precedent (page.route
+  + x-forwarded-for 198.51.100.9). The v10 Ajustes icon pin was
+  EXTENDED to the six-section superset (not weakened).
+- The evidence set: five v22-* captures under docs/screenshots/
+  (mobile drawer from the audit; the account section, the
+  change-password dialog, the delete dialog, and the signup code
+  note live on the dev server against the remediated code).
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 542/542 (38 files,
+  529+13) · e2e 196/196 (3.5m, 187+9).
+- Docs lockstep: README (badge 542+196, the feature row, the API
+  row); AGENTS (the "account UI contract (v22)" section); CLAUDE
+  (the v22 contracts note + counts); PAD v2.9.0 (history + ADR-031
+  + Known-Issue #7 CLOSED + the testing table); DEPLOYMENT.md §10
+  (the UI-wired framing); SKILL v1.16.0; docs/remediation-plan-v22.md
+  (ledger L1-L12 + execution results); docs/session_37.md; this
+  entry.
+
+Stage Summary:
+- V22 closed the account-security loop end-to-end: the four ADR-030
+  routes are UI-wired (the Mi Cuenta section), the discarded-OTP
+  signup bug is fixed (the code note), and the login 403 dead-end is
+  closed (the verify/resend sub-card) — all in the established
+  measured component families, pinned by 13 source pins + 9
+  behavioral e2e tests.
+- The reference is unchanged for the 7th consecutive cycle; the
+  mobile drawer contract re-verified live (44px pitch, Esc/focus
+  return) with the v22 evidence set.
+- Gates: 542 unit + 196 e2e green; all counts bumped in the same
+  commit (529->542, 187->196 everywhere).
+- Known-open (disclosed): the F2 flake watch (clean this run); the
+  react-dom boot floor; the reference's own broken flows (nothing to
+  mirror); a profile/name-edit UI remains future work; every
+  standing v8-v21 disclosure unchanged.

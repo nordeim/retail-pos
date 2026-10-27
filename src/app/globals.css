@@ -390,6 +390,31 @@
   }
 }
 
+/* V22/F1 (SD-89): the red sibling — the destructive confirm on the
+   account-exit AlertDialog (Mi Cuenta, the superset surface the reference
+   lacks). The same extension precedent as the warning ramp above: the
+   reference's own glass-button system, one step further down the tone
+   ladder it never needed to reach. rgb(239,68,68)/(220,38,38) are the
+   v3-pinned red-500/red-600 hexes (the @theme pins carry the tone). */
+@utility glass-button-danger {
+  background: linear-gradient(135deg, rgb(239, 68, 68), rgb(220, 38, 38));
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  box-shadow: rgba(220, 38, 38, 0.35) 0 4px 20px;
+  color: rgb(255, 255, 255);
+  transition: 150ms;
+  &:focus-visible {
+    outline: 3px solid rgba(127, 98, 244, 0.5);
+  }
+  &:hover {
+    background: linear-gradient(135deg, rgb(248, 113, 113), rgb(239, 68, 68));
+    box-shadow: rgba(220, 38, 38, 0.45) 0 6px 28px;
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
 /* The skip link (a11y). */
 .vx-skip-link {
   position: absolute;

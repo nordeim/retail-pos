@@ -588,6 +588,33 @@ rules:
     (`VIEW_LOADERS[activeView]().catch(() => undefined)`) — the lazy
     mount owns the surfaced error.
 
+## The account UI contract (v22)
+
+The reference has NO account surface (its sidebar bottom is the collapse
+chevron alone — live-verified). The clone's superset lives in THREE places,
+all pinned by `tests/account-ui.test.ts` + `tests/e2e/account-ui.spec.ts`:
+
+- **Ajustes → "Mi Cuenta"** (`src/components/views/settings-view.tsx`): a
+  sixth SectionCard (ShieldCheck/rose-500 — the tone the five store
+  sections leave free; the v10 icon pin counts SIX). It owns its
+  /api/auth/me fetch (the async-then setState shape — never
+  synchronous-in-effect), renders the email + "Verificada" badge +
+  member-since, and drives change-password / change-email (Dialog family,
+  key-remount, 42px footer) + delete-account (a plain Dialog + the
+  `glass-button-danger` utility — the warning-ramp extension precedent;
+  NEVER the AlertDialog primitive, whose cva defaults clobber glass fills
+  — the F6 trap). Settings-view inputs stay TRANSPARENT (the v5 pin
+  fails on any `bg-[#0d0f1a]` fill there).
+- **The signup verify stage** (`signup-surface.tsx`): the register
+  response's `code` IS the delivery (no SMTP) — `issuedCode` state +
+  the slate-Alert note (`signup-code-note`). Never discard it again.
+- **The login 403** (`login-surface.tsx`): the verify sub-card
+  (`login-verify-card`) = code entry + "Resend the code" + the
+  delivered/neutral note. It is a plain DIV — HTML forbids a nested
+  `<form>` and hydration rejects it (the v22 lesson: the inner submit
+  silently never fired). Enter in the code field routes to
+  `submitVerify` explicitly.
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content

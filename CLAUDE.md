@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (529 tests / 37 files)
-bun run test:e2e       # playwright e2e layer (187 specs, boots standalone :3100)
+bun run test           # vitest unit layer (542 tests / 38 files)
+bun run test:e2e       # playwright e2e layer (196 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -257,6 +257,28 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   `tests/e2e/account-security.spec.ts` + the source pins in
   `tests/deployment-surfaces.test.ts` (ADR-030; Known-Issue #6
   closed).
+- The v22 contracts: the account-security superset is UI-wired — the
+  **Mi Cuenta** SectionCard in Ajustes (SD-85: sixth section,
+  ShieldCheck/rose-500 at the measured 20px — the tone the five store
+  sections leave free; the v10 icon pin counts SIX now) renders the
+  /api/auth/me identity readout (email + Verificada badge +
+  member-since) and drives change-password / change-email through the
+  Dialog family (42px footer, glass buttons, key-remount) and
+  delete-account through a plain Dialog + the new
+  `glass-button-danger` utility (the warning-ramp extension
+  precedent; the AlertDialog primitive stays unused — its cva
+  defaults clobber glass fills, the F6 trap). The signup verify stage
+  DISPLAYS the register response's code (F2 — previously discarded:
+  signup verification was UI-unusable on a no-SMTP install); the
+  login 403 renders the verify sub-card (F3 — the code entry +
+  "Resend the code" + the delivered-code note, a plain DIV never a
+  nested form — HTML forbids `<form>` in `<form>` and hydration
+  rejects it; the resend's neutral branch never leaks account state).
+  `AppUser` carries `emailVerified`. Pinned by `tests/account-ui.test.ts`
+  (13 source pins) + `tests/e2e/account-ui.spec.ts` (9 behavioral
+  tests — one scratch account, delete LAST, the verify bucket isolated
+  via the H3 xff precedent because the shared localhost verify budget
+  runs at exactly 10/15min).
 - The v15 contracts: the hover micro-interaction families — every
   row-action icon button carries `rounded-lg p-2 text-slate-400
   transition-colors` + its per-action family (edit/detail indigo,

@@ -174,15 +174,18 @@ Notes:
   `DATABASE_URL` service environment to the postgres URL and leave the
   volume unmounted.
 
-## 10. Account security API (the API-only superset)
+## 10. Account security (the UI-wired superset)
 
 Alongside the login/register/verify/reset flows the app ships four
 account-security endpoints the hosted reference lacks entirely. They are
-**API-only** — no UI surface ships for them (the reference has none to
-mirror); drive them over HTTP as the owner. All four are rate-limited
-(10 per 15 minutes per account/IP), verify the current password FIRST
-(a wrong password is rejected with 400 PRE-WRITE), and never enumerate.
-Pinned end-to-end by `tests/e2e/account-security.spec.ts`.
+**UI-wired** (v22): Ajustes → **Mi Cuenta** drives change-password /
+change-email / delete-account through the app's dialogs, and the login
+403 / signup verify surfaces drive resend-verification — while the API
+remains scriptable for the owner (the curl examples below). All four are
+rate-limited (10 per 15 minutes per account/IP), verify the current
+password FIRST (a wrong password is rejected with 400 PRE-WRITE), and
+never enumerate. Pinned end-to-end by `tests/e2e/account-security.spec.ts`
+(the API contracts) + `tests/e2e/account-ui.spec.ts` (the UI journeys).
 
 | Endpoint | Contract |
 |---|---|

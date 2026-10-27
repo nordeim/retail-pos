@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.15.0
+version: 1.16.0
 last_updated: "2026-10-27"
 tags:
   - pos
@@ -25,8 +25,16 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v21 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 529/529 unit · 187/187 e2e** (the v21
+> template), validated against the codebase at the v22 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 542/542 unit · 196/196 e2e** (the v22
+> close: the account-security loop closed end-to-end — the "Mi Cuenta"
+> UI in Ajustes (change-password / change-email / delete-account
+> dialogs + the identity readout), the signup verify stage's
+> self-hosted code note (the discarded-OTP bug fixed), and the login
+> 403's verify/resend sub-card; ADR-031, PAD v2.9.0, Known-Issue #7
+> closed; the nested-form hydration lesson — a `<form>` inside the
+> login `<form>` silently never submits, the verify card is a plain
+> DIV). The prior
 > close: the deployment-surface truth pass — Dockerfile + docker-compose
 > rebranded to the VeloxPOS identity (service `veloxpos`, image
 > `veloxpos:latest`, `VELOXPOS_PORT`), `docs/DEPLOYMENT.md` rewritten to
@@ -150,8 +158,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 529 tests / 37 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 187 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 542 tests / 38 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 196 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -181,8 +189,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 529/529
-bun run test:e2e           # playwright: 187/187 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 542/542
+bun run test:e2e           # playwright: 196/196 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -562,8 +570,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 529/529 vitest
-bun run test:e2e      # 187/187 playwright (production posture)
+bun run test          # 542/542 vitest
+bun run test:e2e      # 196/196 playwright (production posture)
 ```
 
 Verification beyond the gates:
