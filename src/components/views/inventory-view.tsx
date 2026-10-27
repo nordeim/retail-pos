@@ -339,7 +339,7 @@ function ProductDialog({
               value={name}
               onChange={(event) => setName(event.target.value)}
               data-testid="product-name-input"
-              className="mt-1.5"
+              className="mt-1"
             />
           </div>
 
@@ -351,7 +351,7 @@ function ProductDialog({
                 value={barcode}
                 onChange={(event) => setBarcode(event.target.value)}
                 data-testid="product-barcode-input"
-                className="mt-1.5"
+                className="mt-1"
               />
             </div>
             <div>
@@ -361,7 +361,7 @@ function ProductDialog({
                 onValueChange={setCategoryId}
               >
                 <SelectTrigger
-                className="mt-1.5 w-full"
+                className="mt-1 w-full"
                 data-testid="product-category-select"
               >
                   <SelectValue placeholder="Seleccionar" />
@@ -391,7 +391,7 @@ function ProductDialog({
                 value={price}
                 onChange={(event) => setPrice(event.target.value)}
                 data-testid="product-price-input"
-                className="mt-1.5"
+                className="mt-1"
               />
             </div>
             <div>
@@ -403,7 +403,7 @@ function ProductDialog({
                 inputMode="decimal"
                 value={cost}
                 onChange={(event) => setCost(event.target.value)}
-                className="mt-1.5"
+                className="mt-1"
               />
             </div>
           </div>
@@ -418,7 +418,7 @@ function ProductDialog({
                 inputMode="numeric"
                 value={stock}
                 onChange={(event) => setStock(event.target.value)}
-                className="mt-1.5"
+                className="mt-1"
               />
             </div>
             <div>
@@ -430,7 +430,7 @@ function ProductDialog({
                 inputMode="numeric"
                 value={minStock}
                 onChange={(event) => setMinStock(event.target.value)}
-                className="mt-1.5"
+                className="mt-1"
               />
             </div>
           </div>
@@ -445,13 +445,13 @@ function ProductDialog({
                 inputMode="numeric"
                 value={ivaRate}
                 onChange={(event) => setIvaRate(event.target.value)}
-                className="mt-1.5"
+                className="mt-1"
               />
             </div>
             <div>
               <Label className="text-slate-200">Unidad</Label>
               <Select value={unit} onValueChange={setUnit}>
-                <SelectTrigger className="mt-1.5 w-full" data-testid="product-unit-select">
+                <SelectTrigger className="mt-1 w-full" data-testid="product-unit-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
@@ -494,7 +494,7 @@ function ProductDialog({
                   }
                 });
               }}
-              className="mt-1.5 text-slate-400"
+              className="mt-1 text-slate-400"
             />
             {imageError ? (
               <p role="alert" className="mt-1 text-xs text-red-400">{imageError}</p>

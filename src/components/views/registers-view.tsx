@@ -273,7 +273,7 @@ function NewRegisterDialog({
               value={name}
               onChange={(event) => setName(event.target.value)}
               data-testid="register-name-input"
-              className="mt-1.5 bg-[#0d0f1a]"
+              className="mt-1 bg-[#0d0f1a]"
             />
           </div>
           <div>
@@ -283,7 +283,7 @@ function NewRegisterDialog({
               value={location}
               onChange={(event) => setLocation(event.target.value)}
               data-testid="register-location-input"
-              className="mt-1.5 bg-[#0d0f1a]"
+              className="mt-1 bg-[#0d0f1a]"
             />
           </div>
           {error ? (
@@ -360,7 +360,7 @@ function OpenShiftDialog({
           <div>
             <Label className="text-slate-200">Cajero/a *</Label>
             <Select value={cashierId || undefined} onValueChange={setCashierId}>
-              <SelectTrigger className="mt-1.5 w-full bg-[#0d0f1a]" data-testid="shift-cashier-select">
+              <SelectTrigger className="mt-1 w-full bg-[#0d0f1a]" data-testid="shift-cashier-select">
                 <SelectValue placeholder="Seleccionar cajero" />
               </SelectTrigger>
               <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
@@ -372,7 +372,7 @@ function OpenShiftDialog({
               </SelectContent>
             </Select>
             {cashiers.length === 0 ? (
-              <p className="mt-1.5 text-xs text-amber-400">
+              <p className="mt-1 text-xs text-amber-400">
                 No hay cajeros registrados. Crea uno en la vista Cajeros.
               </p>
             ) : null}
@@ -386,7 +386,7 @@ function OpenShiftDialog({
               onChange={(event) => setFloatInput(event.target.value)}
               placeholder="0.00"
               data-testid="shift-float-input"
-              className="mt-1.5 bg-[#0d0f1a]"
+              className="mt-1 bg-[#0d0f1a]"
             />
           </div>
           {error ? (
@@ -491,7 +491,7 @@ function CloseShiftDialog({
               onChange={(event) => setAmountInput(event.target.value)}
               placeholder="0.00"
               data-testid="shift-closing-input"
-              className="mt-1.5 bg-[#0d0f1a]"
+              className="mt-1 bg-[#0d0f1a]"
             />
           </div>
           {error ? (

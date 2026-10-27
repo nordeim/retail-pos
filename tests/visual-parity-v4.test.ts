@@ -266,7 +266,11 @@ describe("B4/V8b — signup shares the parity shell (signup-surface.tsx)", () =>
   it("uses the same AuthShell + the parity input treatment", () => {
     const src = readSource("components", "auth", "signup-surface.tsx");
     expect(src).toContain("AuthShell");
-    expect(src).toContain("h-12 rounded-xl border-slate-200 bg-slate-50/50");
+    // V11/SD-39 realignment: the measured auth input heights (44px mobile,
+    // 48px >= sm) + the slate-400 focus family.
+    expect(src).toContain("h-11");
+    expect(src).toContain("sm:h-12");
+    expect(src).toContain("border-slate-200 bg-slate-50/50");
     expect(src).not.toContain("rounded-3xl");
   });
 });

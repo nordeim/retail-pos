@@ -127,7 +127,7 @@ export function LoginSurface() {
           <Button
             type="submit"
             disabled={busy}
-            className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
+            className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white"
           >
             {busy ? "Enviando…" : "Enviar enlace"}
           </Button>
@@ -171,7 +171,7 @@ export function LoginSurface() {
           <Button
             type="submit"
             disabled={busy}
-            className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
+            className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white"
           >
             {busy ? "Guardando…" : "Actualizar contraseña"}
           </Button>
@@ -275,7 +275,7 @@ export function LoginSurface() {
           type="submit"
           disabled={busy}
           data-testid="login-submit"
-          className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
+          className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white"
         >
           {busy ? "Signing in…" : "Sign in"}
         </Button>
@@ -310,6 +310,12 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
     <main
       className="vx-auth-page flex min-h-dvh items-center justify-center p-4"
       data-testid="auth-page"
+      // V11/SD-39: the reference's auth routes swap --background to WHITE at
+      // the root (its token reads 0 0% 100% — HSL in its own theme; ours is
+      // the RGB-triplet convention, so white = 255 255 255). Scoping it here
+      // makes ring-offset-background render WHITE on the light surface like
+      // the reference, instead of the app's dark canvas.
+      style={{ "--background": "255 255 255" } as React.CSSProperties}
     >
       <div className="relative w-full max-w-md rounded-2xl border-0 bg-white/95 p-8 shadow-2xl backdrop-blur-sm sm:p-10">
         <div className="flex flex-col items-center">{children}</div>
@@ -412,7 +418,7 @@ function AuthInput({
         <Input
           id={id}
           {...props}
-          className="h-12 rounded-xl border-slate-200 bg-slate-50/50 pl-9 text-base text-slate-900 placeholder:text-slate-400"
+          className="h-11 rounded-xl border-slate-200 bg-slate-50/50 pl-10 text-base text-slate-900 placeholder:text-slate-600 focus:border-slate-400 focus:ring-slate-400 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-12"
         />
       </div>
     </div>

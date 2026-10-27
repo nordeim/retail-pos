@@ -671,3 +671,97 @@ Stage Summary:
   ref's register ordering rule (seed order reproduces the observable);
   the donut tooltip; the S4/S5 2° recharts float anomaly. Standing v8/v9
   disclosures unchanged.
+
+---
+Task ID: V11
+Agent: general-purpose (remediation executor, session V11 2026-10-27)
+Task: The v11 cycle — audit the chart containers + the interactive focus
+states (the surfaces no prior session could measure), write
+remediation-plan-v11, execute it TDD, and ship.
+
+Work Log:
+- Baseline re-verified after a fresh clone of main @ ed1d5cd (the v10
+  close + session_14 transcript): lint 0 · tsc 0 · build ✓ · 379/379
+  unit · 127/127 e2e (playwright chromium reinstalled after the reset);
+  workspace rebuilt (.env, deps, db push + seed).
+- v10 source diff audited in full — every v10 contract holds in code.
+- Reference data state re-verified BEFORE probing: UNCHANGED since v10
+  (same 2 sales/datetimes, 12 products, KPIs, donut legend, low-stock
+  row, empty reports) — no seeded-data work this cycle. Mobile drawer
+  re-verified live at 390px: fully green (288px panel, 44px pitch,
+  scroll lock, Escape + focus return).
+- Live audit (agent-browser, BOTH apps, 1440/1280/1024/390): F1 the
+  chart CONTAINERS — the reference's recharts ResponsiveContainers
+  re-wrap the viewBox to the container width with FIXED heights
+  (dashboard 280 / reports 220 / donut 200) and a FIXED donut ring
+  (innerR 50/outerR 80, cx = box/2, cap 333); the clone's aspect-locked
+  SVGs rendered 254px vs 280 (dashboard, 1280), 424px vs 220 (reports),
+  134px vs 160 (donut ring) — unpinned because every prior chart pin was
+  an attribute pin, immune to scale. F2 the form-control chrome — the
+  reference's app controls focus ring-1 in #7f62f4 with no offset (the
+  clone shipped the shadcn ring-2 + 2px-offset indigo halo everywhere);
+  --ring indigo-400 vs 127 98 244; the Input base missing text-base
+  md:text-sm + shadow-sm; Textarea/SelectTrigger 6px-radius; the gap
+  mt-1.5 vs mt-1 at 27 call sites; the glass buttons' violet outline
+  focus missing; the auth inputs' slate-400-over-WHITE focus (the ref's
+  auth routes swap --background to white at root) vs the clone's indigo
+  over the dark canvas; pl-10/h-11 sm:h-12/md:text-sm/slate-600
+  placeholder bases; the 3px white submit outline. F3 the chart
+  tooltip — the recharts default skin measured (white card, 12px
+  radius, 10px padding, 0 4px 20px shadow); the ref's own tooltip text
+  is #e7e9ef-on-white (unreadable platform bug).
+- Wrote docs/remediation-plan-v11.md (25-item ledger, SD-37..SD-40,
+  B1-B5 batches).
+- TDD execution, all pins red first (18 unit + 12 e2e):
+  - B1: useContainerWidth (callback-ref measure at commit + RO +
+    React 19 ref cleanup); SalesAreaChart on SALES_CHART_HEIGHTS
+    (280/220) with fixed paddings; DonutChart on the fixed ring with
+    the 333-cap re-wrapping box.
+  - B2: tokens (--ring/--primary 127 98 244, --background 15 18 26
+    with the body painting the #080a14 canvas token, --border 38 42
+    54); the Input/Textarea/SelectTrigger/Button/Switch measured
+    bases; the glass focus outline; mt-1.5 → mt-1 ×27; the Ajustes
+    raw textarea → the Textarea component.
+  - B3: the AuthShell's scoped white --background (RGB triplet — the
+    HSL form parses as blue through rgb(), caught by the e2e); the
+    auth inputs' slate-400 focus family + measured bases; the 3px
+    white submit outlines.
+  - B4: ChartTooltip (the measured skin, readable dark text — the
+    SD-18 precedent) + pointer tracking on both charts.
+- Legacy-pin alignment: the v10 donut box/M-point to the responsive
+  contract (dynamic box, M = box/2 + 80); the v4 signup input heights;
+  the v10 reports tick pins DATE-RELATIVE (the windows anchor to the
+  current day — the absolute strings rolled over at UTC midnight
+  mid-session, caught live).
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 397/397 · e2e 139/139.
+- Evidence: all 18 screenshots regenerated from the production build;
+  live parity probes — the dashboard chart 625×280/454×280 EXACT
+  (viewBox identical to the reference's own), the reports 714×220/
+  970×220 EXACT, the donut ring 160px at every viewport; the input
+  focus shadow rgb(127, 98, 244) 0px 0px 0px 1px byte-identical.
+- Docs lockstep: AGENTS.md contract 24; CLAUDE.md counts + the v11
+  block; README badge (397+139); PAD v1.9.0 + ADR-021; SKILL v1.6.0;
+  session_15.md; this entry.
+
+Stage Summary:
+- v11 made the charts container-faithful (the recharts geometry rule:
+  fixed heights/radii + re-wrapping boxes — exact rendered parity at
+  every measured viewport), adopted the reference's focus grammar (the
+  ring-1 #7f62f4 edge family, the token realignment, the auth surface's
+  own light-theme focus), and shipped the measured tooltip (closing the
+  v10 donut-tooltip disclosure with the readable-superset posture).
+- Probe lessons recorded: chart CONTAINERS are a parity surface — pin
+  rendered geometry, not just attributes; transition-colors fades a
+  focused outline in from currentColor (settle-wait ~300ms); the ref's
+  glass-outline style/width alternates across states (the color is the
+  stable fact — a deterministic 3px solid ships, disclosed); scoped
+  tokens must follow the repo's RGB-triplet convention; reports tick
+  pins are date-relative by necessity; the observable label→control gap
+  is 8px on BOTH apps (the margin is 4 — pin the geometry).
+- Known-open (disclosed): the ref's squeezed-mobile chart widths (its
+  own broken 220px-sidebar mobile — the geometry rule replicates, not
+  the squeeze); the donut tooltip's populated content on the ref (not
+  reliably triggerable headlessly — the recharts default shape ships);
+  the terminal product-card hover (unobservable — the ref's Terminal is
+  shift-gated); --primary/--border are token hygiene (unrendered today).
+  Standing v8/v9/v10 disclosures unchanged.

@@ -309,6 +309,45 @@ rules:
     day 28, 90 → every 10th ending day 80) — the last day is NOT
     force-labeled.
 
+24. The chart CONTAINERS + the focus system (v11, live-measured at
+    1440/1280/1024/390 on both apps): the charts are container-responsive
+    the recharts way — `useContainerWidth` (a callback ref that measures
+    at commit, before first paint, + a ResizeObserver with the React 19
+    ref-cleanup return) feeds the SVG box, the chart HEIGHT stays FIXED
+    per surface (`SALES_CHART_HEIGHTS`: dashboard 280, reports 220; the
+    donut 200), the internal paddings (52/28/12) stay fixed while the
+    plot flexes, and the donut's ring is FIXED (innerR 50 / outerR 80,
+    cy 100, cx = box/2, the box capped at 333 by the wrapper's max-w) —
+    NEVER aspect-lock a chart SVG (`w-full h-auto` scaled the whole
+    drawing: the dashboard chart rendered 254px tall vs the ref's 280 at
+    1280, the reports chart 424px vs 220, the donut ring 134px vs 160).
+    The focus grammar: app text controls (Input/Textarea/SelectTrigger)
+    focus `ring-1` in the #7f62f4 edge with NO offset (`--ring: 127 98
+    244`); the Switch keeps ring-2 + offset-2 (the offset rides
+    `--background: 15 18 26` — the shadcn SURFACE, not the #080a14 canvas
+    the body paints via `--color-vx-canvas`); the glass buttons focus
+    through `outline: 3px solid rgba(127, 98, 244, 0.5)` in the glass
+    utilities (the cva Button base carries NO focus-ring classes); the
+    auth inputs focus `focus:border-slate-400 focus:ring-slate-400`
+    ring-2 + a WHITE offset (AuthShell scopes `--background: 255 255
+    255`) with `pl-10 h-11 sm:h-12 md:text-sm placeholder:text-slate-600`;
+    the auth submits carry a 3px white outline. The Input/Textarea bases
+    ride `text-base md:text-sm shadow-sm` (16px under 768 — the iOS
+    no-zoom size); the SelectTrigger is `rounded-xl` with the `focus:`
+    spelling (the dropdown PANEL stays rounded-md — 6px, the ref's own);
+    the label→control gap is `mt-1` (4px margin — the measured
+    label-bottom→control-top gap is 8px on BOTH apps: the 4px margin +
+    the inline label's 16px-box overshoot). `transition-colors` covers
+    outline-color — settle-wait ~300ms before reading a focused outline
+    (it fades in from currentColor). The charts render the measured
+    recharts default tooltip on hover (`ChartTooltip`: white card, 12px
+    radius, 10px padding, `rgba(0,0,0,0.1) 0 4px 20px`, nowrap,
+    pointer-events none) with READABLE dark text — the ref's own tooltip
+    text is #e7e9ef-on-white (unreadable, a platform bug; the SD-18
+    readable-superset precedent). Reports X-tick pins are DATE-RELATIVE
+    (the windows anchor to the current day — absolute date strings roll
+    over at midnight).
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content

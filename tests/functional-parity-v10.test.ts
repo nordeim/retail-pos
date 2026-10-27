@@ -76,7 +76,11 @@ describe("B1/F1 — the donut renders the reference's measured geometry", () => 
 
   it("the chart rides the measured box, strokes, and stacked layout (source pins)", () => {
     const s = shared();
-    expect(s).toContain('viewBox="0 0 333 200"');
+    // V11/SD-37 realignment: the box is container-responsive now — the
+    // template + the 333 cap + the fixed 200 height (the v11 pins hold the
+    // full responsive contract; the literal 333-box retired with it).
+    expect(s).toContain('viewBox={`0 0 ${box} 200`}');
+    expect(s).toContain("Math.min(333,");
     expect(s).toContain('stroke="#fff"');
     expect(s).toContain('strokeWidth={1}');
     // The legend caps at the first 5 items (the ref renders 6 sectors, 5 rows).

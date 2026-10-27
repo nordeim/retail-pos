@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (379 tests / 26 files)
-bun run test:e2e       # playwright e2e layer (127 specs, boots standalone :3100)
+bun run test           # vitest unit layer (397 tests / 27 files)
+bun run test:e2e       # playwright e2e layer (139 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -145,6 +145,21 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   (`variant="dashboard"` vs `"reports"` — gridlines/labels/line/gradient
   all differ); the dashboard has NO footer credit (the ref ends at the
   low-stock rows).
+- The v11 contracts: the charts are container-responsive the recharts way
+  (`useContainerWidth` — measure at commit + ResizeObserver; FIXED heights
+  dashboard 280 / reports 220 / donut 200; the donut's ring FIXED at
+  innerR 50/outerR 80 with cx = box/2 capped at 333 — never aspect-lock a
+  chart SVG); the focus grammar is the reference's (app controls ring-1
+  in #7f62f4 with no offset, `--ring: 127 98 244`; the Switch ring-2 +
+  offset-2 over the #0f121a surface `--background`; the glass buttons
+  outline 3px solid rgba(127,98,244,0.5) with NO cva focus ring; the auth
+  inputs slate-400 ring-2 over a WHITE offset with pl-10 / h-11 sm:h-12 /
+  md:text-sm / slate-600 placeholders and the 3px white submit outline);
+  Input/Textarea ride text-base md:text-sm + shadow-sm, the SelectTrigger
+  is rounded-xl (the dropdown panel stays rounded-md), the label→control
+  gap is mt-1; the charts carry the measured white tooltip card
+  (readable dark text — the ref's own is unreadable); reports tick pins
+  are date-relative (windows anchor to the current day).
 - The v10 contracts: the category donut is the ref's recharts rendering
   (`sectorPath()` filled paths, ring 50/80 at (166.5,100) in 333×200,
   CCW from 3 o'clock, trailing 4° gap, #fff 1px strokes, the

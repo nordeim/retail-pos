@@ -292,7 +292,7 @@ function CashierDialog({
               value={name}
               onChange={(event) => setName(event.target.value)}
               data-testid="cashier-name-input"
-              className="mt-1.5 bg-[#0d0f1a]"
+              className="mt-1 bg-[#0d0f1a]"
             />
           </div>
           <div>
@@ -302,7 +302,7 @@ function CashierDialog({
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="mt-1.5 bg-[#0d0f1a]"
+              className="mt-1 bg-[#0d0f1a]"
             />
           </div>
           <div className="flex items-center gap-3">

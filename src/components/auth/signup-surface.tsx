@@ -105,7 +105,7 @@ export function SignupSurface() {
                 <Button
                   type="submit"
                   disabled={busy}
-                  className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
+                  className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white"
                 >
                   {busy ? "Creating…" : "Sign up"}
                 </Button>
@@ -147,7 +147,7 @@ export function SignupSurface() {
                 <Button
                   type="submit"
                   disabled={busy}
-                  className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
+                  className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white"
                 >
                   {busy ? "Verifying…" : "Verify and sign in"}
                 </Button>
@@ -180,7 +180,7 @@ function TextField({
         <Input
           id={id}
           {...props}
-          className="h-12 rounded-xl border-slate-200 bg-slate-50/50 pl-9 text-base text-slate-900 placeholder:text-slate-400"
+          className="h-11 rounded-xl border-slate-200 bg-slate-50/50 pl-10 text-base text-slate-900 placeholder:text-slate-600 focus:border-slate-400 focus:ring-slate-400 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-12"
         />
       </div>
     </div>

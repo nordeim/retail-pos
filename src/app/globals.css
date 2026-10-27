@@ -57,7 +57,7 @@
   --card-foreground: 231 233 239;
   --popover: 18 20 31;
   --popover-foreground: 231 233 239;
-  --primary: 99 102 241;
+  --primary: 127 98 244;
   --primary-foreground: 255 255 255;
   /* V5/T1b: the reference's secondary badge colors, measured live on its
      categoría badges (rgb(33,37,49) fill + rgb(182,188,201) text) — the
@@ -69,10 +69,20 @@
   --accent: 30 34 53;
   --accent-foreground: 248 250 252;
   --destructive: 239 68 68;
-  --border: 30 34 53;
+  /* V11/F2a: the reference's own token set, live-measured at its root:
+     --border/--input 225 18% 18% (#262a36), --ring/--primary 252 87% 67%
+     (#7f62f4 — the same violet as its checked Switch fill and its input
+     focus edge), --background 225 25% 8% (#0f121a — its shadcn SURFACE,
+     i.e. the dialog panel and the Switch's ring offset — NOT the #080a14
+     app canvas, which is the separate --color-vx-canvas token below). */
+  --border: 38 42 54;
   --input: 38 42 54;
-  --ring: 129 140 248;
+  --ring: 127 98 244;
   --radius: 0.75rem;
+  /* The app canvas (the pinned #080a14) — the body paints THIS, not
+     --background (the reference's own split: its body canvas is a custom
+     rule while --background stays the #0f121a shadcn surface). */
+  --background: 15 18 26;
 }
 
 @theme inline {
@@ -105,7 +115,7 @@
     border-color: rgb(var(--border));
   }
   body {
-    background-color: rgb(var(--background));
+    background-color: var(--color-vx-canvas, #080a14);
     color: rgb(var(--foreground));
     font-family:
       ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
@@ -193,6 +203,14 @@
   box-shadow: rgba(0, 0, 0, 0.35) 0 2px 8px;
   color: rgba(200, 210, 255, 0.8);
   transition: 150ms;
+  &:focus-visible {
+    /* V11/F2h: the reference's violet focus outline (its color is the
+       stable measured fact — rgba(127,98,244,0.5); its style/width
+       alternated between auto/1px and solid/3px across probe states, a
+       base44 platform artifact. The deterministic solid 3px ships: the
+       same width family as its auth submit's 3px white outline). */
+    outline: 3px solid rgba(127, 98, 244, 0.5);
+  }
   &:hover {
     background: rgba(42, 46, 78, 0.9);
     border-color: rgba(139, 92, 246, 0.3);
@@ -215,6 +233,14 @@
   box-shadow: rgba(124, 58, 237, 0.4) 0 4px 20px;
   color: rgb(255, 255, 255);
   transition: 150ms;
+  &:focus-visible {
+    /* V11/F2h: the reference's violet focus outline (its color is the
+       stable measured fact — rgba(127,98,244,0.5); its style/width
+       alternated between auto/1px and solid/3px across probe states, a
+       base44 platform artifact. The deterministic solid 3px ships: the
+       same width family as its auth submit's 3px white outline). */
+    outline: 3px solid rgba(127, 98, 244, 0.5);
+  }
   &:hover {
     background: linear-gradient(135deg, rgb(139, 92, 246), rgb(129, 140, 248));
     box-shadow: rgba(124, 58, 237, 0.55) 0 6px 28px;
@@ -231,6 +257,14 @@
   box-shadow: rgba(16, 185, 129, 0.35) 0 4px 20px;
   color: rgb(255, 255, 255);
   transition: 150ms;
+  &:focus-visible {
+    /* V11/F2h: the reference's violet focus outline (its color is the
+       stable measured fact — rgba(127,98,244,0.5); its style/width
+       alternated between auto/1px and solid/3px across probe states, a
+       base44 platform artifact. The deterministic solid 3px ships: the
+       same width family as its auth submit's 3px white outline). */
+    outline: 3px solid rgba(127, 98, 244, 0.5);
+  }
   &:hover {
     background: linear-gradient(135deg, rgb(16, 185, 129), rgb(52, 211, 153));
     box-shadow: rgba(16, 185, 129, 0.45) 0 6px 28px;
@@ -250,6 +284,14 @@
   box-shadow: rgba(217, 119, 6, 0.35) 0 4px 20px;
   color: rgb(255, 255, 255);
   transition: 150ms;
+  &:focus-visible {
+    /* V11/F2h: the reference's violet focus outline (its color is the
+       stable measured fact — rgba(127,98,244,0.5); its style/width
+       alternated between auto/1px and solid/3px across probe states, a
+       base44 platform artifact. The deterministic solid 3px ships: the
+       same width family as its auth submit's 3px white outline). */
+    outline: 3px solid rgba(127, 98, 244, 0.5);
+  }
   &:hover {
     background: linear-gradient(135deg, rgb(245, 158, 11), rgb(251, 146, 60));
     box-shadow: rgba(217, 119, 6, 0.45) 0 6px 28px;

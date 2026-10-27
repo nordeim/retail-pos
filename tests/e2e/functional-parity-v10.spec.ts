@@ -18,7 +18,14 @@ test.describe("functional parity (v10) — the donut family", () => {
   test("the donut renders six measured sectors: fills, white strokes, 3 o'clock CCW start", async ({ page }) => {
     await page.goto("/Dashboard");
     const svg = page.locator('[data-testid="category-chart-card"] svg');
-    await expect(svg).toHaveAttribute("viewBox", "0 0 333 200");
+    // V11/SD-37 realignment: the box is container-responsive now — at this
+    // 1280 viewport the card column is narrower than 333, so the box
+    // re-wraps (the reference's own recharts behavior) instead of scaling
+    // the drawing. The ring geometry (fixed radii, cy 100, cx = box/2) is
+    // the v10 contract, carried forward unchanged.
+    const boxW = await svg.evaluate((el) => Number(el.getAttribute("width")));
+    expect(boxW).toBeLessThan(333);
+    await expect(svg).toHaveAttribute("viewBox", `0 0 ${boxW} 200`);
 
     const sectors = svg.locator("path");
     await expect(sectors).toHaveCount(6);
@@ -28,11 +35,16 @@ test.describe("functional parity (v10) — the donut family", () => {
       await expect(sectors.nth(i)).toHaveAttribute("fill", fills[i]);
       await expect(sectors.nth(i)).toHaveAttribute("stroke", "#fff");
     }
-    // The first sector starts EXACTLY at 3 o'clock on the 333×200 box.
+    // The first sector starts EXACTLY at 3 o'clock relative to the BOX
+    // center: M = (box/2 + 80, 100) — at the 333 cap (the v10 measurement)
+    // this is (246.5, 100).
     const firstD = await sectors.first().getAttribute("d");
-    expect(firstD?.startsWith("M 246.5,100")).toBe(true);
-    // ...and rises counterclockwise (the arc endpoint at 56°).
-    expect(firstD).toMatch(/211\.2\d*,33\.6\d*/);
+    expect(firstD?.startsWith(`M ${boxW / 2 + 80},100`)).toBe(true);
+    // ...and rises counterclockwise (the arc endpoint at 56° relative to
+    // the box center: x = box/2 + 80·cos56°, y = 100 − 80·sin56°).
+    const arcX = boxW / 2 + 80 * Math.cos((56 * Math.PI) / 180);
+    const arcY = 100 - 80 * Math.sin((56 * Math.PI) / 180);
+    expect(firstD).toContain(`${arcX.toFixed(2)},${arcY.toFixed(2)}`);
   });
 
   test("the legend caps at the reference's 5 rows with its measured anatomy", async ({ page }) => {
@@ -194,39 +206,47 @@ test.describe("functional parity (v10) — the seeded data", () => {
   });
 });
 
+// V11 realignment: the reports windows anchor to the CURRENT day
+// (startOfDay(now) - (days-1)), so absolute date strings roll over at
+// midnight — the expected labels are computed date-relatively with the
+// app's own es-MX month table (src/lib/date.ts MONTHS_SHORT).
+const MONTHS_SHORT = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const labelDaysBack = (back: number): string => {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - back);
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
+};
+
 test.describe("functional parity (v10) — the reports X-tick rule", () => {
   test("the default 30-day window labels the reference's exact day steps", async ({ page }) => {
     await page.goto("/Reports");
     // Wait for the chart's date labels to render (the series loads async).
     await expect(page.getByTestId("report-daily-card")).toContainText("sep");
     const labels = await page.evaluate(() => {
-      const svg = Array.from(document.querySelectorAll("svg")).find((s) =>
-        s.getAttribute("viewBox")?.startsWith("0 0 640"),
-      );
+      const svg = document.querySelector('[data-testid="report-daily-card"] svg');
       return Array.from(svg?.querySelectorAll("text") ?? [])
         .map((t) => t.textContent ?? "")
         .filter((t) => /sep|oct|jul|ago/.test(t));
     });
-    // Live-measured on the reference: 4-day steps from the window start,
-    // ending at day 28 (the last day is NOT labeled).
-    expect(labels).toEqual(["27 sep", "1 oct", "5 oct", "9 oct", "13 oct", "17 oct", "21 oct", "25 oct"]);
+    // Live-measured on the reference: 4-day steps from the window start
+    // (day 29 back), ending at day 28 of the window (the last day is NOT
+    // labeled) — computed relative to today, the window's own anchor.
+    expect(labels).toEqual([29, 25, 21, 17, 13, 9, 5, 1].map(labelDaysBack));
   });
 
   test("the 14-day window labels every day (the ref's own rule)", async ({ page }) => {
     await page.goto("/Reports");
     await page.getByTestId("report-periods").getByRole("tab", { name: "14 días" }).click();
-    // Wait for the switch to render (the first 14-day label is 13 oct).
-    await expect(page.getByTestId("report-daily-card")).toContainText("13 oct");
+    // Wait for the switch to render (the first 14-day label = 13 days back).
+    await expect(page.getByTestId("report-daily-card")).toContainText(labelDaysBack(13));
     const labels = await page.evaluate(() => {
-      const svg = Array.from(document.querySelectorAll("svg")).find((s) =>
-        s.getAttribute("viewBox")?.startsWith("0 0 640"),
-      );
+      const svg = document.querySelector('[data-testid="report-daily-card"] svg');
       return Array.from(svg?.querySelectorAll("text") ?? [])
         .map((t) => t.textContent ?? "")
         .filter((t) => /sep|oct/.test(t));
     });
     expect(labels).toHaveLength(14);
-    expect(labels[0]).toBe("13 oct");
-    expect(labels[13]).toBe("26 oct");
+    expect(labels[0]).toBe(labelDaysBack(13));
+    expect(labels[13]).toBe(labelDaysBack(0));
   });
 });

@@ -12,6 +12,135 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 
+// ---- the responsive-container seam (V11/SD-37) ---------------------------------
+
+/** The recharts ResponsiveContainer contract, hand-rolled: the chart box
+ *  re-wraps to the CONTAINER width while the chart's height (and the
+ *  donut's ring radii) stay FIXED. The callback ref measures
+ *  getBoundingClientRect().width synchronously at commit — BEFORE first
+ *  paint, so the fallback box never flashes — and the ResizeObserver
+ *  tracks later resizes (React 19's ref-cleanup return disconnects it).
+ *  The fallback is the natural width, so SSR markup and the hydration
+ *  render agree (no mismatch), and the commit-phase correction lands
+ *  before anything is painted. */
+export function useContainerWidth(
+  fallback: number,
+): [React.RefCallback<HTMLDivElement>, number] {
+  const [width, setWidth] = React.useState<number>(fallback);
+  const ref = React.useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    const measured = node.getBoundingClientRect().width;
+    if (measured > 0) setWidth(measured);
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const next = entry.contentRect.width;
+        if (next > 0) setWidth(next);
+      }
+    });
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, width];
+}
+
+// ---- the chart tooltip (V11/SD-40) ----------------------------------------------
+
+/** The reference's measured recharts default-tooltip skin (live-probed on
+ *  its sales chart): a white card, 12px radius, 10px padding, the
+ *  0 4px 20px rgba(0,0,0,0.1) shadow, nowrap, pointer-events none. The
+ *  reference's own tooltip TEXT is #e7e9ef-on-white (it inherits the app's
+ *  light color onto the white card — unreadable, a platform bug); the
+ *  clone ships the readable dark slate instead (the SD-18 precedent: the
+ *  reference's unreadable Total tone). Content: the point's label + its
+ *  value (the recharts default item line — the reference's empty series
+ *  only ever shows the label; the populated content follows recharts'
+ *  default shape, disclosed in the plan). */
+function ChartTooltip({
+  x,
+  y,
+  label,
+  value,
+}: {
+  x: number;
+  y: number;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div
+      data-testid="chart-tooltip"
+      style={{
+        position: "absolute",
+        left: x,
+        top: y,
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        padding: 10,
+        boxShadow: "rgba(0, 0, 0, 0.1) 0px 4px 20px",
+        whiteSpace: "nowrap",
+        pointerEvents: "none",
+        color: "#1e293b",
+        fontSize: 14,
+        zIndex: 20,
+        transform: "translate(-50%, calc(-100% - 12px))",
+      }}
+    >
+      <p style={{ margin: 0, fontWeight: 600 }}>{label}</p>
+      <p style={{ margin: 0, marginTop: 2, color: "#475569" }}>{value}</p>
+    </div>
+  );
+}
+
+/** The tooltip state for a sales chart: the nearest point to the pointer. */
+function tooltipForSales(
+  points: { label: string; value: number }[],
+  x: number,
+  height: number,
+  padLeft: number,
+  innerW: number,
+  formatY: (v: number) => string,
+): { x: number; y: number; label: string; value: string } | null {
+  if (points.length === 0) return null;
+  const stepX = points.length > 1 ? innerW / (points.length - 1) : innerW;
+  const rel = x - padLeft;
+  const idx = Math.round(rel / stepX);
+  if (idx < 0 || idx > points.length - 1) return null;
+  return {
+    x: padLeft + idx * stepX,
+    y: height / 2,
+    label: points[idx].label,
+    value: formatY(points[idx].value),
+  };
+}
+
+/** The tooltip state for the donut: the sector under the pointer. */
+function tooltipForDonut(
+  sectors: { name: string; count: number; a0: number; a1: number }[],
+  cx: number,
+  cy: number,
+  innerR: number,
+  outerR: number,
+  x: number,
+  y: number,
+): { x: number; y: number; label: string; value: string } | null {
+  const dx = x - cx;
+  const dy = y - cy;
+  const dist = Math.hypot(dx, dy);
+  if (dist < innerR || dist > outerR) return null;
+  // Screen angle, math-style CCW from 3 o'clock (y grows downward).
+  let deg = (Math.atan2(-dy, dx) * 180) / Math.PI;
+  if (deg < 0) deg += 360;
+  const hit = sectors.find((s) => deg >= s.a0 && deg < s.a1);
+  if (!hit) return null;
+  const mid = ((hit.a0 + hit.a1) / 2) * (Math.PI / 180);
+  return {
+    x: cx + Math.cos(mid) * ((innerR + outerR) / 2),
+    y: cy - Math.sin(mid) * ((innerR + outerR) / 2),
+    label: hit.name,
+    value: `${hit.count} ${hit.count === 1 ? "producto" : "productos"}`,
+  };
+}
+
 // ---- page heading ------------------------------------------------------------
 
 export function PageHeading({
@@ -312,20 +441,33 @@ const CHART_SKINS = {
 } as const;
 
 /** The 7-day/daily sales area on the reference's measured skin — flat when
- *  empty. `variant` picks the page's skin (dashboard default). */
+ *  empty. `variant` picks the page's skin (dashboard default).
+ *  V11/SD-37: the box is container-responsive the recharts way — the width
+ *  comes from the measured container while the HEIGHT stays FIXED per
+ *  surface (dashboard 280, reports 220 — the reference's own heights at
+ *  every measured viewport, 1440/1280/1024). The internal paddings stay
+ *  fixed and the plot area flexes, exactly how recharts lays out at a new
+ *  width; the old aspect-locked 640×260/640×280 boxes retired (they
+ *  matched the reference at NO viewport — 254px vs 280 at 1280 on the
+ *  dashboard, 424px vs 220 on the reports page). */
+const SALES_CHART_HEIGHTS = {
+  dashboard: 280,
+  reports: 220,
+} as const;
+
 export function SalesAreaChart({
   points,
-  height = 260,
   formatY = (v: number) => String(v),
   variant = "dashboard",
 }: {
   points: { label: string; value: number }[];
-  height?: number;
   formatY?: (v: number) => string;
   variant?: "dashboard" | "reports";
 }) {
   const skin = CHART_SKINS[variant];
-  const width = 640;
+  const height = SALES_CHART_HEIGHTS[variant];
+  const [boxRef, measured] = useContainerWidth(640);
+  const width = Math.max(120, Math.round(measured));
   const padLeft = 52;
   const padBottom = 28;
   const padTop = 12;
@@ -350,61 +492,78 @@ export function SalesAreaChart({
 
   const gridLines = [0, 0.25, 0.5, 0.75, 1];
 
+  const [tip, setTip] = React.useState<{
+    x: number;
+    y: number;
+    label: string;
+    value: string;
+  } | null>(null);
+
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      className="h-auto w-full"
-      role="img"
-      aria-label="Gráfica de ventas"
-    >
-      <defs>
-        <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor="#6366f1" stopOpacity={skin.gradientTopOpacity} />
-          <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-        </linearGradient>
-      </defs>
-      {gridLines.map((g) => {
-        const gy = padTop + innerH - g * innerH;
-        const value = Math.round(max * g * 100) / 100;
-        return (
-          <g key={g}>
-            <line
-              x1={padLeft}
-              x2={width - 8}
-              y1={gy}
-              y2={gy}
-              stroke={skin.gridStroke}
-              strokeDasharray={skin.gridDash}
-            />
-            <text
-              x={padLeft - 8}
-              y={gy + 4}
-              textAnchor="end"
-              fontSize={skin.labelSize}
-              fill={skin.labelFill}
-            >
-              {formatY(value)}
-            </text>
-          </g>
-        );
-      })}
-      {area ? <path d={area} fill="url(#salesGrad)" /> : null}
-      {path ? (
-        <path d={path} fill="none" stroke={skin.lineStroke} strokeWidth={skin.lineWidth} />
-      ) : null}
-      {labelIndices.map((i) => (
-        <text
-          key={`${points[i].label}-${i}`}
-          x={x(i)}
-          y={height - 8}
-          textAnchor="middle"
-          fontSize={skin.labelSize}
-          fill={skin.labelFill}
-        >
-          {points[i].label}
-        </text>
-      ))}
-    </svg>
+    <div ref={boxRef} className="relative w-full" style={{ height }}>
+      <svg
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="Gráfica de ventas"
+        onPointerMove={(e) => {
+          const box = e.currentTarget.getBoundingClientRect();
+          const svgX = ((e.clientX - box.x) / box.width) * width;
+          setTip(tooltipForSales(points, svgX, height, padLeft, innerW, formatY));
+        }}
+        onPointerLeave={() => setTip(null)}
+      >
+        <defs>
+          <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#6366f1" stopOpacity={skin.gradientTopOpacity} />
+            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        {gridLines.map((g) => {
+          const gy = padTop + innerH - g * innerH;
+          const value = Math.round(max * g * 100) / 100;
+          return (
+            <g key={g}>
+              <line
+                x1={padLeft}
+                x2={width - 8}
+                y1={gy}
+                y2={gy}
+                stroke={skin.gridStroke}
+                strokeDasharray={skin.gridDash}
+              />
+              <text
+                x={padLeft - 8}
+                y={gy + 4}
+                textAnchor="end"
+                fontSize={skin.labelSize}
+                fill={skin.labelFill}
+              >
+                {formatY(value)}
+              </text>
+            </g>
+          );
+        })}
+        {area ? <path d={area} fill="url(#salesGrad)" /> : null}
+        {path ? (
+          <path d={path} fill="none" stroke={skin.lineStroke} strokeWidth={skin.lineWidth} />
+        ) : null}
+        {labelIndices.map((i) => (
+          <text
+            key={`${points[i].label}-${i}`}
+            x={x(i)}
+            y={height - 8}
+            textAnchor="middle"
+            fontSize={skin.labelSize}
+            fill={skin.labelFill}
+          >
+            {points[i].label}
+          </text>
+        ))}
+      </svg>
+      {tip ? <ChartTooltip {...tip} /> : null}
+    </div>
   );
 }
 
@@ -451,21 +610,27 @@ export function sectorPath(
 }
 
 /** The category donut + legend — the reference's measured rendering
- *  (V10/SD-29/30): filled sector PATHS (not stroked circles) on the ring
- *  innerR 50 / outerR 80 centered at (166.5, 100) inside the 333×200 box,
- *  sectors counterclockwise from 3 o'clock with 2°-per-side padding, a
- *  #fff 1px stroke on every sector, and the legend — capped at the FIRST
- *  5 rows (the reference renders 6 sectors but 5 legend rows — its
- *  internal rule is unobservable; slice(0, 5) reproduces the measured
- *  behavior) — stacked BELOW the chart with slate-600 names, semibold
- *  slate-700 counts, and 12px round swatches. */
+ *  (V10/SD-29/30 + V11/SD-37): filled sector PATHS (not stroked circles) on
+ *  a ring innerR 50 / outerR 80 that stays FIXED (the radii and cy 100
+ *  never scale with the box), centered at cx = box/2 (recharts' 50%
+ *  default) inside a box that re-wraps to the CONTAINER width capped at
+ *  333 (the reference's own max-width — at the 1440 sweet spot the box is
+ *  333 and cx = 166.5, the v10 measurement), sectors counterclockwise
+ *  from 3 o'clock with the trailing 4° gap, a #fff 1px stroke on every
+ *  sector, and the legend — capped at the FIRST 5 rows (the reference
+ *  renders 6 sectors but 5 legend rows — its internal rule is
+ *  unobservable; slice(0, 5) reproduces the measured behavior) — stacked
+ *  BELOW the chart with slate-600 names, semibold slate-700 counts, and
+ *  12px round swatches. */
 export function DonutChart({
   data,
 }: {
   data: { name: string; count: number }[];
 }) {
   const total = data.reduce((sum, d) => sum + d.count, 0);
-  const cx = 166.5;
+  const [boxRef, measured] = useContainerWidth(333);
+  const box = Math.min(333, Math.max(120, Math.round(measured)));
+  const cx = box / 2;
   const cy = 100;
   const innerR = 50;
   const outerR = 80;
@@ -489,6 +654,8 @@ export function DonutChart({
   }
   const sectors = visible.map((d, i) => ({
     ...d,
+    a0: starts[i],
+    a1: starts[i] + spans[i],
     path: sectorPath(
       cx,
       cy,
@@ -500,14 +667,41 @@ export function DonutChart({
     ),
   }));
 
+  const [tip, setTip] = React.useState<{
+    x: number;
+    y: number;
+    label: string;
+    value: string;
+  } | null>(null);
+
   return (
     <div>
-      <div className="mx-auto h-[200px] w-full max-w-[333px]">
+      <div ref={boxRef} className="relative mx-auto h-[200px] w-full max-w-[333px]">
         <svg
-          viewBox="0 0 333 200"
+          width={box}
+          height={200}
+          viewBox={`0 0 ${box} 200`}
           className="h-full w-full"
           role="img"
           aria-label="Productos por categoría"
+          onPointerMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const w = rect.width > 0 ? Math.min(333, rect.width) : box;
+            const svgX = ((e.clientX - rect.x) / rect.width) * w;
+            const svgY = ((e.clientY - rect.y) / rect.height) * 200;
+            setTip(
+              tooltipForDonut(
+                sectors.map((s) => ({ name: s.name, count: s.count, a0: s.a0, a1: s.a1 })),
+                cx,
+                cy,
+                innerR,
+                outerR,
+                svgX,
+                svgY,
+              ),
+            );
+          }}
+          onPointerLeave={() => setTip(null)}
         >
           {sectors.length === 0 ? (
             <circle cx={cx} cy={cy} r={65} fill="none" stroke="#1e2235" strokeWidth={30} />
@@ -523,6 +717,7 @@ export function DonutChart({
             ))
           )}
         </svg>
+        {tip ? <ChartTooltip {...tip} /> : null}
       </div>
       <div className="space-y-2 mt-2">
         {data.slice(0, 5).map((d) => (

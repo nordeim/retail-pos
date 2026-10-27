@@ -13,6 +13,7 @@ import { Store, Palette, FileText, CreditCard, Tag, Plus, Upload, X } from "luci
 import { PageHeading, SectionCard } from "@/components/pos/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -136,7 +137,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
                 value={form.name}
                 onChange={(event) => set("name", event.target.value)}
                 data-testid="settings-name-input"
-                className="mt-1.5"
+                className="mt-1"
               />
             </div>
             <div>
@@ -144,7 +145,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
               {/* V5: the reference's styled control — a glass "Subir logo"
                   button (label wrapping the hidden input keeps it a single
                   click-target with native input semantics). */}
-              <div className="mt-1.5 flex flex-wrap items-center gap-3">
+              <div className="mt-1 flex flex-wrap items-center gap-3">
                 <label
                   htmlFor="settings-logo"
                   data-testid="settings-logo-button"
@@ -215,7 +216,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
                 id="settings-address"
                 value={form.address}
                 onChange={(event) => set("address", event.target.value)}
-                className="mt-1.5"
+                className="mt-1"
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -225,7 +226,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
                   id="settings-phone"
                   value={form.phone}
                   onChange={(event) => set("phone", event.target.value)}
-                  className="mt-1.5"
+                  className="mt-1"
                 />
               </div>
               <div>
@@ -235,7 +236,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
                   type="email"
                   value={form.email}
                   onChange={(event) => set("email", event.target.value)}
-                  className="mt-1.5"
+                  className="mt-1"
                 />
               </div>
             </div>
@@ -246,13 +247,13 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
                   id="settings-fiscal"
                   value={form.fiscalId}
                   onChange={(event) => set("fiscalId", event.target.value)}
-                  className="mt-1.5"
+                  className="mt-1"
                 />
               </div>
               <div>
                 <Label className="text-slate-200">Moneda</Label>
                 <Select value={form.currency} onValueChange={(value) => set("currency", value)}>
-                  <SelectTrigger className="mt-1.5 w-full" data-testid="settings-currency">
+                  <SelectTrigger className="mt-1 w-full" data-testid="settings-currency">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
@@ -330,12 +331,12 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
         >
           <div>
             <Label htmlFor="settings-footer" className="text-slate-200">Pie del ticket</Label>
-            <textarea
+            <Textarea
               id="settings-footer"
               value={form.ticketFooter}
               onChange={(event) => set("ticketFooter", event.target.value)}
               rows={3}
-              className="mt-1.5 w-full rounded-xl border border-input bg-transparent px-3 py-2.5 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/45"
+              className="mt-1"
               placeholder="¡Gracias por su compra!"
             />
           </div>
@@ -348,7 +349,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
           <div>
             <Label className="text-slate-200">Proveedor</Label>
             <Select value={form.cardProvider} onValueChange={(value) => set("cardProvider", value)}>
-              <SelectTrigger className="mt-1.5 w-full max-w-xs" data-testid="settings-card-provider">
+              <SelectTrigger className="mt-1 w-full max-w-xs" data-testid="settings-card-provider">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
