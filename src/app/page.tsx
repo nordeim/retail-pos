@@ -16,8 +16,9 @@ import * as React from "react";
 
 import { MobileChrome } from "@/components/layout/mobile-chrome";
 import { Sidebar } from "@/components/layout/sidebar";
-import { Zap } from "lucide-react";
+import { RotateCcw, TriangleAlert, Zap } from "lucide-react";
 import { apiGet, ApiError } from "@/lib/api";
+import { reloadOnStaleChunk } from "@/lib/chunk-recovery";
 import { useAppStore, usePosStore, type AppUser, type LoadedKey } from "@/lib/store";
 import { documentTitleForPath, type ViewId } from "@/lib/router";
 import { cn } from "@/lib/utils";
@@ -55,17 +56,80 @@ const VIEW_LOADERS = {
     import("@/components/views/settings-view").then((m) => ({ default: m.SettingsView })),
 } as const satisfies Record<ViewId, () => Promise<{ default: React.ComponentType }>>;
 
-/** The lazy view registry — one lazy component per view id. */
-const VIEW_COMPONENTS: Record<ViewId, React.LazyExoticComponent<React.ComponentType>> = {
-  terminal: React.lazy(VIEW_LOADERS.terminal),
-  dashboard: React.lazy(VIEW_LOADERS.dashboard),
-  inventario: React.lazy(VIEW_LOADERS.inventario),
-  ventas: React.lazy(VIEW_LOADERS.ventas),
-  cajas: React.lazy(VIEW_LOADERS.cajas),
-  cajeros: React.lazy(VIEW_LOADERS.cajeros),
-  reportes: React.lazy(VIEW_LOADERS.reportes),
-  ajustes: React.lazy(VIEW_LOADERS.ajustes),
-};
+/** Builds the lazy registry — one lazy component per view id. V18/SD-71:
+ * rebuilt per retry EPOCH because React.lazy caches a rejected initializer
+ * FOREVER — resetting an error boundary re-renders the same lazy instance
+ * and re-throws the cached error. Only a fresh React.lazy re-imports. */
+function buildViewComponents(): Record<
+  ViewId,
+  React.LazyExoticComponent<React.ComponentType>
+> {
+  return {
+    terminal: React.lazy(VIEW_LOADERS.terminal),
+    dashboard: React.lazy(VIEW_LOADERS.dashboard),
+    inventario: React.lazy(VIEW_LOADERS.inventario),
+    ventas: React.lazy(VIEW_LOADERS.ventas),
+    cajas: React.lazy(VIEW_LOADERS.cajas),
+    cajeros: React.lazy(VIEW_LOADERS.cajeros),
+    reportes: React.lazy(VIEW_LOADERS.reportes),
+    ajustes: React.lazy(VIEW_LOADERS.ajustes),
+  };
+}
+
+/** V18/F1 (SD-70): the view error boundary — a failed view chunk (a
+ * transient fetch blip or the classic stale-hash-after-redeploy) must
+ * never unmount the shell. Stale-chunk errors auto-reload once per 10s
+ * cooldown (the self-heal seam); every other error renders the Spanish
+ * recovery card whose Reintentar rebuilds the registry (SD-71) and
+ * resets. Keyed by `${view}-${viewEpoch}` so BOTH a route change and a
+ * retry remount it with fresh state. */
+class ViewErrorBoundary extends React.Component<
+  { children: React.ReactNode; onRetry: () => void },
+  { failed: boolean }
+> {
+  state: { failed: boolean } = { failed: false };
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: Error): void {
+    // The stale-chunk self-heal: reload once per cooldown window BEFORE
+    // the user reads the card (a redeploy's new hashes load on the
+    // fresh boot). Non-chunk errors are real bugs — the card is the
+    // honest surface and no reload fires.
+    reloadOnStaleChunk(error, {
+      storage: typeof sessionStorage !== "undefined" ? sessionStorage : null,
+    });
+  }
+
+  render(): React.ReactNode {
+    if (this.state.failed) {
+      return (
+        <div
+          data-testid="view-error-card"
+          className="flex min-h-[60vh] flex-col items-center justify-center gap-3 rounded-2xl border border-[#262a36] bg-[#0f121a] p-8 text-center text-[#e7e9ef]"
+        >
+          <TriangleAlert className="h-8 w-8 text-amber-400" strokeWidth={2} />
+          <h2 className="text-lg font-semibold">No se pudo cargar la vista</h2>
+          <p className="max-w-sm text-sm text-slate-400">
+            Reintentar recarga el módulo de esta vista. Si el problema
+            persiste, actualiza la página.
+          </p>
+          <button
+            type="button"
+            onClick={this.props.onRetry}
+            className="glass-button-primary vx-focus mt-2 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium"
+          >
+            <RotateCcw className="h-4 w-4" strokeWidth={2} />
+            Reintentar
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 /** The collections each view needs on first paint (the pre-warm set). */
 const INITIAL_COLLECTIONS: Record<ViewId, LoadedKey[]> = {
@@ -109,6 +173,10 @@ export default function Home() {
   const [status, setStatus] = React.useState<GateStatus>("loading");
   const [gateError, setGateError] = React.useState<string>("");
   const [attempt, setAttempt] = React.useState(0);
+  // V18/SD-71: the retry epoch — Reintentar bumps it, the registry
+  // rebuilds with fresh React.lazy instances (fresh import() attempts).
+  const [viewEpoch, setViewEpoch] = React.useState(0);
+  const viewComponents = React.useMemo(() => buildViewComponents(), [viewEpoch]);
   const view = useAppStore((s) => s.view);
   const sidebarCollapsed = useAppStore((s) => s.sidebarCollapsed);
 
@@ -122,12 +190,13 @@ export default function Home() {
       useAppStore.getState().hydrate();
       const activeView = useAppStore.getState().view;
 
-      // V17/F2: prefetch the ACTIVE view's chunk in the same parallel
-      // window as the pre-warm — fire-and-forget; by the time status
-      // flips "ready" the chunk is resident (no Suspense gap on the
-      // standard flow). Never blocks: a rejected prefetch surfaces only
-      // if the lazy mount itself retries the import.
-      void VIEW_LOADERS[activeView]();
+      // V17/F2 + V18/F3: prefetch the ACTIVE view's chunk in the same
+      // parallel window as the pre-warm — fire-and-forget-SILENT (a
+      // rejected prefetch never leaks an unhandled rejection; the lazy
+      // mount owns the real error path and the boundary owns the
+      // recovery). By the time status flips "ready" the chunk is
+      // resident (no Suspense gap on the standard flow).
+      VIEW_LOADERS[activeView]().catch(() => undefined);
 
       // The pre-warm rides IN PARALLEL with the auth round-trip and never
       // blocks the shell on failure.
@@ -215,7 +284,7 @@ export default function Home() {
     );
   }
 
-  const ActiveView = VIEW_COMPONENTS[view] ?? VIEW_COMPONENTS.terminal;
+  const ActiveView = viewComponents[view] ?? viewComponents.terminal;
 
   return (
     <>
@@ -244,13 +313,23 @@ export default function Home() {
         )}
         data-testid="main-content"
       >
-        {/* V17/F2: the lazy registry — the fallback stays null because the
-            boot prefetch (above) has the chunk resident before "ready" in
-            the standard flow; a cold route switch shows the same chrome
-            with an empty main for one local chunk fetch. */}
-        <React.Suspense fallback={null}>
-          <ActiveView />
-        </React.Suspense>
+        {/* V17/F2 + V18/F1: the lazy registry — the fallback stays null
+            because the boot prefetch (above) has the chunk resident before
+            "ready" in the standard flow; a cold route switch shows the same
+            chrome with an empty main for one local chunk fetch. The
+            boundary (V18/SD-70) keeps the SHELL alive when a chunk fails:
+            stale chunks self-heal via one guarded reload; everything else
+            gets the Spanish recovery card with a fresh-registry Reintentar.
+            The `${view}-${viewEpoch}` key resets it on route change AND
+            retry (SD-71). */}
+        <ViewErrorBoundary
+          key={`${view}-${viewEpoch}`}
+          onRetry={() => setViewEpoch((n) => n + 1)}
+        >
+          <React.Suspense fallback={null}>
+            <ActiveView />
+          </React.Suspense>
+        </ViewErrorBoundary>
       </main>
     </>
   );

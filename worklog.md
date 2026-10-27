@@ -1291,3 +1291,89 @@ Stage Summary:
   reference's own broken flows have nothing to mirror; the reports
   with-data skins stay unobservable; all standing v8-v16 disclosures
   unchanged.
+
+---
+
+Task ID: v18-cycle
+Agent: Z.ai (main agent, session 29)
+Task: The V18 remediation cycle — the error-recovery architecture pass
+(the V17 lazy registry's one unowned failure mode), the audit ledger
+(reference state, mobile drawer, Tailwind v4 sweep, INP), the
+remediation plan, the TDD execution, the evidence, the docs lockstep,
+the commit + the SSH-wrapper push.
+
+Work Log:
+- Baseline: git pull (main @ 76a3bee — only session_28.md arrived; no
+  re-clone needed this time); the core docs re-read; the V17 close
+  validated against the codebase; the gates re-ran green (lint 0 ·
+  tsc 0 · build ✓ · 486/486 unit · 176/176 e2e) with ONE unreproduced
+  flake in the first e2e run (functional-parity-v9 /Ajustes — the
+  heading never appeared; isolated re-run + two full runs green).
+- The audit: the reference's state UNCHANGED (both cajas Cerrada, 12
+  products, 2 sales, the same headings — nothing new to mirror); the
+  mobile drawer contract re-verified live at 390×844 (full lifecycle:
+  open/close/navigate/focus-return/scroll-lock, zero overflow) and the
+  reference re-confirmed menu-less at 390; the Tailwind v4 sweep clean
+  (trap tests green, the 95 --color- entries, no new patterns in the
+  V17 diff); the INP measurement session_27 suggested: 5.3–14.4 ms
+  median 13.4 ms click→ticket-paint on the terminal grid — no action.
+- F1 reproduced live (scripts/probe-v18-chunk-failure.ts): a route-
+  aborted settings chunk on the SPA nav threw the Turbopack-form
+  ChunkLoadError and unmounted the ENTIRE app to Next's built-in
+  ENGLISH dead-end screen ("This page couldn't load") — no error
+  boundary existed anywhere (no error.tsx, no global-error.tsx, no
+  class boundary). The observed e2e flake has exactly this failure
+  shape (F2, hypothesis-recorded).
+- The fix (the neo-crm session-170 pattern, ported): the pure seam
+  src/lib/chunk-recovery.ts (the stale-chunk message family incl. the
+  captured Turbopack form, the 10 s cooldown, the flag-before-reload
+  loop guard, guarded storage; veloxpos:chunk-reload-at); the
+  ViewErrorBoundary in page.tsx wrapping the Suspense (keyed
+  view-epoch; the shell survives; the Spanish "No se pudo cargar la
+  vista" card + Reintentar; the epoch-keyed fresh-registry retry —
+  React.lazy caches rejected initializers forever); the outer nets
+  error.tsx + global-error.tsx (Spanish, self-healing, zero
+  component-tree imports; the root net self-contained html/body +
+  globals.css); the boot prefetch now fire-and-forget-SILENT.
+- The measurement lesson (L14): a SINGLE aborted chunk fetch never
+  reaches the boundary — the bundler runtime retries internally and
+  the view renders below it (debug-instrumented). The card is for
+  failures persisting past the runtime retry budget; the REINTENTAR
+  pin redesigned to the persistent-block + pre-seeded-cooldown +
+  block-lifts scenario.
+- TDD: 10 source pins + the seam module RED first → green (23 new
+  unit pins: tests/chunk-recovery.test.ts 13 +
+  tests/functional-parity-v18.test.ts 10); 3 e2e pins
+  (tests/e2e/functional-parity-v18.spec.ts: SHELL SURVIVAL,
+  REINTENTAR HEALS, THE SELF-HEAL).
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 509/509 (486+23, 35
+  files) · e2e 179/179 (176+3).
+- Evidence: scripts/probe-v18-chunk-failure.ts + scripts/probe-v18-inp.ts
+  + scripts/capture-v18-recovery.ts committed;
+  docs/screenshots/v18-view-recovery-card.png +
+  v18-view-recovery-healed.png captured against the standalone build.
+- Docs lockstep: AGENTS.md contract 31; CLAUDE.md the v18 block + the
+  counts; README the badge (509+179) + the error-recovery row + the
+  Views row; PAD v2.6.0 + ADR-028 + §8 counts; retail-pos_SKILL.md
+  v1.13.0; docs/remediation-plan-v18.md (with the §6 execution
+  ledger); docs/session_29.md; this entry.
+
+Stage Summary:
+- v18 owned the V17 lazy registry's failure mode: a failed view chunk
+  (transient or stale-hash-after-redeploy) now keeps the app shell
+  alive, self-heals stale chunks with one guarded reload per 10 s, and
+  offers a working Spanish Reintentar that re-imports fresh — with the
+  reproduction, the runtime-reality measurement, and the three e2e
+  failure-path pins as the evidence.
+- The audit found the reference unchanged and the mobile contract
+  intact; INP measured excellent (5–14 ms) — the clone remains the
+  production-ready superset with no new parity gaps.
+- Tooling lessons recorded: the Turbopack ChunkLoadError message form
+  (captured live), the runtime's internal chunk retry (the boundary
+  sees only persistent failures), and the flag-before-reload loop
+  guard pattern (ported from neo-crm session-170).
+- Known-open (disclosed): the react-dom boot floor; the reference's
+  own broken flows have nothing to mirror; the reports with-data skins
+  stay unobservable; the e2e flake is hypothesis-linked to F1 (if it
+  recurs post-fix, it gets its own investigation); all standing
+  v8–v17 disclosures unchanged.

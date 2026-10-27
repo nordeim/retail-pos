@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (486 tests / 33 files)
-bun run test:e2e       # playwright e2e layer (176 specs, boots standalone :3100)
+bun run test           # vitest unit layer (509 tests / 35 files)
+bun run test:e2e       # playwright e2e layer (179 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -213,6 +213,23 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   logged-out bounce). The dashboard's Lighthouse a11y 94 = the
   disclosed color-contrast family + heading-order (H1→h3 — measured
   identical on the reference; parity wins).
+- The v18 contracts: the error-recovery architecture — the lazy
+  registry never ships a bare Suspense (`ViewErrorBoundary` wraps it,
+  keyed `${view}-${viewEpoch}`, so a failed view chunk keeps the
+  SHELL alive); stale-chunk errors (the Turbopack `ChunkLoadError:`
+  family) auto-reload ONCE per 10 s window through the pure seam
+  `src/lib/chunk-recovery.ts` (the `veloxpos:chunk-reload-at` flag
+  written BEFORE the reload — the loop guard; guarded storage access);
+  every other error renders the Spanish card ("No se pudo cargar la
+  vista" + "Reintentar"); Reintentar bumps the view EPOCH (the lazy
+  registry is a `useMemo` keyed on it — `React.lazy` caches rejected
+  initializers forever, only a fresh instance re-imports); the outer
+  nets are `src/app/error.tsx` (segment) + `src/app/global-error.tsx`
+  (root, self-contained html/body + globals.css, zero component-tree
+  imports); the boot prefetch is fire-and-forget-SILENT (`.catch(() =>
+  undefined)`). Measured: a SINGLE aborted chunk fetch never reaches
+  the boundary (the bundler runtime retries internally) — the card is
+  for failures persisting past the runtime retry budget.
 - The v15 contracts: the hover micro-interaction families — every
   row-action icon button carries `rounded-lg p-2 text-slate-400
   transition-colors` + its per-action family (edit/detail indigo,

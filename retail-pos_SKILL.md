@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.12.0
+version: 1.13.0
 last_updated: "2026-10-27"
 tags:
   - pos
@@ -25,8 +25,21 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v16 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 486/486 unit · 176/176 e2e** (the v17 close:
+> template), validated against the codebase at the v18 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 509/509 unit · 179/179 e2e** (the v18 close:
+> the error-recovery architecture — the V17 lazy registry's one unowned
+> failure mode reproduced live (a failed view chunk unmounted the whole
+> app to Next's English dead-end screen) and closed with the neo-crm
+> session-170 three-layer pattern: the pure `src/lib/chunk-recovery.ts`
+> seam (the Turbopack `ChunkLoadError:` message family, the 10s cooldown,
+> the flag-before-reload loop guard), the `ViewErrorBoundary` keeping the
+> SHELL alive (the Spanish "No se pudo cargar la vista" card + the
+> epoch-keyed fresh-registry Reintentar — `React.lazy` caches rejected
+> initializers forever), and the two outer nets (`error.tsx` +
+> `global-error.tsx`, zero component-tree imports); measured: a single
+> aborted chunk fetch never reaches the boundary — the bundler runtime
+> retries internally, the card is for failures persisting past the
+> runtime retry budget; the v17 close:
 > the lazy view registry + the CWV evidence set; the v16 close:
 > the full-page pixel-diff pass found that **Tailwind v4's default palette
 > is not the reference's palette** — 17/22 spot-checked entries render
@@ -118,8 +131,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 486 tests / 33 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 176 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 509 tests / 35 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 179 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -149,8 +162,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 486/486
-bun run test:e2e           # playwright: 176/176 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 509/509
+bun run test:e2e           # playwright: 179/179 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -530,8 +543,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 486/486 vitest
-bun run test:e2e      # 176/176 playwright (production posture)
+bun run test          # 509/509 vitest
+bun run test:e2e      # 179/179 playwright (production posture)
 ```
 
 Verification beyond the gates:

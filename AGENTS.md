@@ -552,6 +552,37 @@ rules:
     2026-10-27); both are reference-parity deviations, not bugs — do
     not "fix" either.
 
+31. The error-recovery architecture (v18, reproduced live): the lazy
+    registry NEVER ships a bare Suspense — `<React.Suspense>` mounts
+    INSIDE `ViewErrorBoundary` (a class boundary keyed
+    `${view}-${viewEpoch}`) so a failed view chunk keeps the SHELL
+    (sidebar, app bar) alive. A stale-chunk error (the redeploy case:
+    the Turbopack message family, e.g. `ChunkLoadError: Failed to load
+    chunk /…​.js from module N`) auto-reloads ONCE per 10 s window via
+    `src/lib/chunk-recovery.ts` (the pure injectable seam — the
+    `veloxpos:chunk-reload-at` sessionStorage flag is written BEFORE
+    the reload fires, the crash-mid-reload loop guard; unavailable
+    storage disables the reload, never throws); every other error gets
+    the Spanish recovery card ("No se pudo cargar la vista" +
+    "Reintentar" — `bg-[#0f121a]` chrome + `glass-button-primary`).
+    "Reintentar" bumps the view EPOCH — the lazy registry is a
+    `useMemo` keyed on it, because `React.lazy` caches a rejected
+    initializer FOREVER (only a fresh `React.lazy` instance re-imports;
+    resetting a boundary alone re-throws the cached error). The outer
+    nets: `src/app/error.tsx` (segment — non-view crashes) +
+    `src/app/global-error.tsx` (root — self-contained html/body +
+    globals.css, zero component-tree imports: a resilience surface
+    never stands on the tree that broke). RUNTIME REALITY (measured):
+    a SINGLE aborted chunk fetch never reaches the boundary — the
+    bundler runtime retries internally and the view renders below it;
+    the card is the surface for failures that PERSIST past the runtime
+    retry budget (the e2e pins in
+    `tests/e2e/functional-parity-v18.spec.ts` block persistently +
+    pre-seed the cooldown to suppress the auto-reload). The boot
+    prefetch is fire-and-forget-SILENT
+    (`VIEW_LOADERS[activeView]().catch(() => undefined)`) — the lazy
+    mount owns the surfaced error.
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content
