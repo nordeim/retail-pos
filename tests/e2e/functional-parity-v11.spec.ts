@@ -297,12 +297,17 @@ test.describe("functional parity (v11) — the chart tooltips", () => {
     // The label line carries the day (the seeded sales sit outside the
     // 7-day window, so every point is a weekday label with a $0 value).
     await expect(tip).toContainText(/lun|mar|mié|jue|vie|sáb|dom/);
-    // Leaving the chart hides it.
+    // Leaving the chart hides it (the V13 persistent wrapper: the tip stays
+    // attached and flips visibility — it glides on re-enter like the
+    // reference's own recharts wrapper).
     await page.mouse.move(10, 10);
-    await expect(tip).toHaveCount(0);
+    await expect(tip).toBeHidden();
+    await expect(tip).toHaveCount(1);
   });
 
-  test("the donut shows the category + count on sector hover", async ({ page }) => {
+  test("the donut shows the raw 'name : count' item on sector hover (the V13 raw skin)", async ({
+    page,
+  }) => {
     await page.goto("/Dashboard");
     const legendRow = page.getByTestId("category-chart-card").locator("div.space-y-2 > div");
     await expect(legendRow.first()).toContainText("Lácteos");
@@ -317,9 +322,10 @@ test.describe("functional parity (v11) — the chart tooltips", () => {
     const px = cx + Math.cos(midAngle) * 65;
     const py = cy - Math.sin(midAngle) * 65;
     await page.mouse.move(px, py);
-    const tip = card.locator('[data-testid="chart-tooltip"]');
+    const tip = card.locator('[data-testid="donut-tooltip"]');
     await expect(tip).toBeVisible();
-    await expect(tip).toContainText("Lácteos");
-    await expect(tip).toContainText("2 productos");
+    // The V13 raw recharts-default content: the name + " : " + the raw
+    // count (the "2 productos" phrasing retired with the white-card skin).
+    await expect(tip).toContainText("Lácteos : 2");
   });
 });

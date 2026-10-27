@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (429 tests / 28 files)
-bun run test:e2e       # playwright e2e layer (153 specs, boots standalone :3100)
+bun run test           # vitest unit layer (445 tests / 29 files)
+bun run test:e2e       # playwright e2e layer (158 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -145,6 +145,18 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   (`variant="dashboard"` vs `"reports"` — gridlines/labels/line/gradient
   all differ); the dashboard has NO footer credit (the ref ends at the
   low-stock rows).
+- The v13 contracts: the chart HOVER micro-interactions — the sales
+  chart renders the recharts hover artifacts (the #ccc cursor line
+  spanning the plot at the active x, the r-4 activeDot in the line color
+  with the #fff 2px stroke) and the recharts DEFAULT tooltip content (the
+  margin-0 day label + the ul/li item in the LINE color: the literal
+  `ventas` + " : " + the RAW value, 16px) on the v11 white-card skin; the
+  tooltip anchors at (point.x + 10, POINTER.y + 10) — the x snaps, the y
+  follows the mouse — with the right-edge left-flip, the transform 400ms
+  glide, and the PERSISTENT wrapper (leave flips visibility, never
+  unmounts). The DONUT tooltip is its OWN raw skin: the 1px #ccc border,
+  NO radius, NO shadow, the empty label p, the black `name : raw-count`
+  item, anchored at the sector's ring midpoint with the same flip/glide.
 - The v12 contracts: the auth surface family measured BELOW the card —
   the card chrome (the 4px slate gradient hairline + overflow-hidden +
   `md:pt-12 md:pb-10 md:px-10` + the space-y-6/8 text-center column),

@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.7.0
+version: 1.8.0
 last_updated: "2026-10-27"
 tags:
   - pos
@@ -25,9 +25,17 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v12 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 429/429 unit · 153/153 e2e** (the v12 close:
-the auth surface family went card-faithful — the 4px slate gradient
+> template), validated against the codebase at the v13 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 445/445 unit · 158/158 e2e** (the v13 close:
+the chart hover micro-interactions went recharts-faithful — the #ccc
+ cursor line + the r-4 activeDot on the sales chart, the recharts default
+tooltip content (the `ventas : RAW-value` item in the line color) on the
+measured white-card skin, the hybrid anchor ((point.x + 10, pointer.y +
+10)) with the right-edge left-flip + the transform 400ms glide + the
+persistent visibility wrapper, and the donut's OWN raw tooltip skin (the
+1px #ccc border, no radius, no shadow, the empty label, the black `name :
+raw-count` item) — on top of the v12 close: the auth surface family went
+card-faithful — the 4px slate gradient
 hairline + the md-stepped padding on the card, the responsive login
 typography with the 16px social buttons and the footer ROW, the
 forgot/sent screens rebuilt to the reference's English family with the
@@ -75,8 +83,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 429 tests / 28 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 153 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 445 tests / 29 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 158 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -106,8 +114,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 429/429
-bun run test:e2e           # playwright: 127/127 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 445/445
+bun run test:e2e           # playwright: 158/158 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -487,8 +495,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 429/429 vitest
-bun run test:e2e      # 127/127 playwright (production posture)
+bun run test          # 445/445 vitest
+bun run test:e2e      # 158/158 playwright (production posture)
 ```
 
 Verification beyond the gates:

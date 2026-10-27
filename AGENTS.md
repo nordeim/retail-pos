@@ -395,6 +395,38 @@ rules:
     resolves palette colors through oklab()/lab() in Chromium —
     probe-compare colors or assert the alpha, never literal rgb strings.
 
+26. The chart HOVER micro-interactions (v13, live-measured on both apps):
+    the sales chart renders the reference's recharts hover artifacts while a
+    point is active — the CURSOR (a vertical `stroke="#ccc"` 1px line at the
+    active x spanning the plot area, `y1={padTop}`→`y2={padTop + innerH}`)
+    and the activeDot (`<circle r="4" fill={skin.lineStroke} stroke="#fff"
+    strokeWidth={2}>` at the point) — and the tooltip is the recharts
+    DEFAULT content on the v11 white-card skin: the margin-0 label p (the
+    day, readable #1e293b — the SD-18 superset; the reference's inherited
+    #e7e9ef is invisible on white) + the ul/li item (4px pad-y, the LINE
+    color #6366f1) carrying the literal series name `ventas` + the " : "
+    separator + the RAW value (`String(value)` — NEVER the formatted Y
+    string), 16px. The tooltip ANCHOR is the reference's measured hybrid —
+    x = the snapped POINT's x + 10, y = the POINTER's y + 10 — flipping to
+    the mirrored −10 gap when the box would overflow the container
+    (`tipTransform`), gliding with `transition: transform 400ms`, and the
+    wrapper PERSISTS after the first hover (leave flips `visibility`,
+    never unmounts — re-enter glides from the last position, recharts' own
+    behavior; the tooltip measures itself via the callback-ref +
+    ResizeObserver `useSelfMeasure` — never setState-in-effect). The DONUT
+    tooltip is a DIFFERENT skin: the RAW recharts default — white bg + a
+    1px `#ccc` border, NO radius, NO shadow, the EMPTY label p, the item in
+    BLACK (`rgb(0,0,0)`): `{name} : {raw count}` ("N productos" RETIRED) —
+    anchored at the sector's ring midpoint (the measured recharts centroid)
+    with the same flip + glide. Probe lessons: a 0-width SVG line (the
+    cursor) has an EMPTY Playwright bounding box — assert attachment +
+    geometry, never toBeVisible; the flat-$0 area path is a 0-height shape
+    (same rule); Chromium serializes `400ms` as `0.4s` in computed
+    transitions; e2e hovers must GATE on the data (the area path) before
+    the mouse.move — a move on the empty-payload chart never activates a
+    point; the reference's PIE tooltip needs mouseenter/mousemove ON THE
+    SECTOR PATH (the chart-wrapper mousemove never activates it).
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content

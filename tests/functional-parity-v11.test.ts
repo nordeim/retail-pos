@@ -242,7 +242,9 @@ describe("B3/F2 — the auth inputs carry the reference's light-theme focus", ()
 describe("B4/F3 — the charts render the reference's measured tooltip skin", () => {
   it("the tooltip card is the recharts default skin: white, 12px radius, 10px padding, the measured shadow", () => {
     const s = shared();
-    expect(s).toContain("ChartTooltip");
+    // V13 realignment: ChartTooltip → SalesTip (the white-card skin moved to
+    // the sales chart's own tooltip when the donut got the raw default skin).
+    expect(s).toContain("SalesTip");
     // The measured skin (live on the ref's sales chart).
     expect(s).toMatch(/background:\s*#fff|backgroundColor:\s*"#fff"|background:\s*"rgb\(255, 255, 255\)"/);
     expect(s).toMatch(/borderRadius:\s*12/);

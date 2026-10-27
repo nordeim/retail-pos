@@ -862,3 +862,97 @@ Stage Summary:
   superset keeps the aligned chrome); the platform Notifications region
   (base44 chrome — the clone's toaster stays the superset). Standing
   v8/v9/v10/v11 disclosures unchanged.
+
+---
+Task ID: V13
+Agent: general-purpose (remediation executor, session V13 2026-10-27)
+Task: The v13 cycle — audit the chart hover micro-interactions
+(session_17's own suggested next step), write remediation-plan-v13,
+execute it TDD, and ship.
+
+Work Log:
+- Baseline re-verified after git pull to main @ 5e7415c (the v12 close
+  0268bd8 + the remote's session_18 transcript): lint 0 · tsc 0 ·
+  build ✓ · 429/429 unit · 153/153 e2e — the v12 close intact; the
+  v12 source diff audited in full (all contracts hold); the reference's
+  data state re-verified BEFORE probing: UNCHANGED since v12.
+- Live audit (agent-browser, BOTH apps, 1280): the chart HOVER family —
+  a synthetic mousemove on the reference's chart svg activates its
+  recharts tooltip + activeDot + cursor (the probe that unlocks the
+  family headlessly), and the donut's tooltip yields to mouseenter ON
+  THE SECTOR PATH (the v10/v11 "not reliably triggerable" disclosure
+  closes). F1 the activeDot (recharts default: r=4, fill #6366f1,
+  stroke #fff 2px — the clone had none). F2 the cursor (a vertical #ccc
+  1px line at the active x spanning the plot — the clone had none).
+  F3 the tooltip content (the recharts DEFAULT: the margin-0 label p +
+  the ul/li item in the LINE color at 4px pad-y — the literal "ventas"
+  dataKey + " : " + the RAW value, 16px; the label's inherited
+  #e7e9ef-on-white is INVISIBLE — the platform's inheritance bug, the
+  SD-18 readable superset stays). F4 the position + motion (the hybrid
+  anchor: x = the snapped point's x + 10, y = the POINTER's y + 10 —
+  three probes; the right-edge left-flip at the mirrored −10 gap;
+  transition: transform 400ms; the wrapper PERSISTS with visibility
+  toggling — the clone anchored centered above, no flip, no glide,
+  unmounted on leave). F5 the donut tooltip's OWN skin (the RAW
+  recharts default — 1px #ccc border, NO radius, NO shadow, the EMPTY
+  label p, the BLACK "Lácteos : 2" item, anchored at the sector
+  centroid with the same flip + glide — the v11 white-card skin was
+  the SALES chart's, wrongly shared).
+- Two disclosures RETIRED with measurements: the v12 social-icon hover
+  transform (zero group-hover utilities on the reference — dead code
+  there too, exact parity) and the donut-tooltip triggerability. At
+  parity with no work: the reports window chips (the active
+  bg-violet-600 + shadow-lg exact), the dashboard chart labels, the
+  low-stock rows (no hover on either app), the donut sectors (no hover
+  state on the reference), the reference's Terminal still shift-gated.
+- Wrote docs/remediation-plan-v13.md (21-item ledger, SD-46..SD-52,
+  B1-B4 batches).
+- TDD execution, all pins red first (16 unit + 5 e2e):
+  - B1: the SalesAreaChart hover state {idx, pointerY, visible}; the
+    cursor line + the activeDot g under the visibility gate; the new
+    SalesTip (the white-card skin + the recharts default content — the
+    literal ventas name, the " : " separator, String(value), 16px, the
+    readable #1e293b label) with tipTransform ((point.x + 10,
+    pointer.y + 10) + the right-edge left-flip + the bottom guard),
+    transition: transform 400ms, the persistent visibility wrapper, and
+    useSelfMeasure (callback-ref + ResizeObserver — no
+    setState-in-effect).
+  - B2: the DonutTip (the raw skin: 1px #ccc border, no radius, no
+    shadow, the empty label p, the black name : count item, the
+    ring-midpoint anchor, the same flip + glide); "N productos"
+    retired; the white-card skin lives only on the sales chart.
+  - B3: the legacy realignments (the v11 unit ChartTooltip → SalesTip;
+    the v11 line-chart leave pin → the persistent-wrapper contract; the
+    v11 donut pin → donut-tooltip + "Lácteos : 2").
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 445/445 (429+16) · e2e
+  158/158 (153+5).
+- Evidence: scripts/capture-hover-shots.ts → 2 pixel-verified hover
+  shots (the cursor a 235px gray run, the dot 301 indigo samples, the
+  donut border 33 #ccc pixels); live parity probes — the tip
+  "sábventas : 0" (#6366f1 item, 16px), the dot r4/#6366f1/#fff/2px,
+  the cursor x=332.5/#ccc, the donut's raw skin + black item + empty
+  label, the flip transform math exact (translate(75.79, 77.5)).
+- Docs lockstep: AGENTS.md contract 26; CLAUDE.md counts + the v13
+  block; README badge (445+158); PAD v2.1.0 + ADR-023 + §8 counts;
+  retail-pos_SKILL.md v1.8.0 (+ the stale 127/127 and 429/153 counts
+  corrected); docs/session_19.md; this entry.
+
+Stage Summary:
+- v13 made the chart hover family recharts-faithful: the sales chart
+  renders the reference's own hover artifacts (the #ccc cursor + the
+  r-4 activeDot) and its default tooltip content on the measured
+  white-card skin, anchored the reference's way ((point.x + 10,
+  pointer.y + 10) with the left-flip and the 400ms glide on a
+  persistent wrapper), and the donut got its OWN raw tooltip skin (the
+  1px #ccc border, the empty label, the black "name : count" item).
+- Probe lessons recorded: 0-width SVG lines and the flat-$0 area path
+  have EMPTY Playwright bounding boxes (assert attachment + geometry,
+  never toBeVisible); Chromium serializes 400ms as 0.4s; e2e hovers
+  gate on the data before the mouse.move; the PIE tooltip activates
+  only on the SECTOR PATH; waitFor() defaults to "visible" — degenerate
+  shapes need {state: "attached"}.
+- Known-open (disclosed): the readable tooltip label (SD-18 family);
+  the reports tooltip content (unobservable — no data in any window);
+  the empty item-unit span (renders nothing — not replicated); the
+  Terminal product-card hover (the reference still shift-gated).
+  Standing v8-v12 disclosures unchanged.

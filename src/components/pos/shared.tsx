@@ -43,77 +43,210 @@ export function useContainerWidth(
   return [ref, width];
 }
 
-// ---- the chart tooltip (V11/SD-40) ----------------------------------------------
+// ---- the chart tooltips (V11/SD-40 + V13/SD-46..48) ----------------------------
 
-/** The reference's measured recharts default-tooltip skin (live-probed on
- *  its sales chart): a white card, 12px radius, 10px padding, the
- *  0 4px 20px rgba(0,0,0,0.1) shadow, nowrap, pointer-events none. The
- *  reference's own tooltip TEXT is #e7e9ef-on-white (it inherits the app's
- *  light color onto the white card — unreadable, a platform bug); the
- *  clone ships the readable dark slate instead (the SD-18 precedent: the
- *  reference's unreadable Total tone). Content: the point's label + its
- *  value (the recharts default item line — the reference's empty series
- *  only ever shows the label; the populated content follows recharts'
- *  default shape, disclosed in the plan). */
-function ChartTooltip({
-  x,
-  y,
+/** The sales chart's series name — the reference's own recharts dataKey,
+ *  measured in its tooltip item line ("ventas : 0"). */
+const SALES_SERIES_NAME = "ventas";
+
+/** A tooltip's self-measurement: the callback-ref + ResizeObserver pattern
+ *  (V13/SD-47 — the same shape as useContainerWidth; no setState inside an
+ *  effect body). The measured outer box feeds the overflow flips. */
+function useSelfMeasure(): [
+  (node: HTMLDivElement | null) => (() => void) | undefined,
+  { w: number; h: number } | null,
+] {
+  const [box, setBox] = React.useState<{ w: number; h: number } | null>(null);
+  const ref = React.useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    setBox({ w: node.offsetWidth, h: node.offsetHeight });
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const el = entry.target as HTMLDivElement;
+        if (el.offsetWidth > 0) setBox({ w: el.offsetWidth, h: el.offsetHeight });
+      }
+    });
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, box];
+}
+
+/** The reference's recharts tooltip anchoring (V13/SD-47, live-measured):
+ *  (anchorX + 10, anchorY + 10), flipping to the mirrored −10 gap when the
+ *  box would overflow the container's right edge (and above the bottom). */
+function tipTransform(
+  anchorX: number,
+  anchorY: number,
+  w: number,
+  h: number,
+  containerW: number,
+  containerH: number,
+): { tx: number; ty: number } {
+  const flipX = anchorX + 10 + w > containerW;
+  const tx = flipX ? anchorX - w - 10 : anchorX + 10;
+  const flipY = anchorY + 10 + h > containerH;
+  const ty = flipY ? anchorY - h - 10 : anchorY + 10;
+  return { tx, ty };
+}
+
+/** The sales chart's tooltip (V13/SD-46): the reference's recharts DEFAULT
+ *  content on the measured white-card skin (the v11 skin pins hold) — the
+ *  margin-0 label p (the day) + the ul/li item line (4px pad-y, the LINE
+ *  color) carrying the literal series name, the " : " separator, and the
+ *  RAW value (never the formatted Y string). The label keeps the readable
+ *  #1e293b (the SD-18 disclosed superset — the reference's inherited
+ *  #e7e9ef is invisible on white). The wrapper glides (transform 400ms)
+ *  and PERSISTS after the first hover: leave flips visibility (never an
+ *  unmount) so re-entering glides from the last position — recharts' own
+ *  wrapper behavior. */
+function SalesTip({
+  anchorX,
+  pointerY,
+  containerW,
+  containerH,
+  visible,
   label,
   value,
+  lineColor,
 }: {
-  x: number;
-  y: number;
+  anchorX: number;
+  pointerY: number;
+  containerW: number;
+  containerH: number;
+  visible: boolean;
   label: string;
   value: string;
+  lineColor: string;
 }) {
+  const [ref, box] = useSelfMeasure();
+  const { tx, ty } = tipTransform(
+    anchorX,
+    pointerY,
+    box?.w ?? 0,
+    box?.h ?? 0,
+    containerW,
+    containerH,
+  );
   return (
     <div
       data-testid="chart-tooltip"
+      ref={ref}
       style={{
         position: "absolute",
-        left: x,
-        top: y,
+        left: 0,
+        top: 0,
+        transform: `translate(${tx}px, ${ty}px)`,
+        transition: "transform 400ms",
+        visibility: visible && box ? "visible" : "hidden",
+        pointerEvents: "none",
+        zIndex: 20,
         backgroundColor: "#fff",
         borderRadius: 12,
         padding: 10,
         boxShadow: "rgba(0, 0, 0, 0.1) 0px 4px 20px",
         whiteSpace: "nowrap",
-        pointerEvents: "none",
         color: "#1e293b",
-        fontSize: 14,
-        zIndex: 20,
-        transform: "translate(-50%, calc(-100% - 12px))",
+        fontSize: 16,
       }}
     >
-      <p style={{ margin: 0, fontWeight: 600 }}>{label}</p>
-      <p style={{ margin: 0, marginTop: 2, color: "#475569" }}>{value}</p>
+      <p style={{ margin: 0 }}>{label}</p>
+      <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+        <li style={{ display: "block", paddingTop: 4, paddingBottom: 4, color: lineColor }}>
+          <span>{SALES_SERIES_NAME}</span>
+          <span>{" : "}</span>
+          <span>{value}</span>
+        </li>
+      </ul>
     </div>
   );
 }
 
-/** The tooltip state for a sales chart: the nearest point to the pointer. */
+/** The donut's tooltip (V13/SD-48): the RAW recharts default skin — NOT
+ *  the sales chart's white card (the reference's two tooltips ship
+ *  different skins; the v11 single-skin application was the bug): white bg
+ *  + the 1px #ccc border, NO radius, NO shadow, the EMPTY label p (the pie
+ *  tooltip's own shape), and the item in BLACK — the name + " : " + the
+ *  raw count. Same flip + glide + persistent wrapper. */
+function DonutTip({
+  anchorX,
+  anchorY,
+  containerW,
+  containerH,
+  visible,
+  name,
+  count,
+}: {
+  anchorX: number;
+  anchorY: number;
+  containerW: number;
+  containerH: number;
+  visible: boolean;
+  name: string;
+  count: number;
+}) {
+  const [ref, box] = useSelfMeasure();
+  const { tx, ty } = tipTransform(
+    anchorX,
+    anchorY,
+    box?.w ?? 0,
+    box?.h ?? 0,
+    containerW,
+    containerH,
+  );
+  return (
+    <div
+      data-testid="donut-tooltip"
+      ref={ref}
+      style={{
+        position: "absolute",
+        left: 0,
+        top: 0,
+        transform: `translate(${tx}px, ${ty}px)`,
+        transition: "transform 400ms",
+        visibility: visible && box ? "visible" : "hidden",
+        pointerEvents: "none",
+        zIndex: 20,
+        backgroundColor: "#fff",
+        border: "1px solid #ccc",
+        padding: 10,
+        whiteSpace: "nowrap",
+        fontSize: 16,
+      }}
+    >
+      <p style={{ margin: 0 }} />
+      <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+        <li style={{ display: "block", paddingTop: 4, paddingBottom: 4, color: "#000" }}>
+          <span>{name}</span>
+          <span>{" : "}</span>
+          <span>{count}</span>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+/** The tooltip state for a sales chart: the nearest point to the pointer.
+ *  V13/SD-47: the anchor x SNAPS to the point while the y follows the
+ *  pointer — the reference's measured hybrid anchoring. */
 function tooltipForSales(
   points: { label: string; value: number }[],
   x: number,
-  height: number,
   padLeft: number,
   innerW: number,
-  formatY: (v: number) => string,
-): { x: number; y: number; label: string; value: string } | null {
+  pointerY: number,
+): { idx: number; pointerY: number } | null {
   if (points.length === 0) return null;
   const stepX = points.length > 1 ? innerW / (points.length - 1) : innerW;
   const rel = x - padLeft;
   const idx = Math.round(rel / stepX);
   if (idx < 0 || idx > points.length - 1) return null;
-  return {
-    x: padLeft + idx * stepX,
-    y: height / 2,
-    label: points[idx].label,
-    value: formatY(points[idx].value),
-  };
+  return { idx, pointerY };
 }
 
-/** The tooltip state for the donut: the sector under the pointer. */
+/** The tooltip state for the donut: the sector under the pointer. V13/SD-48:
+ *  the anchor is the ring midpoint at the mid-angle — the measured recharts
+ *  sector centroid (within 1px) — and the item carries the raw count. */
 function tooltipForDonut(
   sectors: { name: string; count: number; a0: number; a1: number }[],
   cx: number,
@@ -122,7 +255,7 @@ function tooltipForDonut(
   outerR: number,
   x: number,
   y: number,
-): { x: number; y: number; label: string; value: string } | null {
+): { name: string; count: number; x: number; y: number } | null {
   const dx = x - cx;
   const dy = y - cy;
   const dist = Math.hypot(dx, dy);
@@ -134,10 +267,10 @@ function tooltipForDonut(
   if (!hit) return null;
   const mid = ((hit.a0 + hit.a1) / 2) * (Math.PI / 180);
   return {
+    name: hit.name,
+    count: hit.count,
     x: cx + Math.cos(mid) * ((innerR + outerR) / 2),
     y: cy - Math.sin(mid) * ((innerR + outerR) / 2),
-    label: hit.name,
-    value: `${hit.count} ${hit.count === 1 ? "producto" : "productos"}`,
   };
 }
 
@@ -492,11 +625,13 @@ export function SalesAreaChart({
 
   const gridLines = [0, 0.25, 0.5, 0.75, 1];
 
-  const [tip, setTip] = React.useState<{
-    x: number;
-    y: number;
-    label: string;
-    value: string;
+  // V13/SD-47: the hover state carries the snapped point index + the
+  // pointer's y (the anchor hybrid) and PERSISTS after leave (visible flips
+  // — the recharts wrapper's own glide-on-reenter behavior).
+  const [hover, setHover] = React.useState<{
+    idx: number;
+    pointerY: number;
+    visible: boolean;
   } | null>(null);
 
   return (
@@ -510,9 +645,13 @@ export function SalesAreaChart({
         onPointerMove={(e) => {
           const box = e.currentTarget.getBoundingClientRect();
           const svgX = ((e.clientX - box.x) / box.width) * width;
-          setTip(tooltipForSales(points, svgX, height, padLeft, innerW, formatY));
+          const svgY = ((e.clientY - box.y) / box.height) * height;
+          const hit = tooltipForSales(points, svgX, padLeft, innerW, svgY);
+          setHover((h) =>
+            hit ? { ...hit, visible: true } : h ? { ...h, visible: false } : null,
+          );
         }}
-        onPointerLeave={() => setTip(null)}
+        onPointerLeave={() => setHover((h) => (h ? { ...h, visible: false } : null))}
       >
         <defs>
           <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
@@ -561,8 +700,46 @@ export function SalesAreaChart({
             {points[i].label}
           </text>
         ))}
+        {/* V13/SD-49+50: the reference's recharts hover artifacts — the #ccc
+            cursor line spanning the plot at the active x, and the default
+            active dot (r=4, the line fill, the #fff 2px stroke) on the
+            point. Both clear with the hover. */}
+        {hover?.visible ? (
+          <>
+            <line
+              data-testid="tooltip-cursor"
+              x1={x(hover.idx)}
+              x2={x(hover.idx)}
+              y1={padTop}
+              y2={padTop + innerH}
+              stroke="#ccc"
+              strokeWidth={1}
+            />
+            <g data-testid="active-dot">
+              <circle
+                cx={x(hover.idx)}
+                cy={y(points[hover.idx].value)}
+                r={4}
+                fill={skin.lineStroke}
+                stroke="#fff"
+                strokeWidth={2}
+              />
+            </g>
+          </>
+        ) : null}
       </svg>
-      {tip ? <ChartTooltip {...tip} /> : null}
+      {hover ? (
+        <SalesTip
+          anchorX={x(hover.idx)}
+          pointerY={hover.pointerY}
+          containerW={width}
+          containerH={height}
+          visible={hover.visible}
+          label={points[hover.idx].label}
+          value={String(points[hover.idx].value)}
+          lineColor={skin.lineStroke}
+        />
+      ) : null}
     </div>
   );
 }
@@ -667,11 +844,15 @@ export function DonutChart({
     ),
   }));
 
-  const [tip, setTip] = React.useState<{
+  // V13/SD-48: the donut's hover state — the hit sector (name + count + the
+  // ring-midpoint anchor) and the persistent visibility flag (leave flips
+  // it, never unmounts — the same glide-on-reenter as the sales chart).
+  const [hover, setHover] = React.useState<{
+    name: string;
+    count: number;
     x: number;
     y: number;
-    label: string;
-    value: string;
+    visible: boolean;
   } | null>(null);
 
   return (
@@ -689,19 +870,20 @@ export function DonutChart({
             const w = rect.width > 0 ? Math.min(333, rect.width) : box;
             const svgX = ((e.clientX - rect.x) / rect.width) * w;
             const svgY = ((e.clientY - rect.y) / rect.height) * 200;
-            setTip(
-              tooltipForDonut(
-                sectors.map((s) => ({ name: s.name, count: s.count, a0: s.a0, a1: s.a1 })),
-                cx,
-                cy,
-                innerR,
-                outerR,
-                svgX,
-                svgY,
-              ),
+            const hit = tooltipForDonut(
+              sectors.map((s) => ({ name: s.name, count: s.count, a0: s.a0, a1: s.a1 })),
+              cx,
+              cy,
+              innerR,
+              outerR,
+              svgX,
+              svgY,
+            );
+            setHover((h) =>
+              hit ? { ...hit, visible: true } : h ? { ...h, visible: false } : null,
             );
           }}
-          onPointerLeave={() => setTip(null)}
+          onPointerLeave={() => setHover((h) => (h ? { ...h, visible: false } : null))}
         >
           {sectors.length === 0 ? (
             <circle cx={cx} cy={cy} r={65} fill="none" stroke="#1e2235" strokeWidth={30} />
@@ -717,7 +899,17 @@ export function DonutChart({
             ))
           )}
         </svg>
-        {tip ? <ChartTooltip {...tip} /> : null}
+        {hover ? (
+          <DonutTip
+            anchorX={hover.x}
+            anchorY={hover.y}
+            containerW={box}
+            containerH={200}
+            visible={hover.visible}
+            name={hover.name}
+            count={hover.count}
+          />
+        ) : null}
       </div>
       <div className="space-y-2 mt-2">
         {data.slice(0, 5).map((d) => (
