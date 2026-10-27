@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import * as React from "react";
-import { Store, Palette, FileText, CreditCard, Tag, Plus, Upload, X } from "lucide-react";
+import { Store, Palette, FileText, CreditCard, Tag, Plus, Upload, Trash2 } from "lucide-react";
 
 import { PageHeading, SectionCard } from "@/components/pos/shared";
 import { Button } from "@/components/ui/button";
@@ -172,7 +172,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
                     />
                     <button
                       type="button"
-                      className="vx-focus rounded-lg p-1 text-xs text-slate-400 hover:text-red-400"
+                      className="vx-focus rounded-lg p-1 text-xs text-slate-400 transition-colors hover:text-red-500"
                       onClick={() => {
                         set("logoUrl", null);
                         setLogoName("");
@@ -394,7 +394,9 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
           </div>
           <ul className="flex flex-wrap gap-2" data-testid="settings-category-chips">
             {/* V5/S1: the reference's chips are glass-button controls
-                (rounded-xl px-3 py-2 text-sm) with the red-hover X. */}
+                (rounded-xl px-3 py-2 text-sm) — v15/L7: the remove control is
+                the reference's lucide TRASH at w-3.5 h-3.5 (14×14 measured),
+                not the ×. */}
             {categories.map((category) => (
               <li
                 key={category.id}
@@ -407,7 +409,7 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
                   onClick={() => void removeCategory(category.id)}
                   className="vx-focus text-slate-400 transition-colors hover:text-red-500"
                 >
-                  <X className="h-3 w-3" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </li>
             ))}

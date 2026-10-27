@@ -492,7 +492,7 @@ export function StatusPill({
         "inline-flex items-center border border-transparent text-xs font-semibold",
         variant === "card"
           ? "rounded-full px-2.5 py-1"
-          : "rounded-md px-2.5 py-0.5",
+          : "rounded-md px-2.5 py-0.5 transition-colors hover:bg-primary/80",
         STATUS_TONES[tone],
       )}
     >

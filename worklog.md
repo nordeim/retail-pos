@@ -1041,3 +1041,83 @@ Stage Summary:
   no sales in any window); the reference's bg-background vs the
   clone's dark skin (the v8 pins hold); the drawer's own 200ms slide
   (a superset surface). Standing v8-v13 disclosures unchanged.
+
+---
+Task ID: V15
+Agent: general-purpose (remediation executor, session V15 2026-10-27)
+Task: The v15 cycle — the hover micro-interaction families sweep
+(session_21's suggested "remaining motion language": the toast
+enter/exit, the view transitions) with the toast question resolved by
+evidence, write remediation-plan-v15, execute it TDD, and ship.
+
+Work Log:
+- Baseline re-established via git pull (the remote's session_22
+  transcript acquired; the workspace survived intact — deps, 3 DBs,
+  chromium, .env): gates green — lint 0 · tsc 0 · build ✓ · 458/458
+  unit · 162/162 e2e.
+- The toast investigation (L1-L3): the reference's settings save PUT
+  returns 403 with ZERO feedback (silently broken — MutationObserver
+  caught one spinner svg only; the change never persists); the product
+  save returns 200, closes the modal, refreshes, renders NO feedback;
+  the failed login renders the v12 inline alert. NO observable toast
+  anywhere — the clone's toaster stays the disclosed superset (AGENTS.md
+  28 records the closure).
+- The systematic hover sweep (every [class*=hover:] element per view on
+  BOTH apps + computed styles under real mouse hovers): F1 the 6 icon
+  action sites missing transition-colors (registers delete already
+  compliant); F2 the mail button's BLUE family (hover:bg-blue-50
+  hover:text-blue-600 — the clone shipped indigo on both); F3 the
+  Ajustes chip's remove control = lucide trash2 w-3.5 h-3.5 14×14 (the
+  clone shipped an X h-3 w-3); F4 the badge hover tints (the StatusPill
+  table variant's hover:bg-primary/80 — measured green-100 →
+  rgba(127,98,244,0.8) at 150ms — and the categoría
+  hover:bg-secondary/80; the card pill variant hover-free).
+- Near-miss recorded: the Subir logo label's text-slate-700 loses the
+  cascade to .glass-button's lavender on the reference — both apps
+  compute rgba(200,210,255,0.8) (computed parity, no work). Verified at
+  parity: nav links, toggle, TR rows, reports chips, .glass-button's
+  150ms, badge rest skins. Data state unchanged; Terminal shift-gated;
+  the cashier combobox dead end persists; mobile re-checked at 390px
+  (the reference's plain sidebar vs the clone's v12 drawer superset).
+- TDD execution: 12 unit pins (10 red / 2 guards) + 4 e2e pins (4 red /
+  1 family-agnostic pass by design), all green after B1-B4 (the 6 icon
+  sites + mail blue; StatusPill table hover + categoría span; the chip
+  Trash2 swap; the SD-62 grammar alignment on the cashiers CRUD, the
+  Quitar buttons, the terminal ticket controls).
+- Tooling lessons (hardened): Tailwind v4's bg-primary/80 serializes as
+  oklab(… / 0.8) even through canvas fillStyle — the e2e pin reads the
+  sRGB pixel bytes via getImageData (±1/channel); agent-browser resets
+  hover on every command after a mouse move — hover evidence rides
+  Playwright's page.mouse (capture-v15-shots.ts, hover verified before
+  each shot); agent-browser eval output is JSON-quoted (tr -d '"\r').
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 470/470 (458+12, 31
+  files) · e2e 166/166 (162+4).
+- Evidence (VLM-verified): desktop-ventas-mail-hover.png (mail blue
+  beside the Eye's resting indigo), desktop-badge-hover-violet.png (the
+  violet-at-80% Completada with green text),
+  desktop-ajustes-categorias.png (the 14×14 trash), + the refreshed
+  standard desktop-ajustes.png.
+- Docs lockstep: AGENTS.md contract 28; CLAUDE.md counts + the v15
+  block; README badge (470+166); PAD v2.3.0 + ADR-025 + §8 counts;
+  retail-pos_SKILL.md v1.10.0; docs/session_23.md; the plan's §6
+  execution ledger; this entry.
+
+Stage Summary:
+- v15 made the hover micro-interaction families reference-faithful: the
+  icon action buttons transition their measured per-action color
+  families (edit indigo, delete red, MAIL blue), the table badges ride
+  the shadcn hover tints (the platform violet at 80% on the StatusPill
+  table variant, secondary/80 on the categoría badge — the card pill
+  hover-free), and the category chips' remove control is the reference's
+  14×14 lucide trash.
+- The toast question closed by evidence: the reference never fires a
+  toast in any observable flow (the settings save 403s silently, the
+  product save is feedback-free, the failed login renders the inline
+  alert) — the clone's toaster is the disclosed superset.
+- Two Tailwind v4 / tooling traps recorded for posterity: the color-mix
+  oklab serialization (read pixel bytes, pin classes) and the
+  agent-browser hover reset (Playwright for hover evidence).
+- Known-open (disclosed): the reference's own broken flows (403 save,
+  shift-gated terminal, empty cashier combobox) have nothing to mirror;
+  the reports with-data skins stay unobservable; all standing v8-v14
+  disclosures unchanged.

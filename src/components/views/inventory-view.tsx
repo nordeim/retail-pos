@@ -173,7 +173,7 @@ export function InventoryView() {
                       <span className="text-sm font-bold text-slate-700">{product.stock}</span>
                     </td>
                     <td className="px-5 py-3 text-center">
-                      <span className="inline-flex items-center rounded-md bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground">
+                      <span className="inline-flex items-center rounded-md bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80">
                         {product.categoryName ?? "—"}
                       </span>
                     </td>
@@ -191,7 +191,7 @@ export function InventoryView() {
                           aria-label={`Editar ${product.name}`}
                           data-testid={`edit-product-${product.id}`}
                           onClick={() => setEditing(product)}
-                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
+                          className="vx-focus rounded-lg p-2 text-slate-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
@@ -200,7 +200,7 @@ export function InventoryView() {
                           aria-label={`Eliminar ${product.name}`}
                           data-testid={`delete-product-${product.id}`}
                           onClick={() => setDeleting(product)}
-                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                          className="vx-focus rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -504,7 +504,7 @@ function ProductDialog({
                 <img src={imageUrl} alt="Vista previa" className="h-10 w-10 rounded-lg object-cover" />
                 <button
                   type="button"
-                  className="vx-focus rounded-lg p-1 text-xs text-slate-400 hover:text-red-400"
+                  className="vx-focus rounded-lg p-1 text-xs text-slate-400 transition-colors hover:text-red-500"
                   onClick={() => {
                     setImageUrl("");
                     const input = document.getElementById("product-image") as HTMLInputElement | null;

@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.9.0
+version: 1.10.0
 last_updated: "2026-10-27"
 tags:
   - pos
@@ -25,18 +25,30 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v14 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 458/458 unit · 162/162 e2e** (the v14 close:
-> the interaction-state family went reference-faithful — the dialog
-> system rides the shared max-w-lg 512px base with rounded-2xl
-> sm:rounded-lg (16px full-bleed below sm), the full tailwindcss-animate
-> grammar (fade + zoom + the slide quartet) with the FADING overlay and
-> the tw-animate .15s default (NO duration- class — Tailwind 4.3.3
-> threads --tw-duration to 200ms where the reference's own duration-200
-> is inert), the focus family lands the platform violet (vx-focus's 3px
-> solid rgba(127,98,244,0.5) outline + the global outline-color recolor,
-> the indigo halo retired), and the reports empty states adopt the
-> measured h-40 centered text-white/25 boxes with the mb-5 heading gap —
+> template), validated against the codebase at the v15 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 470/470 unit · 166/166 e2e** (the v15 close:
+> the hover micro-interaction families went reference-faithful — every
+> row-action icon button carries `transition-colors` + its per-action
+> family (edit/detail indigo, delete red, MAIL blue), the table badges
+> ride the shadcn hover tints (the StatusPill table variant's
+> `hover:bg-primary/80` — the measured violet-at-80% — and the categoría
+> `hover:bg-secondary/80`; the card pill stays hover-free), the Ajustes
+> category chip's remove control is the reference's 14×14 lucide TRASH,
+> and the toast question closed by evidence: the reference NEVER fires a
+> toast in any observable flow (its settings save 403s silently, its
+> product save is feedback-free, its failed login renders the inline
+> alert) — the clone's toaster is the disclosed superset — on top of
+> the v14 close: the interaction-state family went reference-faithful —
+> the dialog system rides the shared max-w-lg 512px base with
+> rounded-2xl sm:rounded-lg (16px full-bleed below sm), the full
+> tailwindcss-animate grammar (fade + zoom + the slide quartet) with
+> the FADING overlay and the tw-animate .15s default (NO duration-
+> class — Tailwind 4.3.3 threads --tw-duration to 200ms where the
+> reference's own duration-200 is inert), the focus family lands the
+> platform violet (vx-focus's 3px solid rgba(127,98,244,0.5) outline +
+> the global outline-color recolor, the indigo halo retired), and the
+> reports empty states adopt the measured h-40 centered text-white/25
+> boxes with the mb-5 heading gap —
 > on top of the v13 close: the chart hover micro-interactions went
 > recharts-faithful — the #ccc
 > cursor line + the r-4 activeDot on the sales chart, the recharts default
@@ -94,8 +106,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 458 tests / 30 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 162 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 470 tests / 31 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 166 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -125,8 +137,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 458/458
-bun run test:e2e           # playwright: 162/162 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 470/470
+bun run test:e2e           # playwright: 166/166 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -506,8 +518,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 458/458 vitest
-bun run test:e2e      # 162/162 playwright (production posture)
+bun run test          # 470/470 vitest
+bun run test:e2e      # 166/166 playwright (production posture)
 ```
 
 Verification beyond the gates:

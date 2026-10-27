@@ -150,7 +150,7 @@ export function SalesView() {
                           aria-label={`Ver ticket ${sale.ticketNo}`}
                           data-testid={`view-sale-${sale.ticketNo}`}
                           onClick={() => void openDetail(sale)}
-                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
+                          className="vx-focus rounded-lg p-2 text-slate-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
                         >
                           <Eye className="h-4 w-4" />
                         </button>
@@ -159,7 +159,7 @@ export function SalesView() {
                           aria-label={`Enviar ticket ${sale.ticketNo} por correo`}
                           data-testid={`mail-sale-${sale.ticketNo}`}
                           onClick={() => void sendByEmail(sale)}
-                          className="vx-focus rounded-lg p-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
+                          className="vx-focus rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
                         >
                           <Mail className="h-4 w-4" />
                         </button>

@@ -463,6 +463,35 @@ rules:
     (220↔68px, 300ms cubic-bezier(0.4,0,0.2,1), labels conditionally
     removed from the DOM, chevron flip) — do not re-audit.
 
+28. The hover micro-interaction families (v15, live-measured on both
+    apps): every row-action icon button carries the grammar
+    `rounded-lg p-2 text-slate-400 transition-colors` + a per-action
+    hover family — edit/detail INDIGO (`hover:bg-indigo-50
+    hover:text-indigo-600`), delete RED (`hover:bg-red-50
+    hover:text-red-500`), MAIL BLUE (`hover:bg-blue-50
+    hover:text-blue-600` — the Ventas mail button is NOT the Eye's
+    indigo). The grammar applies on unobservable superset surfaces too
+    (the cashiers CRUD — the reference's view is read-only). The table
+    badges carry the shadcn hover tints: the StatusPill TABLE variant
+    rides `transition-colors hover:bg-primary/80` (measured under a real
+    hover: green-100 → the platform violet rgba(127,98,244,0.8) with the
+    text tone unchanged, 150ms) and the categoría badge rides
+    `hover:bg-secondary/80`; the CARD pill variant (register cards) stays
+    hover-free. The Ajustes category chip's remove control is lucide
+    TRASH2 `w-3.5 h-3.5` (14×14) — never an X icon. The reference NEVER
+    fires a toast in any observable flow (its settings save 403s
+    SILENTLY, its product save closes the modal with zero feedback, its
+    failed login renders the inline alert) — the clone's zustand toaster
+    is the disclosed functional superset; do not chase toast parity.
+    COLOR-MIX TRAP: Tailwind v4 computes `bg-primary/80` through
+    color-mix and Chromium serializes it as `oklab(… / 0.8)` — even
+    canvas fillStyle preserves the notation; read the sRGB PIXEL bytes
+    via getImageData (±1 per channel is color-space rounding) or pin
+    the class, never the computed string. HOVER EVIDENCE TRAP: every
+    agent-browser command after a `mouse move` resets the hover state —
+    hover screenshots ride Playwright's `page.mouse` (the v13 lesson),
+    with the hover state verified before the shot.
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content

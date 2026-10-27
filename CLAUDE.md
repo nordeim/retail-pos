@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (458 tests / 30 files)
-bun run test:e2e       # playwright e2e layer (162 specs, boots standalone :3100)
+bun run test           # vitest unit layer (470 tests / 31 files)
+bun run test:e2e       # playwright e2e layer (166 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -178,6 +178,18 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   `titleClassName="mb-5"` (the 20px heading gap). The sidebar collapse is
   MEASURED AT PARITY (220↔68px, 300ms, labels conditionally removed) —
   do not re-audit.
+- The v15 contracts: the hover micro-interaction families — every
+  row-action icon button carries `rounded-lg p-2 text-slate-400
+  transition-colors` + its per-action family (edit/detail indigo,
+  delete red, MAIL blue — `hover:bg-blue-50 hover:text-blue-600`); the
+  StatusPill TABLE variant rides `transition-colors
+  hover:bg-primary/80` (the measured violet-at-80% hover tint) and the
+  categoría badge `hover:bg-secondary/80` (the CARD pill stays
+  hover-free); the Ajustes category chip's remove control is lucide
+  Trash2 `w-3.5 h-3.5` (14×14); the reference NEVER fires a toast in
+  any observable flow (settings save 403s silently, product save is
+  feedback-free, failed login renders the inline alert) — the clone's
+  toaster is the disclosed superset.
 - The v12 contracts: the auth surface family measured BELOW the card —
   the card chrome (the 4px slate gradient hairline + overflow-hidden +
   `md:pt-12 md:pb-10 md:px-10` + the space-y-6/8 text-center column),

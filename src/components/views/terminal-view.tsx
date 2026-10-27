@@ -259,7 +259,7 @@ export function TerminalView() {
                     type="button"
                     aria-label={`Quitar ${line.product.name}`}
                     onClick={() => ticketRemove(line.product.id)}
-                    className="vx-focus rounded-md p-1 text-slate-500 hover:text-red-400"
+                    className="vx-focus rounded-md p-1 text-slate-500 transition-colors hover:text-red-500"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -270,7 +270,7 @@ export function TerminalView() {
                       type="button"
                       aria-label="Quitar uno"
                       onClick={() => ticketSetQty(line.product.id, line.qty - 1)}
-                      className="vx-focus flex h-7 w-7 items-center justify-center rounded-md bg-[#1e2235] text-slate-200 hover:bg-white/10"
+                      className="vx-focus flex h-7 w-7 items-center justify-center rounded-md bg-[#1e2235] text-slate-200 transition-colors hover:bg-white/10"
                     >
                       <Minus className="h-3.5 w-3.5" />
                     </button>
@@ -282,7 +282,7 @@ export function TerminalView() {
                       aria-label="Agregar uno"
                       disabled={line.qty >= line.product.stock}
                       onClick={() => ticketSetQty(line.product.id, line.qty + 1)}
-                      className="vx-focus flex h-7 w-7 items-center justify-center rounded-md bg-[#1e2235] text-slate-200 hover:bg-white/10 disabled:opacity-40"
+                      className="vx-focus flex h-7 w-7 items-center justify-center rounded-md bg-[#1e2235] text-slate-200 transition-colors hover:bg-white/10 disabled:opacity-40"
                     >
                       <Plus className="h-3.5 w-3.5" />
                     </button>
