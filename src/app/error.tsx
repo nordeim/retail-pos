@@ -42,7 +42,10 @@ export default function ErrorPage({
       className="vx-canvas flex min-h-dvh items-center justify-center p-4"
       data-testid="segment-error-card"
     >
-      <div className="vx-card w-full max-w-md p-10 text-center shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+      <div
+        role="alert"
+        className="vx-card w-full max-w-md p-10 text-center shadow-[0_30px_80px_rgba(0,0,0,0.45)]"
+      >
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-400 shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
           <RotateCcw className="h-7 w-7" strokeWidth={2} />
         </span>

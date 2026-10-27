@@ -39,6 +39,7 @@ export default function GlobalError({
       <body className="vx-canvas min-h-dvh">
         <main className="flex min-h-dvh items-center justify-center p-4">
           <div
+            role="alert"
             className="vx-card w-full max-w-md p-10 text-center shadow-[0_30px_80px_rgba(0,0,0,0.45)]"
             data-testid="global-error-card"
           >

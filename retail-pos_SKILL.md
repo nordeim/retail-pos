@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.13.0
+version: 1.14.0
 last_updated: "2026-10-27"
 tags:
   - pos
@@ -25,8 +25,16 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v18 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 509/509 unit · 179/179 e2e** (the v18 close:
+> template), validated against the codebase at the v20 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 513/513 unit · 179/179 e2e** (the v20
+> close: the recovery cards announce — `role="alert"` on the card
+> element that MOUNTS with the failure in all three V18 surfaces
+> (view/segment/root), LANDMARK-SAFE (never on the `<main>` wrapper —
+> one role per element), TDD-pinned RED→GREEN by source pins + the
+> live failure-path e2e assertion — a disclosed superset beyond both
+> the reference (no recovery surface) and neo-crm (no role on their
+> cards); the v19 close was audit-clean — no code changes, the mobile
+> evidence set + the self-contained probe tooling; the v18 close:
 > the error-recovery architecture — the V17 lazy registry's one unowned
 > failure mode reproduced live (a failed view chunk unmounted the whole
 > app to Next's English dead-end screen) and closed with the neo-crm
@@ -131,7 +139,7 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 509 tests / 35 files |
+| Unit | vitest ^5.0.1 (node env) | 513 tests / 36 files |
 | E2E | @playwright/test ^1.63.0 + chromium | 179 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
@@ -162,7 +170,7 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 509/509
+bun run test               # vitest: 513/513
 bun run test:e2e           # playwright: 179/179 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
@@ -543,7 +551,7 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 509/509 vitest
+bun run test          # 513/513 vitest
 bun run test:e2e      # 179/179 playwright (production posture)
 ```
 

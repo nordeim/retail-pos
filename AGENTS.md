@@ -564,7 +564,12 @@ rules:
     the reload fires, the crash-mid-reload loop guard; unavailable
     storage disables the reload, never throws); every other error gets
     the Spanish recovery card ("No se pudo cargar la vista" +
-    "Reintentar" — `bg-[#0f121a]` chrome + `glass-button-primary`).
+    "Reintentar" — `bg-[#0f121a]` chrome + `glass-button-primary`; the
+    card element carries `role="alert"` — V20/F1: the fresh mount IS
+    the screen-reader announcement, LANDMARK-SAFE (the role rides the
+    card div, never the `<main>` wrapper — one role per element;
+    pinned by tests/recovery-a11y.test.ts + the v18 SHELL SURVIVAL
+    e2e)).
     "Reintentar" bumps the view EPOCH — the lazy registry is a
     `useMemo` keyed on it, because `React.lazy` caches a rejected
     initializer FOREVER (only a fresh `React.lazy` instance re-imports;

@@ -57,6 +57,11 @@ test.describe("functional parity (v18) — the view error boundary", () => {
     // The Spanish recovery card — not Next's English dead-end.
     await expect(page.getByTestId("view-error-card")).toBeVisible();
     await expect(page.getByRole("heading", { name: "No se pudo cargar la vista" })).toBeVisible();
+    // V20/F1 (SD-77): the card announces through a live region — the
+    // fresh mount of a role="alert" element is the screen-reader
+    // announcement. Pinned on the live failure path (the source pins in
+    // tests/recovery-a11y.test.ts cover the segment/root nets).
+    await expect(page.getByTestId("view-error-card")).toHaveAttribute("role", "alert");
     // The SHELL stays alive: the sidebar is still on the page and the
     // app was never unmounted (pre-V18 this exact scenario replaced the
     // whole document with "This page couldn't load").

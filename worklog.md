@@ -1447,3 +1447,70 @@ Stage Summary:
   (informational — the pattern reference ships the same shape); the
   react-dom boot floor; the reference's own broken flows have nothing
   to mirror; every standing v8–v18 disclosure unchanged.
+
+---
+
+Task ID: V20
+Agent: Z.ai (main agent)
+Task: The V20 cycle — audit the codebase + the reference, verify the mobile mandate + the Tailwind v4 sweep, action the F1 finding (role="alert" on the recovery cards) TDD-first, refresh the evidence set, docs lockstep, commit + SSH push (main only).
+
+Work Log:
+- Baseline: workspace INTACT (first time in 3 cycles) — git pull
+  fast-forwarded 0c3f951 → 3229f95 (only docs/session_32.md, the raw
+  V19 log); isolated minimal git commands, output treated as
+  untrusted; V19 reference files + core docs re-read and validated
+  against the code (the lazy registry, the boundary, the drawer, the
+  chunk-recovery seam — all in exact contract shape; .env
+  DATABASE_URL + root db/ + both test configs verified).
+- Baseline gates: lint 0 · tsc 0 · build ✓ · unit 509/509 · e2e
+  179/179 ON RE-RUN — the first e2e run failed ONE spec (v7 M1 tab
+  title); isolated re-run 8/8 (1.1s), full re-run green, tree
+  byte-identical to the V19 close → root-caused as a load-timing
+  flake (retries: 0, one worker, 10s windows), recorded as the F2
+  watch's newest data point, NOT speculatively patched.
+- The audit: reference UNCHANGED 5th consecutive cycle (Terminal
+  gated, both cajas Cerrada, 12 products, 2 sales, Reports
+  "Sin datos en este período", Dashboard H1+3×H3); at 390px still NO
+  hamburger (220px sidebar, main 170px, viewport-locked); Tailwind v4
+  sweep clean (95 pins, traps 8/8, no duration- on dialogs); neo-crm
+  unchanged since 2026-10-22 (no new patterns).
+- F1 actioned TDD-first (the prior cycle's suggested target): RED —
+  tests/recovery-a11y.test.ts (4 source pins: role presence ×3 + the
+  <main>-keeps-its-landmark guard) failed 3/4 pre-fix, and the v18
+  SHELL SURVIVAL e2e failed at its new toHaveAttribute line; GREEN —
+  role="alert" on the three mounting card divs (page.tsx view card,
+  error.tsx inner card, global-error.tsx card), LANDMARK-SAFE (never
+  on <main> — one role per element); pins 4/4, v18 spec 4/4. A
+  disclosed superset (ADR-029): the reference ships no recovery
+  surface, neo-crm's cards carry no role — the divergence is
+  deliberate (WCAG 2.2 AA + the superset mandate).
+- The evidence set: scripts/probe-v20-mobile-recovery.ts (the
+  self-contained probe pattern) — the full mobile drawer contract
+  LIVE at 390×844: 10/10 PASS (geometry/aria/8 links/44.0px pitch/
+  scroll lock/focus in/Esc+focus return/backdrop/route nav/zero
+  overflow ×8 routes/recovery card/Reintentar heal) + the three
+  v20-* captures, re-run on the REMEDIATED build.
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 513/513 (36 files,
+  509+4) · e2e 179/179 (3.1m).
+- Docs lockstep: AGENTS §31 + the card contract; CLAUDE v20 contracts
+  note + 513/36; README badge (513+179) + feature row + Tests row;
+  PAD v2.7.0 (history entry + ADR-029 + the stale v2.0.0 title fixed
+  + the count table); SKILL v1.14.0 (validation chain + counts);
+  docs/remediation-plan-v20.md (ledger L1-L12 + execution results);
+  docs/session_33.md; this entry.
+
+Stage Summary:
+- V20 closed the F1 loop: the three recovery cards now ANNOUNCE to
+  screen readers (role="alert", landmark-safe, RED→GREEN on both pin
+  layers) — the cycle's one code change, everything else audited
+  clean.
+- The reference is unchanged for the 5th consecutive cycle; the
+  mobile drawer contract re-verified live (10/10) with the fresh v20
+  evidence set on the remediated build.
+- The flake watch gained a documented data point (load-timing family,
+  passed isolated + full re-run) — no speculative patch.
+- Gates: 513 unit + 179 e2e green; all counts bumped in the same
+  commit (509→513 everywhere).
+- Known-open (disclosed): the F2 flake watch; the react-dom boot
+  floor; the reference's own broken flows (nothing to mirror); every
+  standing v8–v19 disclosure unchanged.

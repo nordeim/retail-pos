@@ -27,7 +27,7 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (509 tests / 35 files)
+bun run test           # vitest unit layer (513 tests / 36 files)
 bun run test:e2e       # playwright e2e layer (179 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
@@ -230,6 +230,18 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   undefined)`). Measured: a SINGLE aborted chunk fetch never reaches
   the boundary (the bundler runtime retries internally) — the card is
   for failures persisting past the runtime retry budget.
+- The v20 contracts: the recovery cards ANNOUNCE — each of the three
+  failure surfaces (the view card in `page.tsx`, the segment card in
+  `error.tsx`, the root card in `global-error.tsx`) carries
+  `role="alert"` on the card element that MOUNTS with the failure
+  (the fresh mount of a live-region element is the screen-reader
+  announcement). LANDMARK-SAFE placement: the role rides the card
+  div, NEVER the `<main>` wrapper (one role per element —
+  `role="alert"` on main would delete the main landmark). Pinned by
+  `tests/recovery-a11y.test.ts` (source pins) + the v18 SHELL
+  SURVIVAL e2e assertion (the live failure path). A disclosed
+  superset: the reference ships no recovery surface at all and
+  neo-crm's own cards carry no role (ADR-029).
 - The v15 contracts: the hover micro-interaction families — every
   row-action icon button carries `rounded-lg p-2 text-slate-400
   transition-colors` + its per-action family (edit/detail indigo,

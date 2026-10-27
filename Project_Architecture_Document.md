@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.0.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.7.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -195,6 +195,39 @@
 > e2e flake whose failure shape matches a transient chunk failure
 > (the self-heal now covers that path). Gates: 509/509 unit (486+23,
 > 35 files) + 179/179 e2e (176+3). ADR-028 added.
+>
+> v2.7.0 (2026-10-27): the remediation-plan-v20 execution — the
+> screen-reader announcement on the recovery cards. The V19 cycle
+> recorded F1 informational (the three V18 failure surfaces mount
+> silently — a screen-reader user discovers a failed view only on
+> next browse); both session logs suggested it as the next cycle's
+> optional target, and the operator's production-ready-superset
+> mandate plus the WCAG 2.2 AA baseline call for dynamic error
+> messages that announce. The fix (ADR-029): `role="alert"` on the
+> card element that MOUNTS with the failure in all three surfaces —
+> the view card (`page.tsx`'s `view-error-card` div), the segment
+> card (`error.tsx`'s inner `vx-card` div), the root card
+> (`global-error.tsx`'s `global-error-card` div) — LANDMARK-SAFE (the
+> role never rides the `<main>` wrapper: one role per element,
+> `role="alert"` on main would delete the main landmark). Pinned
+> TDD-first: `tests/recovery-a11y.test.ts` (4 source pins — presence
+> ×3 + the landmark guard) written RED, then the fix, then GREEN;
+> the v18 SHELL SURVIVAL e2e gained the live failure-path assertion
+> (`view-error-card` → role="alert"). A disclosed superset: the
+> reference ships no recovery surface at all, and neo-crm's own cards
+> carry no role (no commit there since 2026-10-22). Also this cycle:
+> the reference state re-checked (unchanged — 5th consecutive cycle,
+> nothing new to mirror), the mobile drawer contract re-verified live
+> at 390×844 (10/10 via `scripts/probe-v20-mobile-recovery.ts`, the
+> self-contained probe pattern), the Tailwind v4 sweep clean (95
+> pins, no trap surfaces), the V20 evidence set captured
+> (`v20-mobile-drawer-open-390.png`, `v20-view-recovery-card-390.png`,
+> `v20-view-recovery-healed-390.png`), one load-timing e2e flake
+> recorded (v7 M1 under full-suite load — passed isolated AND on the
+> full re-run; the F2 watch gains a data point, no speculative
+> patch), and the stale PAD title version fixed (it read v2.0.0
+> through the v2.1.0–v2.6.0 era). Gates: 513/513 unit (509+4, 36
+> files) + 179/179 e2e. ADR-029 added.
 > v2.4.0 (2026-10-27): the remediation-plan-v16 execution — the
 > full-page pixel-diff pass (9 surfaces at 1280, the mobile pair at
 > 390) closing with the cycle's headline finding: **Tailwind v4's
@@ -406,6 +439,7 @@ lowest-risk path. **Verified.**
 | ADR-026 | The v16 palette-pin + category-order contract set: **Tailwind v4's default palette is NOT the reference's palette** — the v4 engine re-derived every default color in oklch and 17/22 spot-checked entries render beyond ±2 per channel of the reference's v3 hexes (indigo-500 Δ56, red-500 Δ24, green-700 Δ21, violet-600 Δ24, blue-600 Δ17, indigo-600 Δ17, emerald-500 Δ16, amber-500 Δ11, amber-600 Δ8, violet-300 Δ8, slate-400/500/600/700 Δ3-4 — pixel-read in Chromium via `scripts/palette-drift-v16.ts`, canvas getImageData as the authority; the reference renders the v3 hexes: badge text rgb(21,128,61), pill bg rgba(124,58,237,0.2), amber count rgb(217,119,6), all v3); the class-pinning idiom (v10+) had silently accepted the drift — class parity ≠ color parity. The fix: a `@theme` block in globals.css pins every palette entry the app uses (61 across slate/gray/red/orange/amber/green/emerald/teal/blue/indigo/violet/purple) to its v3 hex — one source; utilities, /opacity modifiers (color-mix over a hex keeps the sRGB hue — `bg-violet-600/20` renders rgba(124,58,237,0.2) exact), and ring/shadow/border/fill consumers all inherit; RULE: a new palette color requires its v3 pin in the same commit; the e2e v3-exactness pins read the literal reference values (rgb(21,128,61) badge text, rgb(217,119,6) amber count, rgb(79,70,229) ticket cell, the pill's pixel bytes — the /opacity modifiers serialize oklab even over hex vars). The category ENTITIES display order (Inventario chips + Ajustes categorías) is `Category.sortOrder` — seeded to the reference's measured chip sequence (Snacks, Lácteos, Higiene Personal, Limpieza, Alimentos, Bebidas — DOM-measured twice) while the DONUT's byCategory KEEPS its own createdAt order (Lácteos first — the v10 pin; the reference renders two different orders, both now matched); sortOrder is server-managed (the category delegate's prepareCreate computes max+1; the column is absent from the client schema — never writable); the delegate factory grows `listOrderBy` + `prepareCreate` (optional, defaults preserve the v10 rule). New evidence: the reference's pages are VIEWPORT-LOCKED (scrollTop pinned to 0, scrollHeight == clientHeight, no internal scroll container — its inventory rows 4-12, settings sections below the fold, and low-stock card bottom are permanently unreachable at 1280×800); the clone's flowing layout is the functional superset. The login surface swept at full hover parity (the v12 family complete: socials `hover:bg-slate-50 hover:border-slate-300 hover:shadow-sm transition-all duration-200`, the links, the Sign in `hover:bg-slate-800`); the mobile drawer timing closed (288px, `enter 0.2s`, 44px pitch, zero overflow); probe tooling: a shift close must reset BOTH shift.status AND register.status | Accepted — Verified (478 unit + 173 e2e; the full-gate run + the live chip-order verification + VLM-verified evidence shots) |
 | ADR-027 | The v17 lazy-view-registry + CWV-evidence contract set: `src/app/page.tsx` ships NO static view imports — the registry is `VIEW_LOADERS` (one dynamic `import()` per view, the named exports adapted via `.then((m) => ({ default: m.XView }))`) consumed through `React.lazy`, and the boot effect PREFETCHES the active view's chunk fire-and-forget in the same parallel window as `/api/auth/me` + the collection pre-warm (`void VIEW_LOADERS[activeView]()`), so the chunk is resident before `status` flips "ready" (no Suspense gap on the standard flow); `<ActiveView />` mounts inside `<React.Suspense fallback={null}>`. RULE: never re-add a static view import — the monolithic registry billed every route ~69 KiB gz of views it never runs (the authed dashboard measured TBT 550 ms / LCP 3.7 s / perf 54 in Lighthouse 13 pre-split; the split took it to 280 ms / 3.5 s / 67 — measured with the session cookie injected via `--extra-headers`, because a Lighthouse CDP attach opens a FRESH INCOGNITO context that shares no cookies and silently measures the logged-out bounce). The reference benchmark: its public login measures perf 51 / LCP 14.4 s / 2,314 KiB vs the clone's 86 / 2.4 s / 314 KiB — the clone outperforms on every metric. The dashboard's Lighthouse a11y 94 = the disclosed color-contrast family PLUS heading-order (H1→h3, no h2 — measured IDENTICAL on the reference's Dashboard, 2026-10-27); both are reference-parity deviations, not bugs. The react-dom boot cost (~890 ms) is the framework floor — out of scope. The stale study-app Lighthouse evidence (localhost:3200, 2026-10-18) was deleted; the v17 set + the methodology README live in `docs/lighthouse/` | Accepted — Verified (486 unit + 176 e2e; the before/after Lighthouse runs + the mobile drawer's live lifecycle probe) |
 | ADR-028 | The v18 error-recovery architecture contract set (the neo-crm session-170 pattern ported, reproduced live first): the lazy registry NEVER ships a bare Suspense — `<React.Suspense>` mounts INSIDE a `ViewErrorBoundary` class component keyed `` `${view}-${viewEpoch}` `` so a failed view chunk (transient blip or stale-hash-after-redeploy) keeps the SHELL (sidebar, app bar, navigation) alive; a stale-chunk error (the Turbopack message family, live-captured as `ChunkLoadError: Failed to load chunk /_next/static/chunks/….js from module N`) auto-reloads ONCE per 10 s window through the pure injectable seam `src/lib/chunk-recovery.ts` (`isStaleChunkError` / `shouldHardReload` / `reloadOnStaleChunk`; the `veloxpos:chunk-reload-at` sessionStorage flag written BEFORE the reload fires — the crash-mid-reload loop guard; unavailable/corrupt storage disables the reload, never throws); every other error renders the Spanish recovery card ("No se pudo cargar la vista" + "Reintentar" in the `bg-[#0f121a]` dialog chrome + `glass-button-primary` grammar); Reintentar bumps the view EPOCH — the lazy registry is a `useMemo` keyed on it because `React.lazy` caches a rejected initializer FOREVER (only a fresh instance re-imports; a bare boundary reset re-throws the cached error); the outer nets are `src/app/error.tsx` (route segment — non-view crashes; Spanish card in the 404's vx-card dialect + reset()) and `src/app/global-error.tsx` (root — self-contained `<html lang="es">` + body + a direct globals.css import, zero component-tree imports: a resilience surface never stands on the tree that broke); the boot prefetch is fire-and-forget-SILENT (`VIEW_LOADERS[activeView]().catch(() => undefined)` — the lazy mount owns the surfaced error). RUNTIME REALITY (debug-instrumented this cycle): a SINGLE aborted chunk fetch never reaches the boundary — the bundler runtime retries internally and the view renders below it; the card is the surface for failures persisting past the runtime retry budget (the e2e pins block persistently + pre-seed the cooldown to suppress the auto-reload). Pre-fix evidence: the same failure unmounted the ENTIRE app to Next 16's built-in English dead-end screen ("This page couldn't load") — no boundary existed anywhere | Accepted — Verified (509 unit + 179 e2e; the live reproduction probe + the three failure-path e2e pins + the recovery screenshot set) |
+| ADR-029 | The v20 recovery-card announcement contract: every one of the three V18 failure surfaces carries `role="alert"` on the card element that MOUNTS with the failure — the view card (`src/app/page.tsx`'s `data-testid="view-error-card"` div), the segment card (`src/app/error.tsx`'s inner `vx-card` div), and the root card (`src/app/global-error.tsx`'s `data-testid="global-error-card"` div) — so a screen-reader user HEARS that a view failed (the fresh mount of a live-region element with its content is the announcement mechanism; no live region existed pre-fix — the V19 cycle's F1, recorded informational and suggested as the next target by both session logs). LANDMARK-SAFE placement: the role rides the card div, NEVER the `<main>` wrapper — an element carries exactly one role, and `role="alert"` on `<main>` would delete the main landmark from the accessibility tree. Pinned TDD-first: `tests/recovery-a11y.test.ts` (4 source pins in the tailwind-traps idiom — role presence ×3 + the `<main>`-keeps-its-landmark guard) written and verified RED against the unfixed tree, then the three one-attribute fixes, then GREEN; the v18 SHELL SURVIVAL e2e pin gained the live failure-path assertion (`view-error-card` → `role="alert"`), also verified RED-then-GREEN on the real chunk-blocked navigation. A DISCLOSED SUPERSET on two axes: the reference ships no recovery surface at all (any implementation is superset), and neo-crm's own error cards carry no role (no commit there since 2026-10-22 — the pattern reference was checked before diverging). The announcement itself (assistive-tech speech) is not assertable in Chromium — the attribute + fresh-mount pattern is the standard mechanism; the pins are the honest ceiling | Accepted — Verified (513 unit + 179 e2e; RED→GREEN evidence on both pin layers + the v20 mobile evidence set) |
 
 ---
 
@@ -594,7 +628,7 @@ Two layers, two runners, disjoint file globs:
 
 | Layer | Runner | Scope | Count |
 |---|---|---|---|
-| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 509 tests / 35 files — Verified |
+| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 513 tests / 36 files — Verified |
 | E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 179 specs — Verified |
 
 - **Unit seams**: money (the verified ticket math), ticket (V-ID shape),

@@ -108,6 +108,7 @@ class ViewErrorBoundary extends React.Component<
       return (
         <div
           data-testid="view-error-card"
+          role="alert"
           className="flex min-h-[60vh] flex-col items-center justify-center gap-3 rounded-2xl border border-[#262a36] bg-[#0f121a] p-8 text-center text-[#e7e9ef]"
         >
           <TriangleAlert className="h-8 w-8 text-amber-400" strokeWidth={2} />
