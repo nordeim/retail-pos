@@ -201,7 +201,7 @@ export function RegistersView() {
       ) : null}
 
       <Dialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
-        <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
+        <DialogContent className="border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
           <DialogHeader>
             <DialogTitle>Eliminar caja</DialogTitle>
           </DialogHeader>
@@ -261,7 +261,7 @@ function NewRegisterDialog({
 
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
+      <DialogContent className="border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           <DialogTitle>Nueva Caja</DialogTitle>
         </DialogHeader>
@@ -352,7 +352,7 @@ function OpenShiftDialog({
 
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
+      <DialogContent className="border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           <DialogTitle>Abrir Turno — {register.name}</DialogTitle>
         </DialogHeader>
@@ -459,7 +459,7 @@ function CloseShiftDialog({
 
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
+      <DialogContent className="border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           <DialogTitle>Cerrar Turno — {register.name}</DialogTitle>
         </DialogHeader>

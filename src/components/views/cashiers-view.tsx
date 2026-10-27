@@ -214,7 +214,7 @@ export function CashiersView() {
       ) : null}
 
       <Dialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
-        <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
+        <DialogContent className="border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
           <DialogHeader>
             <DialogTitle>Eliminar cajero</DialogTitle>
           </DialogHeader>
@@ -280,7 +280,7 @@ function CashierDialog({
 
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
+      <DialogContent className="border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           <DialogTitle>{cashier ? "Editar Cajero" : "Nuevo Cajero"}</DialogTitle>
         </DialogHeader>

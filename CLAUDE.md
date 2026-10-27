@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (445 tests / 29 files)
-bun run test:e2e       # playwright e2e layer (158 specs, boots standalone :3100)
+bun run test           # vitest unit layer (458 tests / 30 files)
+bun run test:e2e       # playwright e2e layer (162 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -157,6 +157,27 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   unmounts). The DONUT tooltip is its OWN raw skin: the 1px #ccc border,
   NO radius, NO shadow, the empty label p, the black `name : raw-count`
   item, anchored at the sector's ring midpoint with the same flip/glide.
+- The v14 contracts: the dialog motion + geometry family — the shared
+  `max-w-lg` (512px) base with `rounded-2xl sm:rounded-lg` (16px
+  full-bleed below sm / 8px at ≥sm), the FULL tailwindcss-animate grammar
+  on the content (fade + zoom + the slide quartet
+  `slide-in-from-left-1/2`/`slide-in-from-top-[48%]` and the out mirrors)
+  and the FADING overlay (`animate-in fade-in-0` / `animate-out
+  fade-out-0` — never a snap), and the tw-animate `.15s` default — NO
+  `duration-` class on the dialog (Tailwind 4.3.3 threads `--tw-duration`
+  to 200ms where the reference's older stack leaves its own duration-200
+  inert); NO per-surface width overrides (every DialogContent rides the
+  base; the inventory editor keeps only `max-h-[90vh] overflow-y-auto`).
+  The focus family: `vx-focus` draws the deterministic violet outline
+  (`outline: 3px solid rgba(127, 98, 244, 0.5)` on :focus-visible — the
+  retired indigo 129,140,248 halo stays retired) and a global base-layer
+  `outline-color: rgba(127, 98, 244, 0.5)` recolors every UA-default
+  outline violet (the platform mechanism). The reports empty states are
+  the measured `flex h-40 items-center justify-center text-sm
+  text-white/25` boxes and the three reports cards carry
+  `titleClassName="mb-5"` (the 20px heading gap). The sidebar collapse is
+  MEASURED AT PARITY (220↔68px, 300ms, labels conditionally removed) —
+  do not re-audit.
 - The v12 contracts: the auth surface family measured BELOW the card —
   the card chrome (the 4px slate gradient hairline + overflow-hidden +
   `md:pt-12 md:pb-10 md:px-10` + the space-y-6/8 text-center column),

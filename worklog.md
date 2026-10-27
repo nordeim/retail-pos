@@ -956,3 +956,88 @@ Stage Summary:
   the empty item-unit span (renders nothing — not replicated); the
   Terminal product-card hover (the reference still shift-gated).
   Standing v8-v12 disclosures unchanged.
+
+---
+Task ID: V14
+Agent: general-purpose (remediation executor, session V14 2026-10-27)
+Task: The v14 cycle — audit the remaining interaction states
+(session_19's own suggested next step: the dialog open/close
+transitions, the focus rings in motion, the sidebar collapse), write
+remediation-plan-v14, execute it TDD, and ship.
+
+Work Log:
+- Baseline re-established after a workspace reset (re-clone to
+  main @ 20b68e4 — the v13 close 214e196 + the remote's session_20
+  transcript): environment rebuilt (.env → db/custom.db, deps, seed,
+  Playwright chromium reinstalled), gates green — lint 0 · tsc 0 ·
+  build ✓ · 445/445 unit · 158/158 e2e (one documented sequential
+  flake green in isolation + on rerun); the v13 diff audited in full
+  (SalesTip, DonutTip, hybrid anchor, persistent wrapper, cursor +
+  activeDot all hold); the reference's data state UNCHANGED since v13
+  (Terminal still shift-gated, the Abrir Turno cashier combobox still
+  empty).
+- Live audit (agent-browser, BOTH apps, 1280 + 390): the reference's
+  dialog caught MID-ENTER for the first time (scale + translate +
+  opacity all in flight at 60ms); three finding families measured —
+  F1 the dialog motion + geometry family (the full slide quartet +
+  the fading overlay + the 150ms default + the shared 512px max-w-lg
+  base + rounded-2xl sm:rounded-lg full-bleed mobile skin vs the
+  clone's fade+zoom-only, snapping overlay, 200ms duration-200,
+  max-w-md/sm overrides, flat rounded-lg), F2 the focus family (the
+  platform's global violet outline-color rgba(127,98,244,0.5) vs the
+  clone's retired indigo 129,140,248 vx-focus halo + the plain
+  Button's missing focus color), F3 the reports empty-state skins
+  (the measured h-40 centered text-white/25 boxes + the mb-5 heading
+  gap vs the clone's plain text-slate-400 paragraphs + mb-4).
+- The sidebar collapse (session_19's suggestion) measured AT PARITY
+  end-to-end (220↔68px, the same 300ms curve, labels conditionally
+  removed, chevron flip) — resolves with NO work; the X close button,
+  the select motion, the reports chips, and the login card verified
+  at parity.
+- TDD execution: 13 unit + 4 e2e pins written red first; B1 the
+  dialog family (dialog.tsx + alert-dialog.tsx adopt the complete
+  grammar class-for-class, duration-200 removed — Tailwind 4.3.3
+  threads --tw-duration to 200ms where the reference's own class is
+  inert; all 10 call sites drop width overrides, the inventory editor
+  keeps max-h-[90vh] overflow-y-auto); B2 the focus family (vx-focus →
+  the deterministic 3px solid violet outline + the global base-layer
+  outline-color platform line, no double rings); B3 the reports
+  surfaces (the h-40 centered boxes + titleClassName="mb-5" ×3).
+- E2e authoring lessons (hardened, not weakened): toBeVisible()
+  resolves mid-enter and zoom-in-95 scales the rect (512 read
+  508/510) — geometry reads settle via getAnimations().finished
+  (applied to the v14 pins AND the v8 ticket-modal pin, assertions
+  unchanged); test.use() is illegal in a test body — the mobile
+  viewport rides page.setViewportSize (the v12 convention).
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 458/458 (445+13, 30
+  files) · e2e 162/162 (158+4).
+- Evidence: the standard set re-captured from the production build
+  (only 2 shots changed — the cobrar dialog now 512px, the reports
+  empty states; everything else pixel-identical); 3 new VLM-verified
+  shots via scripts/capture-v14-shots.sh (desktop-dialog-abrir-turno,
+  mobile-dialog-abrir-turno, desktop-focus-nav-violet).
+- Docs lockstep: AGENTS.md contract 27; CLAUDE.md counts + the v14
+  block; README badge (458+162); PAD v2.2.0 + ADR-024 + §8 counts;
+  retail-pos_SKILL.md v1.9.0; docs/session_21.md; this entry.
+
+Stage Summary:
+- v14 made the interaction-state family reference-faithful: the dialog
+  system rides the shared 512px base with the full tailwindcss-animate
+  grammar (the slide quartet + the fading overlay at the 150ms
+  default), the focus family lands the platform violet (the
+  deterministic vx-focus outline + the global outline-color recolor —
+  the indigo halo retired everywhere), and the reports empty states
+  adopt the measured centered boxes with the 20px heading gap. The
+  sidebar collapse resolved as verified parity.
+- The Tailwind v4 duration trap recorded: tw-animate resolves
+  --animate-in through --tw-duration — a duration-200 class makes the
+  clone's animation 200ms where the reference's older stack leaves it
+  inert at 150ms; the observable is the .15s default, so no duration-
+  class ships on the dialog family.
+- E2e lesson recorded: dialog geometry reads must settle the enter
+  run first (getAnimations().finished) — mid-flight zoom-in-95 scales
+  the rect.
+- Known-open (disclosed): the reports with-data skins (unobservable —
+  no sales in any window); the reference's bg-background vs the
+  clone's dark skin (the v8 pins hold); the drawer's own 200ms slide
+  (a superset surface). Standing v8-v13 disclosures unchanged.

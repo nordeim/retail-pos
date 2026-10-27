@@ -125,6 +125,7 @@ export function ReportsView() {
       <SectionCard
         title="Ventas diarias"
         className="mt-6"
+        titleClassName="mb-5"
         testId="report-daily-card"
         variant="kicker"
       >
@@ -141,11 +142,14 @@ export function ReportsView() {
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <SectionCard
           title="Ingresos por método de pago"
+          titleClassName="mb-5"
           testId="report-by-method"
           variant="kicker"
         >
           {data.byMethod.length === 0 ? (
-            <p className="text-sm text-slate-400">Sin datos en este período</p>
+            <div className="flex h-40 items-center justify-center text-sm text-white/25">
+              Sin datos en este período
+            </div>
           ) : (
             <ul className="space-y-3">
               {data.byMethod.map((entry) => {
@@ -176,11 +180,14 @@ export function ReportsView() {
 
         <SectionCard
           title="Detalle por método"
+          titleClassName="mb-5"
           testId="report-method-detail"
           variant="kicker"
         >
           {data.byMethod.length === 0 ? (
-            <p className="text-sm text-slate-400">Sin datos en este período</p>
+            <div className="flex h-40 items-center justify-center text-sm text-white/25">
+              Sin datos en este período
+            </div>
           ) : (
             <table className="w-full text-sm">
               <thead>

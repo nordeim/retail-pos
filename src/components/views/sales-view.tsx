@@ -181,7 +181,7 @@ export function SalesView() {
 function SaleDetailDialog({ sale, onClose }: { sale: Sale | null; onClose: () => void }) {
   return (
     <Dialog open={sale !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
+      <DialogContent className="border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           {/* V8/F2: the reference's title icon — lucide-receipt, indigo. */}
           <DialogTitle className="flex items-center gap-2" data-testid="sale-detail-title">

@@ -427,6 +427,42 @@ rules:
     point; the reference's PIE tooltip needs mouseenter/mousemove ON THE
     SECTOR PATH (the chart-wrapper mousemove never activates it).
 
+27. The dialog MOTION + geometry family and the focus family (v14,
+    live-measured on both apps): the dialog system is UNIFORM — every
+    DialogContent/AlertDialogContent rides the shared `max-w-lg` (512px)
+    base with `rounded-2xl sm:rounded-lg` (16px full-bleed below sm —
+    `w-full` takes the viewport under the cap — 8px at ≥sm); NO per-surface
+    width overrides ship (the inventory editor keeps only
+    `max-h-[90vh] overflow-y-auto`). The content carries the FULL
+    tailwindcss-animate grammar — fade + zoom + the slide quartet
+    (`data-[state=open]:slide-in-from-left-1/2` +
+    `slide-in-from-top-[48%]`, the `slide-out-to-*` mirrors) — and the
+    OVERLAY fades (`animate-in fade-in-0` / `animate-out fade-out-0`).
+    The DURATION trap: `tw-animate-css` resolves
+    `--animate-in: enter var(--tw-animation-duration, var(--tw-duration,
+    .15s))…` — on Tailwind 4.3.3 a `duration-200` class sets
+    `--tw-duration: 200ms` and the animation runs 200ms, while the
+    reference's older stack leaves its own `duration-200` INERT (computed
+    150ms — the class only sets transition-duration there). NEVER put a
+    `duration-` class on the dialog family; the observable is the tw-animate
+    `.15s` default. E2e geometry reads must WAIT for the enter run —
+    mid-flight, `zoom-in-95` scales the rect (512 reads ~508-510): settle
+    via `el.getAnimations().map(a => a.finished)`. The focus family:
+    `vx-focus` draws `outline: 3px solid rgba(127, 98, 244, 0.5)` on
+    :focus-visible (the retired indigo 129,140,248 box-shadow halo stays
+    retired), and the base layer sets a GLOBAL
+    `outline-color: rgba(127, 98, 244, 0.5)` — the reference platform's
+    mechanism — so every element falling back to the UA default outline
+    (the plain Button, unstyled links) focuses violet; outline-none
+    controls (inputs/textareas with their own 1px edge, the glass buttons
+    with their own outline) never double-ring. The reports empty states
+    are the measured `flex h-40 items-center justify-center text-sm
+    text-white/25` boxes; the three reports cards carry
+    `titleClassName="mb-5"` (20px heading gap; the dashboard's mb-4/mb-3
+    pins are untouched). The sidebar collapse is MEASURED AT PARITY
+    (220↔68px, 300ms cubic-bezier(0.4,0,0.2,1), labels conditionally
+    removed from the DOM, chevron flip) — do not re-audit.
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content

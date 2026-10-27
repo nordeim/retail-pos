@@ -113,6 +113,11 @@
 @layer base {
   * {
     border-color: rgb(var(--border));
+    /* V14/F2: the reference platform's global outline recolor (L18) —
+       every element that falls back to the UA default outline (the
+       plain Button, unstyled links) focuses violet. The
+       outline-none controls keep their own deterministic rings. */
+    outline-color: rgba(127, 98, 244, 0.5);
   }
   body {
     background-color: var(--color-vx-canvas, #080a14);
@@ -179,7 +184,11 @@
 @utility vx-focus {
   outline: none;
   &:focus-visible {
-    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.45);
+    /* V14/F2: the deterministic violet outline — the same form V11/F2h
+       shipped for the glass buttons (the color is the stable measured
+       fact; the ref's auto/1-2-3px alternation is a base44 platform
+       artifact). The retired indigo halo does not return. */
+    outline: 3px solid rgba(127, 98, 244, 0.5);
   }
 }
 

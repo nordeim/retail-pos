@@ -227,7 +227,7 @@ export function InventoryView() {
       ) : null}
 
       <Dialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
-        <DialogContent className="max-w-sm border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
+        <DialogContent className="border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
           <DialogHeader>
             <DialogTitle>Eliminar producto</DialogTitle>
           </DialogHeader>
@@ -326,7 +326,7 @@ function ProductDialog({
 
   return (
     <Dialog open onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-[#262a36] bg-[#0f121a] text-[#e7e9ef]">
         <DialogHeader>
           <DialogTitle>{product ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
         </DialogHeader>

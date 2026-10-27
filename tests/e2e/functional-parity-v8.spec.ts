@@ -58,6 +58,13 @@ test.describe("functional parity (v8) — authenticated surfaces", () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByTestId("sale-detail-title")).toContainText("Ticket ");
 
+    // V14 hardening: let the 150ms enter run finish before the boundingBox
+    // reads — the v14 motion family (zoom-in-95 + the slide quartet)
+    // transforms the rect mid-flight (assertions unchanged).
+    await dialog.evaluate((el) =>
+      Promise.all(el.getAnimations().map((a) => a.finished.catch(() => {}))),
+    );
+
     // The meta block is a 2×2 grid: Fecha/Cajero share a row (same y,
     // different x), Método/Caja the next.
     const metaBox = await dialog
