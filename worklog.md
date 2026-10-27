@@ -1377,3 +1377,73 @@ Stage Summary:
   stay unobservable; the e2e flake is hypothesis-linked to F1 (if it
   recurs post-fix, it gets its own investigation); all standing
   v8–v17 disclosures unchanged.
+
+---
+
+Task ID: v19-cycle
+Agent: Z.ai (main agent, session 31)
+Task: The V19 remediation cycle — the audit-clean pass (reference state,
+mobile drawer, Tailwind v4 sweep, V18 contract validation on a fresh
+clone), the mobile evidence set for the error-recovery surfaces
+(session_29's suggested next step), the self-contained probe tooling,
+the remediation plan, the docs lockstep, the commit + the SSH-wrapper
+push.
+
+Work Log:
+- Baseline: the workspace had been RESET — a fresh git clone rebuilt it
+  (main @ f347032, the V18 close intact); the full environment bootstrap
+  (bun install, .env from .env.example, db/ at the root, db:push +
+  db:seed, playwright chromium 1243) ran end-to-end; the gates re-ran
+  green (lint 0 · tsc 0 · build ✓ · 509/509 unit · 179/179 e2e — the
+  first e2e run's 3 failures were the missing chromium-1243 binary, an
+  infra miss root-caused on the spot, NOT the V18/F2 flake shape).
+- The audit: the reference's state UNCHANGED for the 4th consecutive
+  cycle (both cajas Cerrada, 12 products, 2 sales, Reports empty,
+  Terminal shift-gated); the reference at 390px still has NO hamburger
+  (220px sidebar, main at 170px) — the clone's drawer remains the
+  superset; the Tailwind v4 sweep clean (95 --color- pins, no trap
+  surfaces in the error cards, the disclosed drawer 200ms); the V18
+  implementation validated against the codebase in exact contract shape;
+  the neo-crm cross-check confirmed the port (their cards also carry no
+  role="alert" — recorded informational).
+- The sandbox lesson: this environment kills background processes
+  between tool invocations (a setsid+nohup sleep does not survive) —
+  the probe-server-across-commands pattern is impossible. The new probe
+  tooling owns its server's whole lifecycle inside one invocation.
+- The deliverable: scripts/probe-v19-mobile-recovery.ts — the
+  self-contained probe. 10/10 live checks PASS at 390×844 (the full
+  mobile drawer contract: geometry, aria, 8 links, 44.0px uniform
+  pitch, scroll lock, focus in/return, Esc/backdrop/route close, zero
+  overflow on all 8 routes) + the three mobile evidence captures
+  (v19-mobile-drawer-open-390.png, v19-view-recovery-card-390.png —
+  the persistent-block + pre-seeded-cooldown path navigated FROM THE
+  DRAWER, v19-view-recovery-healed-390.png), all VLM-verified (z-ai
+  vision: the card reads "No se pudo cargar la vista" with the app bar
+  alive; the healed view shows "Ajustes de la Tienda").
+- No code changes: the audit found no parity gaps and no bugs (SD-75 —
+  nothing invented to fill the cycle); the 509 + 179 pins stay the
+  regression contract, re-proven on the fresh clone.
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 509/509 · e2e 179/179
+  (re-run with the probe script in the lint/typecheck scope).
+- Docs lockstep: docs/remediation-plan-v19.md (the verification ledger
+  L1-L12 + the execution ledger); docs/session_31.md; this entry. No
+  AGENTS/CLAUDE/README/PAD/SKILL bumps — no code or contract changed
+  and the counts stay 509 + 179 (lockstep-true by NOT bumping).
+
+Stage Summary:
+- v19 closed session_29's suggested next step: the error-recovery
+  surfaces now carry a VLM-verified MOBILE evidence set (390×844:
+  the card with the shell alive, the healed view, plus the drawer
+  open) — produced by the self-contained probe that also re-verified
+  the full mobile drawer contract live (10/10).
+- The audit is honestly clean: the reference unchanged (4th cycle), no
+  parity gaps, no bugs, the V18 architecture in contract shape, the
+  Tailwind v4 traps guarded — and the full gate re-proven on a fresh
+  clone (the strongest regression evidence there is).
+- Tooling lessons recorded: the sandbox's kill-between-invocations
+  behavior (the server-lifecycle-owning probe pattern) and the
+  fresh-clone chromium-1243 cache miss (install before the first e2e).
+- Known-open (disclosed): F1 role="alert" on the recovery cards
+  (informational — the pattern reference ships the same shape); the
+  react-dom boot floor; the reference's own broken flows have nothing
+  to mirror; every standing v8–v18 disclosure unchanged.
