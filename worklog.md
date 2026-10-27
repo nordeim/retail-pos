@@ -1212,3 +1212,82 @@ Stage Summary:
 - Known-open (disclosed): the reference's own broken flows have
   nothing to mirror; the reports with-data skins stay unobservable;
   all standing v8-v15 disclosures unchanged.
+
+---
+
+Task ID: v17-cycle
+Agent: Z.ai (main agent, session 27)
+Task: The V17 remediation cycle — the Core Web Vitals pass (session_25's
+suggestion), the task-mandated mobile-navigation re-verification, the
+Tailwind v4 sweep, the remediation plan, the TDD execution, the
+evidence, the docs lockstep, the commit + the SSH-wrapper push.
+
+Work Log:
+- Baseline: the workspace had been RESET — a fresh git clone rebuilt it
+  (main @ 8250e12, the V16 close intact); bun install + .env from
+  .env.example + db:push + db:seed + the chromium-1243 install; the
+  gates re-ran green (lint 0 · tsc 0 · build ✓ · 478/470 unit · 173/173
+  e2e) before any probing.
+- The mobile drawer contract re-verified LIVE end-to-end (Playwright
+  probes at 390×844 + the short 390×480): the app bar 64px, the drawer
+  lifecycle (Esc/backdrop/route close, focus in/out, scroll lock), the
+  geometry (288px, enter 0.2s, 44px pitch), the inside-panel scroll
+  (last link reachable), zero horizontal overflow on all 8 routes; the
+  reference re-confirmed at 390px: NO menu (its 220px sidebar squeezes
+  main to 170px) — the clone's drawer is the working superset.
+- The Tailwind v4 sweep: no new bugs (the drawer's duration-200 is the
+  intended disclosed 200ms — --tw-duration threads correctly on 4.3.3;
+  the V16 palette pins hold; the trap tests green).
+- The CWV measurements (Lighthouse 13, desktop): the clone's login
+  86/100/100/100 (LCP 2.4s) vs the reference's 51 (LCP 14.4s, 2,314
+  KiB vs the clone's 314 KiB); the authed dashboard 54 (TBT 550ms,
+  LCP 3.7s) — measured via --extra-headers Cookie injection after the
+  CDP-incognito lesson (a --port attach opens a fresh incognito context
+  that shares NO cookies — the first run silently measured the
+  logged-out bounce; the 401s + the from_url redirect chain exposed it).
+- F2 the fix (TDD): the lazy view registry — 8 unit pins red →
+  VIEW_LOADERS (one dynamic import() per view) through React.lazy +
+  the boot prefetch of the ACTIVE view's chunk (parallel with auth/me
+  + the pre-warm; Suspense fallback null) → green; the build split
+  17 → 27 chunks (terminal 12 KiB, dashboard 15, none in the entry
+  set); 3 e2e pins (the boot-ships-no-terminal-code chunk-body scan,
+  the on-demand SPA chunk fetch, the no-gap h1 attachment).
+- The result: performance 54 → 67 (+13), TBT 550ms → 280ms (−49%),
+  LCP 3.7s → 3.5s, CLS 0.
+- F1: the stale study-app Lighthouse reports (localhost:3200,
+  2026-10-18) deleted; the v17 set + the methodology README landed in
+  docs/lighthouse/ (the scores table, the CHROME_PATH/flags, the
+  CDP-incognito lesson, the cookie-injection channel).
+- F3: the dashboard's Lighthouse a11y 94 decomposed — color-contrast
+  (the reference's own low-contrast family, standing) + heading-order
+  (H1→h3 measured IDENTICAL on the reference the same day); recorded
+  as reference-parity deviations (AGENTS.md 30, ADR-027) — no code
+  change; parity wins.
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 486/486 (478+8, 33
+  files) · e2e 176/176 (173+3).
+- Evidence: the refreshed standard 32-shot set (production build) +
+  v17-mobile-drawer-short-viewport-scrolled.png + the three Lighthouse
+  reports.
+- Docs lockstep: AGENTS.md contract 30; CLAUDE.md counts + the v17
+  block; README badge (486+176) + the Views row + the lighthouse
+  pointer; PAD v2.5.0 + ADR-027 + §8 counts; retail-pos_SKILL.md
+  v1.12.0; docs/session_27.md; the plan's §6 execution ledger; this
+  entry.
+
+Stage Summary:
+- v17 made the app measurably faster where it was actionable: every
+  surface now ships only its own view code (the lazy registry + the
+  boot prefetch), halving the authed dashboard's total blocking time
+  (550→280ms) and lifting its Lighthouse performance 54→67 — with the
+  176-spec e2e suite proving zero behavioral drift.
+- The clone now CARRIES its CWV evidence: the reference measures 51 on
+  its public login (LCP 14.4s, 2.3 MiB); the clone measures 86 (LCP
+  2.4s, 314 KiB) — the production-readiness claim is measured, not
+  asserted.
+- Tooling lessons recorded: the Lighthouse CDP-incognito trap (authed
+  audits need --extra-headers Cookie) and the reference's identical
+  heading-order structure (H1→h3 — a parity deviation, not a bug).
+- Known-open (disclosed): the react-dom boot floor (~890ms); the
+  reference's own broken flows have nothing to mirror; the reports
+  with-data skins stay unobservable; all standing v8-v16 disclosures
+  unchanged.

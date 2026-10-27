@@ -1,6 +1,6 @@
 # VeloxPOS — Punto de venta, your store
 
-![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-478%20%2B%20173%20green-22c55e)
+![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-486%20%2B%20176%20green-22c55e)
 
 **VeloxPOS** is a production-ready, self-hosted clone (functional superset) of
 the [`veloxposretail.base44.app`](https://veloxposretail.base44.app/) point-of-sale
@@ -69,7 +69,8 @@ flowchart TB
 | API | Next route handlers + Zod 4 | Strip-mode validation, typed error mapper |
 | DB | Prisma 6 + SQLite | Zero-ops persistence at `<repo>/db/custom.db` |
 | Charts | Hand-rolled SVG | Zero dependencies, deterministic, pixel-controlled |
-| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (478 + 173 green) |
+| Views | React.lazy code-split registry | Each surface ships only its own view (authed dashboard TBT 550→280 ms, perf 54→67 — see `docs/lighthouse/README.md`) |
+| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (486 + 176 green) |
 | Runtime | Bun 1.3 | Scripts, seed, and the standalone server |
 
 ## Quick start
@@ -177,7 +178,9 @@ The store's **Color primario/secundario** settings write `--vx-primary` /
 - `docs/Tailwind-V4-Validation-Report.md` — the v3→v4 trap log this build
   guards against
 - `docs/reference-evidence/` — live reference captures · `docs/screenshots/`
-  — this app's own evidence set (`bun scripts/capture-screenshots.ts`)
+  — this app's own evidence set (`bun scripts/capture-screenshots.ts`) ·
+  `docs/lighthouse/` — the v17 Core Web Vitals measurements (clone vs
+  reference + the authed-surface methodology)
 - `AGENTS.md` / `CLAUDE.md` — agent working contracts ·
   `Project_Architecture_Document.md` — the full PAD · `worklog.md` — the
   session journal

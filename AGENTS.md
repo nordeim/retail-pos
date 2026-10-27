@@ -526,6 +526,32 @@ rules:
     writes both in one transaction — a direct DB write that skips the
     register leaves phantom "Abierta" cards).
 
+30. The lazy view registry + the CWV evidence (v17, live-measured):
+    `src/app/page.tsx` ships NO static view imports — the registry is
+    `VIEW_LOADERS` (one dynamic `import()` per view, the named exports
+    adapted via `.then((m) => ({ default: m.XView }))`) consumed through
+    `React.lazy`, and the boot effect PREFETCHES the active view's chunk
+    fire-and-forget in the same parallel window as `/api/auth/me` + the
+    collection pre-warm (`void VIEW_LOADERS[activeView]()`), so the
+    chunk is resident before `status` flips "ready" (no Suspense gap on
+    the standard flow). `<ActiveView />` mounts inside
+    `<React.Suspense fallback={null}>`. RULE: never re-add a static
+    view import — the monolithic registry billed every route ~69 KiB gz
+    of views it never runs (the authed dashboard measured TBT 550 ms /
+    perf 54 pre-split; the split took it to 280 ms / 67 — the evidence
+    lives in `docs/lighthouse/README.md`). The react-dom boot cost
+    (~890 ms) is the framework floor — not actionable. LIGHTHOUSE
+    TOOLING: a CDP attach (`--port`) opens a FRESH INCOGNITO context —
+    cookies do NOT transfer (the run silently measures the logged-out
+    bounce instead of the authed surface); the working channel for
+    authed runs is `--extra-headers '{"Cookie":"sf_session=…"}'` with
+    the cookie extracted via a Playwright login
+    (`scripts/lighthouse-v17-authed.sh`). The dashboard's Lighthouse
+    a11y 94 = the disclosed `color-contrast` family PLUS
+    `heading-order` (H1→h3, no h2 — measured IDENTICAL on the reference
+    2026-10-27); both are reference-parity deviations, not bugs — do
+    not "fix" either.
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content

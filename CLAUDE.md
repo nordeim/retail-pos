@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (478 tests / 32 files)
-bun run test:e2e       # playwright e2e layer (173 specs, boots standalone :3100)
+bun run test           # vitest unit layer (486 tests / 33 files)
+bun run test:e2e       # playwright e2e layer (176 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -200,6 +200,19 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   settings sections below the fold are unreachable at 1280×800); the
   clone's flowing layout is the functional superset. Probe tooling: a
   shift close must reset BOTH shift.status AND register.status.
+- The v17 contracts: the view registry is LAZY — `VIEW_LOADERS` (one
+  dynamic `import()` per view) consumed through `React.lazy` with the
+  boot effect prefetching the ACTIVE view's chunk in parallel with
+  auth/me + the pre-warm (`void VIEW_LOADERS[activeView]()`, the
+  Suspense fallback null — no gap on the standard flow); never re-add
+  a static view import (the monolith billed every route ~69 KiB gz;
+  the split took the authed dashboard TBT 550→280 ms, perf 54→67 —
+  the evidence + methodology live in `docs/lighthouse/README.md`,
+  including the CDP-incognito lesson: authed Lighthouse runs need
+  `--extra-headers Cookie`, a `--port` attach silently measures the
+  logged-out bounce). The dashboard's Lighthouse a11y 94 = the
+  disclosed color-contrast family + heading-order (H1→h3 — measured
+  identical on the reference; parity wins).
 - The v15 contracts: the hover micro-interaction families — every
   row-action icon button carries `rounded-lg p-2 text-slate-400
   transition-colors` + its per-action family (edit/detail indigo,

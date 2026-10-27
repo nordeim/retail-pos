@@ -22,15 +22,6 @@ import { useAppStore, usePosStore, type AppUser, type LoadedKey } from "@/lib/st
 import { documentTitleForPath, type ViewId } from "@/lib/router";
 import { cn } from "@/lib/utils";
 
-import { TerminalView } from "@/components/views/terminal-view";
-import { DashboardView } from "@/components/views/dashboard-view";
-import { InventoryView } from "@/components/views/inventory-view";
-import { SalesView } from "@/components/views/sales-view";
-import { RegistersView } from "@/components/views/registers-view";
-import { CashiersView } from "@/components/views/cashiers-view";
-import { ReportsView } from "@/components/views/reports-view";
-import { SettingsView } from "@/components/views/settings-view";
-
 /** Sets data-app-hydrated on the shell commit — the e2e gate that proves the
  *  authed chrome (sidebar nav) has actually rendered. */
 function HydrationMarker() {
@@ -40,16 +31,40 @@ function HydrationMarker() {
   return null;
 }
 
-/** The static view registry — one component per view id. */
-const VIEW_COMPONENTS: Record<ViewId, React.ComponentType> = {
-  terminal: TerminalView,
-  dashboard: DashboardView,
-  inventario: InventoryView,
-  ventas: SalesView,
-  cajas: RegistersView,
-  cajeros: CashiersView,
-  reportes: ReportsView,
-  ajustes: SettingsView,
+/** The lazy loaders — V17/F2 (SD-67): one dynamic import() per view so
+ * each surface ships only its own code (the monolithic registry billed
+ * every route ~69 KiB gz of views it never runs; the authed dashboard
+ * measured TBT 550 ms / LCP 3.7 s pre-split). The views are named
+ * exports; the `.then` adapts them to React.lazy's default shape. */
+const VIEW_LOADERS = {
+  terminal: () =>
+    import("@/components/views/terminal-view").then((m) => ({ default: m.TerminalView })),
+  dashboard: () =>
+    import("@/components/views/dashboard-view").then((m) => ({ default: m.DashboardView })),
+  inventario: () =>
+    import("@/components/views/inventory-view").then((m) => ({ default: m.InventoryView })),
+  ventas: () =>
+    import("@/components/views/sales-view").then((m) => ({ default: m.SalesView })),
+  cajas: () =>
+    import("@/components/views/registers-view").then((m) => ({ default: m.RegistersView })),
+  cajeros: () =>
+    import("@/components/views/cashiers-view").then((m) => ({ default: m.CashiersView })),
+  reportes: () =>
+    import("@/components/views/reports-view").then((m) => ({ default: m.ReportsView })),
+  ajustes: () =>
+    import("@/components/views/settings-view").then((m) => ({ default: m.SettingsView })),
+} as const satisfies Record<ViewId, () => Promise<{ default: React.ComponentType }>>;
+
+/** The lazy view registry — one lazy component per view id. */
+const VIEW_COMPONENTS: Record<ViewId, React.LazyExoticComponent<React.ComponentType>> = {
+  terminal: React.lazy(VIEW_LOADERS.terminal),
+  dashboard: React.lazy(VIEW_LOADERS.dashboard),
+  inventario: React.lazy(VIEW_LOADERS.inventario),
+  ventas: React.lazy(VIEW_LOADERS.ventas),
+  cajas: React.lazy(VIEW_LOADERS.cajas),
+  cajeros: React.lazy(VIEW_LOADERS.cajeros),
+  reportes: React.lazy(VIEW_LOADERS.reportes),
+  ajustes: React.lazy(VIEW_LOADERS.ajustes),
 };
 
 /** The collections each view needs on first paint (the pre-warm set). */
@@ -106,6 +121,13 @@ export default function Home() {
       // The view comes from the URL, not the render closure.
       useAppStore.getState().hydrate();
       const activeView = useAppStore.getState().view;
+
+      // V17/F2: prefetch the ACTIVE view's chunk in the same parallel
+      // window as the pre-warm — fire-and-forget; by the time status
+      // flips "ready" the chunk is resident (no Suspense gap on the
+      // standard flow). Never blocks: a rejected prefetch surfaces only
+      // if the lazy mount itself retries the import.
+      void VIEW_LOADERS[activeView]();
 
       // The pre-warm rides IN PARALLEL with the auth round-trip and never
       // blocks the shell on failure.
@@ -222,7 +244,13 @@ export default function Home() {
         )}
         data-testid="main-content"
       >
-        <ActiveView />
+        {/* V17/F2: the lazy registry — the fallback stays null because the
+            boot prefetch (above) has the chunk resident before "ready" in
+            the standard flow; a cold route switch shows the same chrome
+            with an empty main for one local chunk fetch. */}
+        <React.Suspense fallback={null}>
+          <ActiveView />
+        </React.Suspense>
       </main>
     </>
   );
