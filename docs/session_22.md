@@ -1,3 +1,72 @@
+I'll continue the retail-pos task chain. The task prompt now references `docs/session_19.md`, `docs/remediation-plan-v13.md`, `worklog.md`, and `docs/session_20.md` (incremented from session_17/18 + plan-v12). Let me start by refreshing the workspace and checking the current state.
+工作区已重置 — 本地仓库缺失。根据指示，我将重新克隆该仓库。
+仓库克隆完成——远程仓库自上次会话以来已更新（最新提交：`214e196`，对应 remediation-plan-v13 执行）。提示词中引用的所有四份文档都存在：`session_19.md`、`remediation-plan-v13.md`、`session_20.md` 和 `worklog.md`。让我先制定任务计划。
+现在让我读取完整的 `AGENTS.md` 和核心文档。
+Now let me read the remaining core docs and the session documents.
+Session 19/20 read — V13 cycle closed at `214e196`, session log pushed as `20b68e4`. This round is the **V14 cycle**. Now reading remediation-plan-v13 and worklog.
+Now let me read the worklog tail and remaining core docs.
+I now have a full picture of the project state. V13 closed at `214e196` (gates: lint 0 · tsc 0 · build ✓ · 445/445 unit · 158/158 e2e). This round is the **V14 cycle**. Session_19 suggests next: the remaining interaction states (sidebar collapse animation, dialog open/close transitions, focus rings in motion) or the reports per-method table with live sale data.
+
+Let me set up the environment and verify the baseline.
+Environment ready (12 products, 6 categories, 2 registers, 2 sales seeded). Now running the baseline gates.
+Build succeeded. Now running the e2e suite (checking port 3100 is clean first, per the v12 probe lesson).
+Some e2e tests failed. Let me see the details.
+所有失败都在 1ms 内完成——这是 setup-project 的失败，而不是 test-body 的失败。让我看看开头的错误。
+Setup succeeded but every chromium test fails at 1ms. Let me run one spec directly to see the full error.
+Root cause: fresh workspace lacks the Playwright chromium binary. Installing it.
+157/158，存在一个错误。我来单独重新运行一下失败的 `spec`，以确认这是否为文档中记载的顺序不稳定（sequential flake）问题。
+**Baseline fully green**: lint 0 · tsc 0 · build ✓ · unit 445/445 · e2e 158/158 (the single failure was the documented sequential flake — green in isolation and in the full re-run).
+现在让我阅读 `skills` 目录和 `web-application` 技能，以规划审计。
+我已了解 web-application 的技能合约。现在让我审核最近的代码变更——即 `214e196` 处的 v13 提交。
+v13 的实现审计无异常——所有合约（`SalesTip`、`DonutTip`、混合锚点、持久化包装器、光标 + `activeDot`）均已到位，并符合计划。现在让我加载 `agent-browser` 技能，并开始与参考站点进行实时对比。
+现在让我启动克隆的生产服务器进行实时对比。首先，检查 `e2e` `webServer` 是如何启动它的。
+Clone server 已在 :3101 启动，并连接了全新的 probe DB。让我来对它进行数据 seeding。
+Probe DB 需要先应用 schema。正在应用。
+Probe DB 已填充数据。现在让我打开参考站点并使用 agent-browser 登录。
+Logged into the reference. Let me first re-verify the reference's data state (unchanged since v13?), then sweep the interaction states.
+Reference data state confirmed UNCHANGED since v13 (KPIs $0.00/0/12, Atún Dolores low-stock row, date line). Now checking whether the reference Terminal is still shift-gated — if it could open a shift, the Terminal surfaces would unlock.
+Terminal 依然处于 shift-gated 状态。让我验证一下 Cajas → Abrir Turno 的死胡同状态（空的收银员组合）。
+收银员组合框仍然为空 —— 参考站点的销售流程死胡同问题依旧存在（Terminal 保持不可观测，既定披露维持不变）。现在让我测量参考站点的**对话框打开/关闭过渡效果**，同时此对话框仍处于打开状态。
+Key finding — the reference dialog carries an `enter` animation (0.15s) + a 0.2s transition. Let me extract the full animation details.
+The reference uses the shadcn `animate-in` pattern. Let me get the full class lists and measure the close animation.
+Major discovery — the reference dialog uses the full shadcn `tailwindcss-animate` class family (`animate-in/out`, `fade-in/out-0`, `zoom-in/out-95`, `slide-in/out-from-left-1/2`, `slide-in/out-to-top-[48%]`, `duration-200`, and **`rounded-2xl sm:rounded-lg`**). These utilities don't exist natively in Tailwind v4 — a prime v4-bug candidate. Let me check the clone's dialog implementation.
+The clone has `tw-animate-css` and partial animation classes — but is missing the `slide-in/out-from-left-1/2` + `slide-in/out-to-top-[48%]` family. Let me check the clone's full dialog.tsx and overlay, then verify live.
+Key diffs found between the reference dialog and the clone's:
+1. **Overlay**: reference animates (`animate-in fade-in-0` / `animate-out fade-out-0`) — clone has NO animation classes (snaps)
+2. **Content slide family**: reference has `slide-in/out-from-left-1/2` + `slide-in/out-to-top-[48%]` — clone missing
+3. **Radius**: reference `rounded-2xl sm:rounded-lg` — clone flat `rounded-lg`
+4. **Width**: reference `max-w-lg` (512px) — clone `max-w-md` (448px)
+
+Let me measure the reference dialog's live geometry at 1280 and 390 to confirm.
+Reference dialog geometry confirmed: 512px max-w-lg / 8px radius at ≥sm; **full-width 390px edge-to-edge with 16px radius at mobile**. Now let me probe the clone's dialog live.
+已登录克隆版本。现在正在测量该克隆版本的对话框动态和几何布局。
+**⚠️ Tool Infrastructure Issue Detected**
+
+The Bash tool has failed **5 consecutive times** (infrastructure-level failures, not command errors). Per the operating protocol, I'm stopping retries to inform you:
+
+> **The tool calls are timing out/failing repeatedly. Please click the 重启 (restart) button in the top right corner to restart the session and try again.**
+
+**State is fully preserved — no work is lost:**
+
+| Item | Status |
+|---|---|
+| Repo | Cloned at `20b68e4` (V13 close + session_20 log), main, clean |
+| Environment | bun 488 pkgs · `.env` created · `db/custom.db` pushed+seeded (12 products) |
+| Baseline gates | ✅ lint 0 · tsc 0 · build ✓ · unit 445/445 · e2e 158/158 (playwright chromium installed; 1 documented flake green on rerun) |
+| Clone probe server | Running on `:3101` (standalone build, seeded probe DB) |
+| Reference site | Logged in via agent-browser (session state preserved) |
+
+**V14 audit findings so far (recorded in conversation, will be re-verified after restart):**
+
+1. **Reference data state**: UNCHANGED since v13 (KPIs $0.00/0/12, Atún Dolores low-stock, date line) — Terminal still shift-gated, 'Abrir Turno' cashier combobox still empty (dead end persists)
+2. **Dialog motion family — the V14 core finding** (live-measured on the reference at 1280 + 390):
+   - Reference content classes: `max-w-lg` (512px) · `rounded-2xl sm:rounded-lg` (16px mobile / 8px ≥sm) · `duration-200` · full `animate-in/out` family: `fade-in/out-0` + `zoom-in/out-95` + `slide-in-from-left-1/2` + `slide-in-from-top-[48%]` / `slide-out-to-left-1/2` + `slide-out-to-top-[48%]` · computed `animation: 0.15s enter`
+   - Reference overlay: `animate-in fade-in-0` / `animate-out fade-out-0` (fades)
+   - Clone gaps: overlay has **no animation classes** (snaps) · content missing the **slide-in/out family** · width `max-w-md` (448px vs 512px) · radius flat `rounded-lg` (vs `rounded-2xl sm:rounded-lg`)
+   - Clone has `tw-animate-css@1.3.5` imported — the existing fade/zoom classes should work in v4, but the live computed-animation verification was interrupted
+
+After restart, the next steps are: verify the clone's live dialog animation, measure the reference's sidebar collapse animation, sweep dialog-transition variants across surfaces, then write remediation-plan-v14 and execute TDD-style.
+
 I'll continue the retail-pos V14 cycle from where the previous session was interrupted. Let me first verify the current workspace state.
 工作区完好无损——代码仓库处于 `20b68e4`，探针服务器仍在 :3101 运行。让我验证一下环境并阅读工作日志，以确认接下来的计划。
 工作空间已完全恢复。让我为本 V14 周期的其余阶段制定任务计划。
