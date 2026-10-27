@@ -765,3 +765,100 @@ Stage Summary:
   the terminal product-card hover (unobservable — the ref's Terminal is
   shift-gated); --primary/--border are token hygiene (unrendered today).
   Standing v8/v9/v10 disclosures unchanged.
+
+---
+Task ID: V12
+Agent: general-purpose (remediation executor, session V12 2026-10-27)
+Task: The v12 cycle — audit the auth surface family BELOW the card
+(session_15's own suggested next step), write remediation-plan-v12,
+execute it TDD, and ship.
+
+Work Log:
+- Baseline re-verified after a fresh clone of main @ d125bca (the v11
+  close + session_16 transcript): lint 0 · tsc 0 · build ✓ · 397/397
+  unit · 139/139 e2e (one first-run order flake re-run clean); workspace
+  rebuilt (.env, deps, db push + seed, chromium reinstalled).
+- v11 source diff audited in full — every v11 contract holds in code.
+- Reference data state re-verified BEFORE probing: UNCHANGED since v11
+  (same 2 sales, 12 products, KPIs, donut legend, low-stock row) — no
+  seeded-data work. Mobile drawer re-verified live at 390px: fully green
+  (288px panel, 44px pitch, scroll lock, Escape + focus return — a probe
+  artifact initially suggested an aria bug: the query matched the HIDDEN
+  desktop collapse toggle first; select aria-expanded buttons BY LABEL).
+- Live audit (agent-browser, BOTH apps, 1280 + 390, the auth family
+  below the card): F1 the card chrome — the reference's auth card
+  carries a 4px slate gradient hairline at its top edge + overflow-hidden
+  + the md:pt-12/pb-10/px-10 padding step + the text-center space-y-6/8
+  column (the clone had none; 20px per-child margins vs 24/32px gaps).
+  F2 the login grammar — the responsive H1 (24/30 vs the clone's fixed
+  30), the subtext (14/16/500 vs 16/400), the social buttons 16px text /
+  54px (vs 14px/50px) + hover:bg-slate-50 + the -ml-4 icon offset, the
+  OR chip (literal "or", slate-500, tracking-wider), the sm-stepped form
+  groups, the Forgot/Sign-up footer ROW inside the form (the clone
+  stacked them outside), the h-11 sm:h-12 submit (44px mobile vs 48).
+  F3 the forgot/sent screens — the clone's Spanish one-offs vs the
+  reference's English family (24px H2, 16px slate-600 subtext, h-10
+  sm:h-11 controls + slate-400 placeholders, back-at-top -mb-2, and the
+  sent screen's icon circle + green Alert the clone lacked entirely).
+  F4 the /reset-password page — the reference's base44 PLATFORM template
+  (white page, rounded-lg shadow-lg card + 2px bg-gray-900 strip, the
+  gray palette, New Password + Confirm at h-11, the 8-char helper, the
+  Invalid Reset Link state) vs the clone's custom indigo design.
+  F5 the error alert — the reference's shadcn Alert (bg-red-50/70
+  border-red-200 rounded-xl p-4 + text-red-700 text-sm leading-relaxed,
+  between the fields and actions groups) vs the clone's rounded-lg box.
+- Wrote docs/remediation-plan-v12.md (19-item ledger, SD-41..SD-45,
+  B1-B6 batches).
+- TDD execution, all pins red first (32 unit + 14 e2e):
+  - B1: the AuthShell card (hairline + overflow-hidden + md:padding +
+    the space-y column).
+  - B2: the login grammar (the column children, the responsive
+    typography, the 16px social buttons with the -ml-4 offset, the OR
+    Separator, the form groups + the footer ROW, the h-11 sm:h-12
+    submit); the signup surface rode the same grammar with English
+    labels.
+  - B3: the forgot screen (back-at-top, 24px H2, the compact AuthInput
+    h-10 sm:h-11); the sent screen (icon circle + green Alert + the
+    in-app reset link INSIDE the alert — the superset; the in-card token
+    screen retired, the flow landing on /reset-password).
+  - B4: the /reset-password page as the platform template (white page,
+    the gray card + 2px strip, the pair + helper + client gates, the
+    invalid state, the 404→invalid mapping, success → /login).
+  - B5: the shadcn Alert family on every auth note (red/green/slate).
+- Legacy-pin alignment: the v4 social-height pin 50→54px + the 16px
+  assertion; the auth.spec copy pins ("or" + the English notice); the
+  v4/v11 unit pins all held substring-compatible.
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 429/429 · e2e 153/153.
+- Evidence: 18 screenshots regenerated + 5 new auth-surface shots
+  (forgot/sent/reset/reset-invalid/mobile-login); live parity probes —
+  the hairline pixel-identical (the VLM claimed it was missing; the
+  pixel crop settled it — the v10 settlement lesson), H1 24/30, social
+  54/16, submit 44/48, the footer row exact, the forgot/sent/reset
+  geometry exact; a full scratch-user reset round-trip green.
+- Docs lockstep: AGENTS.md contract 25; CLAUDE.md counts + the v12
+  block; README badge (429+153); PAD v2.0.0 + ADR-022 + §8 counts; SKILL
+  v1.7.0 (+ the §4 auth-chrome rows); session_17.md; this entry.
+
+Stage Summary:
+- v12 made the auth surface family card-faithful and grammar-faithful:
+  the card chrome (hairline + md:padding + the space-y column), the
+  login typography/layout (responsive H1/subtext, 16px social buttons,
+  the OR Separator, the footer ROW, the 44px-mobile submit), the
+  forgot/sent screens rebuilt to the reference's English family (with
+  the in-app reset link as the disclosed superset), the /reset-password
+  page rebuilt to the platform template, and the shadcn Alert family on
+  every auth note.
+- Probe lessons recorded: kill :3100 before e2e (the webServer reuses a
+  running server against the WRONG db); transition-all animates through
+  viewport changes (settle-wait ~350ms); v4 palette colors resolve
+  through oklab()/lab() (probe-compare or assert the alpha); login gates
+  unverified accounts (scratch flows must verify); resetting the owner
+  kills the storageState session (always a scratch user);
+  page.evaluate cannot see Node consts; VLM hairline claims need pixel
+  settlement.
+- Known-open (disclosed): the social hover icon-transform (the platform
+  micro-interaction); the card's text-card-foreground class (renders
+  nothing new); the reference's /signup 404 (SD-20 — the clone's
+  superset keeps the aligned chrome); the platform Notifications region
+  (base44 chrome — the clone's toaster stays the superset). Standing
+  v8/v9/v10/v11 disclosures unchanged.

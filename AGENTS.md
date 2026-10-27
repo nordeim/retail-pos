@@ -348,6 +348,53 @@ rules:
     (the windows anchor to the current day — absolute date strings roll
     over at midnight).
 
+25. The auth surface family (v12, live-measured on both apps at 1280+390):
+    the auth CARD carries a 4px slate gradient HAIRLINE at its top edge
+    (`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-200
+    via-slate-300 to-slate-200`) and `overflow-hidden` to clip it; the
+    padding steps `p-8 sm:p-10 md:pt-12 md:pb-10 md:px-10`; the inner
+    column is `flex flex-col items-center text-center space-y-6
+    sm:space-y-8` (never per-child margins). The login grammar: H1
+    `text-2xl sm:text-3xl` (24/30px), subtext `text-sm sm:text-base
+    font-medium text-slate-500`, social buttons `text-[16px]` (54px tall)
+    with `hover:bg-slate-50 … hover:shadow-sm` and the icon wrapper's
+    `-ml-4` optical offset, the OR chip = a shadcn Separator (the 1px
+    slate-200 line + `bg-white px-3 font-medium tracking-wider
+    text-slate-500` with the LITERAL "or" — uppercased by the wrapper's
+    `text-xs uppercase`), the form `space-y-4 sm:space-y-5` with the
+    fields group (`space-y-3 sm:space-y-4`) and the actions group
+    (`space-y-3`), the footer row `flex flex-col sm:flex-row
+    items-center justify-between gap-2 sm:gap-0` INSIDE the form (Forgot
+    left / "Need an account? Sign up" right at ≥sm), and the submit
+    `h-11 sm:h-12 … shadow-sm … transition-all duration-200` (44px
+    mobile — settle-wait ~300ms before measuring heights across viewport
+    changes). The forgot screen is the reference's ENGLISH family:
+    back-at-top (`w-fit … -mb-2`, lucide-arrow-left), H2 24px, subtext
+    16px slate-600, the SMALLER controls (`h-10 sm:h-11`,
+    `placeholder:text-slate-400`), "Send reset link" `h-10 sm:h-11`; the
+    sent screen = the `w-14 h-14 sm:w-16 sm:h-16 bg-slate-100` icon
+    circle + lucide-mail + the email `font-medium text-slate-900` + the
+    GREEN alert (`border-green-200 bg-green-50/70 p-4 rounded-xl` +
+    `text-green-700 text-sm leading-relaxed`) + the w-full back; the
+    in-app reset link rides INSIDE the green alert (the no-SMTP superset
+    — the flow lands on /reset-password like the email link would). The
+    /reset-password page is the base44 PLATFORM template (NOT the app
+    card): a plain WHITE page, `rounded-lg … shadow-lg bg-white
+    overflow-hidden` card + the 2px `bg-gray-900` top strip, the GRAY
+    palette (`bg-gray-50/50 border-gray-200 focus:gray-400` inputs,
+    lucide-lock `text-gray-400`), H2 `text-2xl font-bold text-gray-900`
+    "Set new password", New Password + Confirm New Password (`pl-10
+    h-11`), the `text-xs text-gray-500` helper, the `h-11 bg-gray-900`
+    submit, "Back to login" `w-full text-sm text-gray-600`; NO token →
+    the "Invalid Reset Link" state (the `w-20 h-20 bg-red-100` circle +
+    lucide-circle-alert + the standard button). The error/success
+    alerts are the shadcn Alert family everywhere on auth:
+    `border-{red|green|slate}-200 bg-{red|green|slate}-50/70 p-4
+    rounded-xl` + `text-{red|green|slate}-700 text-sm leading-relaxed`
+    (NEVER the old `rounded-lg bg-red-50 px-3 py-2`). Tailwind v4
+    resolves palette colors through oklab()/lab() in Chromium —
+    probe-compare colors or assert the alpha, never literal rgb strings.
+
 ## The mobile drawer contract
 
 The reference has NO working mobile menu (its 220px sidebar squeezes content

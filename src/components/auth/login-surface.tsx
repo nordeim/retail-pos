@@ -1,16 +1,23 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// The auth surface — the reference-measured LIGHT page (v4 re-probe): a
-// bg-white/95 backdrop-blur card with shadow-2xl on a to-bottom-right
-// slate-50→slate-100 gradient, the VeloxPOS logo PNG in a ring-4 white
-// circle, "Welcome to VeloxPOS", the four social buttons (official brand
-// marks), the OR divider, Email/Password, Sign in, Forgot password?, and
-// "Need an account? Sign up".
+// The auth surface — the reference-measured LIGHT card (v4 probe + the V12
+// below-the-card sweep): a bg-white/95 backdrop-blur card with shadow-2xl on
+// a to-bottom-right slate-50→slate-100 gradient, the 4px slate gradient
+// HAIRLINE at the card's top edge (V12/F1), the md-stepped padding, the
+// space-y-6/8 centered column, "Welcome to VeloxPOS" at the responsive
+// text-2xl sm:text-3xl, the four social buttons (official brand marks, 16px
+// text, the -ml-4 icon optical offset), the "or" divider chip, Email/
+// Password, the h-11 sm:h-12 Sign in, and the Forgot/Sign-up footer row
+// (stacked under sm, justify-between at >=sm — inside the form like the
+// reference).
 //
-// The social buttons are the reference's hosted-OAuth affordances; this
-// self-hosted build has no OAuth apps configured, so they explain themselves
-// honestly (the inline notice) instead of dead-ending.
+// The forgot → sent sub-flow is the reference's English family (V12/F3):
+// "Reset your password" with the back-at-top, the smaller h-10 sm:h-11
+// controls, then the "Check your email" state (the slate-100 icon circle,
+// the green alert). The social buttons are the reference's hosted-OAuth
+// affordances; this self-hosted build has no OAuth apps configured, so they
+// explain themselves honestly (the inline notice) instead of dead-ending.
 // ---------------------------------------------------------------------------
 
 import * as React from "react";
@@ -21,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { apiSend, ApiError } from "@/lib/api";
 import { safeReturnTo } from "@/lib/router";
 
-type Screen = "login" | "forgot" | "sent" | "reset";
+type Screen = "login" | "forgot" | "sent";
 
 export function LoginSurface() {
   const [screen, setScreen] = React.useState<Screen>("login");
@@ -30,12 +37,14 @@ export function LoginSurface() {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState("");
   const [notice, setNotice] = React.useState("");
-  const [resetToken, setResetToken] = React.useState("");
-  const [newPassword, setNewPassword] = React.useState("");
+  /** The no-SMTP delivery: when the API hands back the one-shot reset path
+   *  (non-production, or RESET_INAPP_DELIVERY=1), the sent screen carries
+   *  the link inside the green alert — the documented superset. */
+  const [resetUrl, setResetUrl] = React.useState("");
 
   const social = (provider: string) => {
     setNotice(
-      `${provider} no está configurado en esta instalación. Usa tu email y contraseña.`,
+      `${provider} is not configured on this install. Use your email and password.`,
     );
   };
 
@@ -52,7 +61,7 @@ export function LoginSurface() {
       window.location.replace(safeReturnTo(fromUrl, window.location.origin));
       // Full reload — the shell boots fresh with the session cookie.
     } catch (err: unknown) {
-      setError(err instanceof ApiError ? err.message : "No se pudo iniciar sesión.");
+      setError(err instanceof ApiError ? err.message : "Could not sign in.");
       setBusy(false);
     }
   };
@@ -69,39 +78,16 @@ export function LoginSurface() {
       );
       setBusy(false);
       // No SMTP in a self-hosted install: the API returns the one-shot
-      // reset path directly (documented delivery contract) — complete the
-      // flow in place when it does.
-      if (res?.resetPath) {
-        const token = new URL(res.resetPath, window.location.origin).searchParams.get(
-          "token",
-        );
-        if (token) {
-          setResetToken(token);
-          setScreen("reset");
-          return;
-        }
-      }
+      // reset path directly when in-app delivery is enabled (the documented
+      // delivery contract) — the sent screen surfaces it as the superset
+      // link; the flow itself lands on /reset-password?token=… exactly like
+      // the reference's email link would.
+      setResetUrl(
+        res?.resetPath ? new URL(res.resetPath, window.location.origin).toString() : "",
+      );
       setScreen("sent");
     } catch (err: unknown) {
-      setError(err instanceof ApiError ? err.message : "No se pudo enviar el enlace.");
-      setBusy(false);
-    }
-  };
-
-  const submitReset = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      await apiSend("POST", "/api/auth/reset-password", {
-        token: resetToken,
-        password: newPassword,
-      });
-      setBusy(false);
-      setNotice("Contraseña actualizada. Inicia sesión con la nueva.");
-      setScreen("login");
-    } catch (err: unknown) {
-      setError(err instanceof ApiError ? err.message : "No se pudo restablecer.");
+      setError(err instanceof ApiError ? err.message : "Could not send the link.");
       setBusy(false);
     }
   };
@@ -109,74 +95,49 @@ export function LoginSurface() {
   if (screen === "forgot") {
     return (
       <AuthShell>
-        <h2 className="text-xl font-bold text-slate-900">Recuperar contraseña</h2>
-        <p className="mt-1 text-center text-sm text-slate-500">
-          Te enviaremos un enlace de restablecimiento.
-        </p>
-        <form onSubmit={submitForgot} className="mt-5 w-full space-y-4">
-          <AuthInput
-            id="forgot-email"
-            type="email"
-            label="Email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
-            icon={<Mail className="h-4 w-4 text-slate-400" />}
-            required
-          />
-          <Button
-            type="submit"
-            disabled={busy}
-            className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white"
-          >
-            {busy ? "Enviando…" : "Enviar enlace"}
-          </Button>
-        </form>
-        <button
-          type="button"
-          onClick={() => setScreen("login")}
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
-        >
-          <ArrowLeft className="h-4 w-4" /> Volver a iniciar sesión
-        </button>
-        {error ? <AuthError message={error} /> : null}
-      </AuthShell>
-    );
-  }
-
-  if (screen === "reset") {
-    return (
-      <AuthShell>
-        <h2 className="text-xl font-bold text-slate-900">Nueva contraseña</h2>
-        <form onSubmit={submitReset} className="mt-5 w-full space-y-4">
-          <AuthInput
-            id="reset-token"
-            type="text"
-            label="Código de restablecimiento"
-            value={resetToken}
-            onChange={(event) => setResetToken(event.target.value)}
-            icon={<Lock className="h-4 w-4 text-slate-400" />}
-            required
-          />
-          <AuthInput
-            id="reset-password"
-            type="password"
-            label="Nueva contraseña"
-            value={newPassword}
-            onChange={(event) => setNewPassword(event.target.value)}
-            placeholder="••••••••"
-            icon={<Lock className="h-4 w-4 text-slate-400" />}
-            required
-          />
-          <Button
-            type="submit"
-            disabled={busy}
-            className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white"
-          >
-            {busy ? "Guardando…" : "Actualizar contraseña"}
-          </Button>
-        </form>
-        {error ? <AuthError message={error} /> : null}
+        {/* The reference's forgot anatomy (V12/F3): the back docks LEFT at
+            the top (w-fit + the -mb-2 tuck), the H2/subtext center, and the
+            controls ride the SMALLER auth size (h-10 sm:h-11). */}
+        <div className="w-full">
+          <div className="space-y-4 sm:space-y-6">
+            <button
+              type="button"
+              onClick={() => {
+                setNotice("");
+                setError("");
+                setScreen("login");
+              }}
+              className="flex w-fit items-center gap-2 text-sm text-slate-500 font-medium transition-colors hover:text-slate-700 -mb-2"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to sign in
+            </button>
+            <h2 className="text-2xl font-bold text-slate-900">Reset your password</h2>
+            <p className="text-base text-slate-600">
+              Enter your email and we&apos;ll send you a link to reset your password
+            </p>
+            <form onSubmit={submitForgot} className="space-y-4 sm:space-y-5">
+              <AuthInput
+                id="forgot-email"
+                type="email"
+                label="Email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                icon={<Mail className="h-4 w-4 text-slate-400" />}
+                compact
+                required
+              />
+              {error ? <AuthError message={error} /> : null}
+              <Button
+                type="submit"
+                disabled={busy}
+                className="h-10 w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white sm:h-11"
+              >
+                {busy ? "Sending…" : "Send reset link"}
+              </Button>
+            </form>
+          </div>
+        </div>
       </AuthShell>
     );
   }
@@ -184,28 +145,61 @@ export function LoginSurface() {
   if (screen === "sent") {
     return (
       <AuthShell>
-        <h2 className="text-xl font-bold text-slate-900">Revisa tu correo</h2>
-        <p className="mt-2 text-center text-sm text-slate-500">
-          Si {email} tiene una cuenta, encontrarás el enlace de
-          restablecimiento ahí.
-        </p>
-        <button
-          type="button"
-          onClick={() => setScreen("login")}
-          className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-        >
-          <ArrowLeft className="h-4 w-4" /> Volver a iniciar sesión
-        </button>
+        {/* The reference's sent anatomy (V12/F3): the slate-100 icon circle
+            + the centered copy, the GREEN alert, the w-full back. The
+            in-app delivery link rides inside the alert (the superset). */}
+        <div className="w-full">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-3 text-center sm:space-y-4">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 sm:h-16 sm:w-16">
+                <Mail className="h-7 w-7 text-slate-700 sm:h-8 sm:w-8" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">Check your email</h2>
+              <p className="text-sm text-slate-600 sm:text-base">
+                {"We've sent password reset instructions to "}
+                <span className="font-medium text-slate-900">{email}</span>
+              </p>
+            </div>
+            <div
+              role="status"
+              className="relative w-full rounded-xl border border-green-200 bg-green-50/70 p-4"
+            >
+              <div className="text-sm leading-relaxed text-green-700">
+                Please check your email for the password reset link. It may take a
+                few minutes to arrive.
+                {resetUrl ? (
+                  <>
+                    {" "}
+                    <a
+                      href={resetUrl}
+                      data-testid="inapp-reset-link"
+                      className="font-medium underline underline-offset-2"
+                    >
+                      Open your reset link
+                    </a>
+                    .
+                  </>
+                ) : null}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setScreen("login")}
+              className="flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-700"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to sign in
+            </button>
+          </div>
+        </div>
       </AuthShell>
     );
   }
 
   return (
     <AuthShell>
-      {/* The reference's logo mark (v4 re-probe): the hosted PNG in a
-          ring-4 white circle over a soft slate glow — the DOM ships an
-          <img> inside a `group relative` wrapper. */}
-      <div className="group relative mb-5">
+      {/* The reference's column children (V12/F2): [logo] [the responsive
+          h1 + subtext wrapper] [the w-full block: social + OR + form]. */}
+      <div className="group relative">
         <div
           aria-hidden
           className="absolute inset-0 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 opacity-30 blur-xl transition-opacity duration-300 group-hover:opacity-40"
@@ -220,85 +214,105 @@ export function LoginSurface() {
           />
         </div>
       </div>
-      <h1 className="text-center text-3xl font-bold tracking-tight text-slate-900">
-        Welcome to VeloxPOS
-      </h1>
-      <p className="mt-2 text-center text-slate-500">Sign in to continue</p>
-
-      <div className="mt-6 w-full space-y-3">
-        <SocialButton provider="Google" onUse={social} />
-        <SocialButton provider="Microsoft" onUse={social} />
-        <SocialButton provider="Facebook" onUse={social} />
-        <SocialButton provider="Apple" onUse={social} />
+      <div className="space-y-2 sm:space-y-3">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          Welcome to VeloxPOS
+        </h1>
+        <p className="text-sm font-medium text-slate-500 sm:text-base">
+          Sign in to continue
+        </p>
       </div>
+      <div className="w-full">
+        <div className="space-y-3">
+          <SocialButton provider="Google" onUse={social} />
+          <SocialButton provider="Microsoft" onUse={social} />
+          <SocialButton provider="Facebook" onUse={social} />
+          <SocialButton provider="Apple" onUse={social} />
+        </div>
 
-      <div className="my-6 flex w-full items-center gap-4" aria-hidden>
-        <span className="h-px flex-1 bg-slate-200" />
-        <span className="text-xs font-medium text-slate-400">OR</span>
-        <span className="h-px flex-1 bg-slate-200" />
+        {/* The OR divider — the reference's shadcn Separator: the 1px
+            slate-200 line behind a white text chip (literal "or",
+            uppercased by the wrapper). */}
+        <div className="relative my-6" aria-hidden>
+          <div className="absolute inset-0 flex items-center">
+            <div className="h-px w-full shrink-0 bg-slate-200" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-3 font-medium tracking-wider text-slate-500">
+              or
+            </span>
+          </div>
+        </div>
+
+        <form onSubmit={submitLogin} className="space-y-4 sm:space-y-5" data-testid="login-form">
+          <div className="space-y-3 sm:space-y-4">
+            <AuthInput
+              id="login-email"
+              type="email"
+              label="Email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+              icon={<Mail className="h-4 w-4 text-slate-400" />}
+              autoComplete="email"
+              required
+            />
+            <AuthInput
+              id="login-password"
+              type="password"
+              label="Password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="••••••••"
+              icon={<Lock className="h-4 w-4 text-slate-400" />}
+              autoComplete="current-password"
+              required
+            />
+            {error ? <AuthError message={error} /> : null}
+            {notice ? (
+              <div
+                role="status"
+                data-testid="social-notice"
+                className="relative w-full rounded-xl border border-slate-200 bg-slate-50/70 p-4"
+              >
+                <div className="text-sm leading-relaxed text-slate-700">{notice}</div>
+              </div>
+            ) : null}
+          </div>
+          <div className="space-y-3">
+            <Button
+              type="submit"
+              disabled={busy}
+              data-testid="login-submit"
+              className="h-11 w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white sm:h-12"
+            >
+              {busy ? "Signing in…" : "Sign in"}
+            </Button>
+            {/* The reference's footer row: stacked under sm, Forgot LEFT +
+                Sign up RIGHT at >=sm — inside the form's actions group. */}
+            <div className="flex flex-col items-center justify-between gap-2 sm:flex-row sm:gap-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setNotice("");
+                  setError("");
+                  setScreen("forgot");
+                }}
+                data-testid="forgot-password-link"
+                className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-700"
+              >
+                Forgot password?
+              </button>
+              <a
+                href="/signup"
+                className="text-sm text-slate-500 transition-colors hover:text-slate-700"
+              >
+                Need an account? Sign up
+              </a>
+            </div>
+          </div>
+        </form>
       </div>
-
-      <form onSubmit={submitLogin} className="w-full space-y-4" data-testid="login-form">
-        <AuthInput
-          id="login-email"
-          type="email"
-          label="Email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="you@example.com"
-          icon={<Mail className="h-4 w-4 text-slate-400" />}
-          autoComplete="email"
-          required
-        />
-        <AuthInput
-          id="login-password"
-          type="password"
-          label="Password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="••••••••"
-          icon={<Lock className="h-4 w-4 text-slate-400" />}
-          autoComplete="current-password"
-          required
-        />
-        {error ? <AuthError message={error} /> : null}
-        {notice ? (
-          <p
-            role="status"
-            data-testid="social-notice"
-            className="rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-700"
-          >
-            {notice}
-          </p>
-        ) : null}
-        <Button
-          type="submit"
-          disabled={busy}
-          data-testid="login-submit"
-          className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white"
-        >
-          {busy ? "Signing in…" : "Sign in"}
-        </Button>
-      </form>
-
-      <button
-        type="button"
-        onClick={() => {
-          setNotice("");
-          setScreen("forgot");
-        }}
-        data-testid="forgot-password-link"
-        className="mt-4 w-full text-sm font-medium text-slate-500 hover:text-slate-700"
-      >
-        Forgot password?
-      </button>
-
-      <p className="mt-4 text-center text-sm text-slate-500">
-        Need an account?{" "}
-        <a href="/signup" className="font-semibold text-indigo-600 hover:text-indigo-700">
-          Sign up
-        </a>
-      </p>
     </AuthShell>
   );
 }
@@ -317,8 +331,18 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
       // the reference, instead of the app's dark canvas.
       style={{ "--background": "255 255 255" } as React.CSSProperties}
     >
-      <div className="relative w-full max-w-md rounded-2xl border-0 bg-white/95 p-8 shadow-2xl backdrop-blur-sm sm:p-10">
-        <div className="flex flex-col items-center">{children}</div>
+      {/* V12/F1: the reference's card — overflow-hidden clips the 4px slate
+          gradient hairline to the rounded corners; the padding steps up at
+          md (pt-12/pb-10/px-10); the column stacks its blocks at 24/32px
+          and centers every text. */}
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border-0 bg-white/95 p-8 shadow-2xl backdrop-blur-sm sm:p-10 md:pt-12 md:pb-10 md:px-10">
+        <div
+          aria-hidden
+          className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200"
+        />
+        <div className="flex flex-col items-center text-center space-y-6 sm:space-y-8">
+          {children}
+        </div>
       </div>
     </main>
   );
@@ -385,9 +409,13 @@ function SocialButton({
       type="button"
       onClick={() => onUse(provider)}
       data-testid={`social-${provider.toLowerCase()}`}
-      className="vx-focus flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-medium text-slate-700 transition-all hover:border-slate-300 hover:shadow"
+      className="vx-focus group flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3.5 font-medium text-[16px] text-slate-700 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-sm"
     >
-      <SocialGlyph provider={provider} />
+      {/* The reference's icon wrapper: the -ml-4 optical offset pulls the
+          mark left so the button content centers like the reference's. */}
+      <span className="-ml-4 shrink-0 transition-transform duration-200">
+        <SocialGlyph provider={provider} />
+      </span>
       Continue with {provider}
     </button>
   );
@@ -397,11 +425,16 @@ function AuthInput({
   id,
   label,
   icon,
+  compact = false,
   ...props
 }: {
   id: string;
   label: string;
   icon: React.ReactNode;
+  /** The forgot screen rides the SMALLER auth size (h-10 sm:h-11 + the
+   *  slate-400 placeholder) — the reference's own split between its login
+   *  inputs (h-11 sm:h-12, slate-600) and its reset-surface input. */
+  compact?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
@@ -418,7 +451,11 @@ function AuthInput({
         <Input
           id={id}
           {...props}
-          className="h-11 rounded-xl border-slate-200 bg-slate-50/50 pl-10 text-base text-slate-900 placeholder:text-slate-600 focus:border-slate-400 focus:ring-slate-400 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-12"
+          className={
+            compact
+              ? "h-10 rounded-xl border-slate-200 bg-slate-50/50 pl-10 text-base text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:ring-slate-400 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-11"
+              : "h-11 rounded-xl border-slate-200 bg-slate-50/50 pl-10 text-base text-slate-900 placeholder:text-slate-600 focus:border-slate-400 focus:ring-slate-400 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-12"
+          }
         />
       </div>
     </div>
@@ -426,13 +463,16 @@ function AuthInput({
 }
 
 function AuthError({ message }: { message: string }) {
+  // V12/F5: the reference's shadcn Alert shape — the red-50/70 wash, the
+  // red-200 hairline, the 12px radius, p-4, and the red-700 14px
+  // leading-relaxed text.
   return (
-    <p
+    <div
       role="alert"
       data-testid="auth-error"
-      className="mt-4 w-full rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
+      className="relative w-full rounded-xl border border-red-200 bg-red-50/70 p-4"
     >
-      {message}
-    </p>
+      <div className="text-sm leading-relaxed text-red-700">{message}</div>
+    </div>
   );
 }

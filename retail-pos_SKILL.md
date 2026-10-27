@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.6.0
+version: 1.7.0
 last_updated: "2026-10-27"
 tags:
   - pos
@@ -25,12 +25,15 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v11 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 397/397 unit · 139/139 e2e** (the v11 close:
-the charts went container-responsive — fixed per-surface heights 280/220/200
-and a fixed donut ring, retiring the aspect-locked boxes; the focus grammar
-adopted the reference's ring-1 #7f62f4 edge with the token realignment; the
-charts gained the measured white tooltip card). Evidence labels:
+> template), validated against the codebase at the v12 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 429/429 unit · 153/153 e2e** (the v12 close:
+the auth surface family went card-faithful — the 4px slate gradient
+hairline + the md-stepped padding on the card, the responsive login
+typography with the 16px social buttons and the footer ROW, the
+forgot/sent screens rebuilt to the reference's English family with the
+sent screen's icon circle + green alert, the /reset-password page rebuilt
+to the platform template, and the shadcn Alert family on every auth
+note). Evidence labels:
 > **Verified** (executed here), **Reasoned** (inference), **Assumed**
 > (decision).
 
@@ -72,8 +75,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 397 tests / 27 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 139 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 429 tests / 28 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 153 specs; standalone prod server :3100 |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -103,7 +106,7 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 397/397
+bun run test               # vitest: 429/429
 bun run test:e2e           # playwright: 127/127 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
@@ -142,7 +145,8 @@ parity evidence against `docs/reference-evidence/ref-*.png`):
 | `glass-button-success` | `135deg #059669→#10b981` + emerald hairline + glow | Abrir/Iniciar Turno, COBRAR (70px, `py-5 text-xl font-black`) |
 | `glass-button-warning` | `135deg #d97706→#f97316` amber sibling | Cerrar Turno (the superset-only state) |
 | `vx-focus` | focus-visible box-shadow ring | shared focus ring |
-| `vx-auth-page` | `to right bottom #f8fafc→#f1f5f9` | login/signup/reset (dark tokens never leak there) |
+| `vx-auth-page` | `to right bottom #f8fafc→#f1f5f9` | login/signup ONLY — /reset-password is the platform's plain WHITE page (v12/F4; the app gradient never paints there) |
+| auth card chrome | `overflow-hidden rounded-2xl bg-white/95 shadow-2xl` + the 4px hairline `h-1 bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200` + `p-8 sm:p-10 md:pt-12 md:pb-10 md:px-10` | every app-auth card (v12/F1); the column inside is `text-center space-y-6 sm:space-y-8` |
 | radius scale | NATIVE v4 (`--radius-xl: 0.75rem`) | the shadcn remap was REMOVED (v4 V1) — re-adding it drifts every control +4px |
 | shell gutter | `lg:ml-[220px]` / `lg:ml-[68px]` | main is FLUSH to the sidebar; the view padding provides the 24px gutter (H1 at x=244) — never re-add `ml-[244px]` (v5 G1) |
 | terminal rail | `rounded-none border-l border-[#1e2235] bg-[#0d0f1a] md:w-[380px]` | the ticket panel is a full-height RAIL inside the ONE full-bleed view (`lg:h-screen` main) — not a card (v5 T7) |
@@ -483,7 +487,7 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 397/397 vitest
+bun run test          # 429/429 vitest
 bun run test:e2e      # 127/127 playwright (production posture)
 ```
 

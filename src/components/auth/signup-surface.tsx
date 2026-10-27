@@ -5,6 +5,12 @@
 // + email + password → the API returns the 6-digit verification code (the
 // documented no-SMTP delivery: the OTP rides the response) → the verify step
 // signs the new user in and lands on the Terminal.
+//
+// The surface rides the V12 auth grammar: the fixed AuthShell card, the
+// responsive h-11 sm:h-12 submit, the shadcn-Alert error boxes, and the
+// English label family (the reference's auth copy is English throughout —
+// its /signup itself 404s, the documented SD-20 platform artifact, so the
+// clone's public signup is the superset with the aligned chrome).
 // ---------------------------------------------------------------------------
 
 import * as React from "react";
@@ -36,7 +42,7 @@ export function SignupSurface() {
       });
       setStage("verify");
     } catch (err: unknown) {
-      setError(err instanceof ApiError ? err.message : "No se pudo crear la cuenta.");
+      setError(err instanceof ApiError ? err.message : "Could not create the account.");
     } finally {
       setBusy(false);
     }
@@ -50,29 +56,37 @@ export function SignupSurface() {
       await apiSend("POST", "/api/auth/verify-email", { email, code });
       window.location.replace("/");
     } catch (err: unknown) {
-      setError(err instanceof ApiError ? err.message : "Código incorrecto.");
+      setError(err instanceof ApiError ? err.message : "That code is not correct.");
       setBusy(false);
     }
   };
 
+  const submitClass =
+    "h-11 w-full rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white sm:h-12";
+
   return (
     <AuthShell>
       {stage === "form" ? (
-            <>
-              <h1 className="text-center text-2xl font-bold tracking-tight text-slate-900">
-                Create your account
-              </h1>
-              <p className="mt-2 text-center text-sm text-slate-500">
-                Start selling with VeloxPOS today.
-              </p>
-              <form onSubmit={submitForm} className="mt-6 w-full space-y-4">
+        <>
+          <div className="space-y-2 sm:space-y-3">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              Create your account
+            </h1>
+            <p className="text-sm font-medium text-slate-500 sm:text-base">
+              Start selling with VeloxPOS today.
+            </p>
+          </div>
+          <div className="w-full">
+            <form onSubmit={submitForm} className="space-y-4 sm:space-y-5">
+              <div className="space-y-3 sm:space-y-4">
                 <TextField
                   id="signup-name"
-                  label="Nombre"
+                  label="Full name"
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
-                  placeholder="Tu nombre"
+                  placeholder="Your name"
                   icon={<User className="h-4 w-4 text-slate-400" />}
+                  required
                 />
                 <TextField
                   id="signup-email"
@@ -90,70 +104,61 @@ export function SignupSurface() {
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  placeholder="Mínimo 8 caracteres"
+                  placeholder="Minimum 8 characters"
                   icon={<Lock className="h-4 w-4 text-slate-400" />}
                   required
                 />
-                {error ? (
-                  <p
-                    role="alert"
-                    className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
-                  >
-                    {error}
-                  </p>
-                ) : null}
-                <Button
-                  type="submit"
-                  disabled={busy}
-                  className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white"
-                >
+                {error ? <FormError message={error} /> : null}
+              </div>
+              <div className="space-y-3">
+                <Button type="submit" disabled={busy} className={submitClass}>
                   {busy ? "Creating…" : "Sign up"}
                 </Button>
-              </form>
-              <p className="mt-4 text-center text-sm text-slate-500">
-                Already have an account?{" "}
-                <a href="/login" className="font-semibold text-indigo-600 hover:text-indigo-700">
-                  Sign in
-                </a>
-              </p>
-            </>
-          ) : (
-            <>
-              <h1 className="text-center text-2xl font-bold tracking-tight text-slate-900">
-                Verify your email
-              </h1>
-              <p className="mt-2 text-center text-sm text-slate-500">
-                Introduce el código de 6 dígitos que enviamos a {email}. (Sin SMTP
-                configurado, el código también aparece en la respuesta del registro.)
-              </p>
-              <form onSubmit={submitVerify} className="mt-6 w-full space-y-4">
+                <p className="text-center text-sm text-slate-500">
+                  <a
+                    href="/login"
+                    className="transition-colors hover:text-slate-700"
+                  >
+                    Already have an account? Sign in
+                  </a>
+                </p>
+              </div>
+            </form>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="space-y-2 sm:space-y-3">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              Verify your email
+            </h1>
+            <p className="text-sm font-medium text-slate-500 sm:text-base">
+              Enter the 6-digit code we sent to {email}.
+            </p>
+          </div>
+          <div className="w-full">
+            <form onSubmit={submitVerify} className="space-y-4 sm:space-y-5">
+              <div className="space-y-3 sm:space-y-4">
                 <TextField
                   id="signup-code"
-                  label="Código"
+                  label="Verification code"
                   value={code}
                   onChange={(event) => setCode(event.target.value)}
                   placeholder="123456"
                   icon={<Lock className="h-4 w-4 text-slate-400" />}
                   required
                 />
-                {error ? (
-                  <p
-                    role="alert"
-                    className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600"
-                  >
-                    {error}
-                  </p>
-                ) : null}
-                <Button
-                  type="submit"
-                  disabled={busy}
-                  className="h-12 w-full rounded-xl bg-slate-900 px-4 text-sm font-medium text-white outline-[3px] outline-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-solid focus-visible:outline-[3px] focus-visible:outline-white"
-                >
+                {error ? <FormError message={error} /> : null}
+              </div>
+              <div className="space-y-3">
+                <Button type="submit" disabled={busy} className={submitClass}>
                   {busy ? "Verifying…" : "Verify and sign in"}
                 </Button>
-              </form>
-            </>
-          )}
+              </div>
+            </form>
+          </div>
+        </>
+      )}
     </AuthShell>
   );
 }
@@ -170,7 +175,10 @@ function TextField({
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-center text-sm font-medium text-slate-700">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-center text-sm font-medium text-slate-700"
+      >
         {label}
       </label>
       <div className="relative">
@@ -183,6 +191,20 @@ function TextField({
           className="h-11 rounded-xl border-slate-200 bg-slate-50/50 pl-10 text-base text-slate-900 placeholder:text-slate-600 focus:border-slate-400 focus:ring-slate-400 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-12"
         />
       </div>
+    </div>
+  );
+}
+
+function FormError({ message }: { message: string }) {
+  // The reference's shadcn Alert shape (V12/F5) — same family as the login
+  // error and the sent screen's green note.
+  return (
+    <div
+      role="alert"
+      data-testid="auth-error"
+      className="relative w-full rounded-xl border border-red-200 bg-red-50/70 p-4"
+    >
+      <div className="text-sm leading-relaxed text-red-700">{message}</div>
     </div>
   );
 }

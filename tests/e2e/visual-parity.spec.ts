@@ -316,11 +316,15 @@ test.describe("visual parity (v4)", () => {
 
     const social = await page.getByTestId("social-google").evaluate((el) => {
       const cs = getComputedStyle(el);
-      return { h: el.getBoundingClientRect().height, radius: cs.borderRadius };
+      return { h: el.getBoundingClientRect().height, radius: cs.borderRadius, size: cs.fontSize };
     });
-    // py-3.5 (28) + 20px line + 2px border = 50px (border-box, as measured)
-    expect(social.h).toBe(50);
+    // V12/F2c realignment: the reference's social buttons render 16px text
+    // (text-[16px], 24px line) — py-3.5 (28) + 24 + 2px border = 54px
+    // (border-box, as measured on both apps; the v4-era 50px was the
+    // text-sm 20px line).
+    expect(social.h).toBe(54);
     expect(social.radius).toBe("12px");
+    expect(social.size).toBe("16px");
 
     // the submit is the reference's near-black (probe identity vs bg-slate-900)
     const submit = await computedStyles(page, '[data-testid="login-submit"]', [

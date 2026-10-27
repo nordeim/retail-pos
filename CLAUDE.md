@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (397 tests / 27 files)
-bun run test:e2e       # playwright e2e layer (139 specs, boots standalone :3100)
+bun run test           # vitest unit layer (429 tests / 28 files)
+bun run test:e2e       # playwright e2e layer (153 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -145,6 +145,23 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   (`variant="dashboard"` vs `"reports"` — gridlines/labels/line/gradient
   all differ); the dashboard has NO footer credit (the ref ends at the
   low-stock rows).
+- The v12 contracts: the auth surface family measured BELOW the card —
+  the card chrome (the 4px slate gradient hairline + overflow-hidden +
+  `md:pt-12 md:pb-10 md:px-10` + the space-y-6/8 text-center column),
+  the login grammar (H1 `text-2xl sm:text-3xl`, subtext `text-sm
+  sm:text-base font-medium`, social `text-[16px]` 54px with the `-ml-4`
+  icon offset, the OR chip with the literal "or", the sm-stepped form
+  groups, the Forgot/Sign-up footer ROW inside the form, the `h-11
+  sm:h-12` submit), the forgot/sent screens in the reference's ENGLISH
+  family (back-at-top `-mb-2`, 24px H2, `h-10 sm:h-11` controls, the
+  sent screen's slate-100 icon circle + the green alert; the in-app
+  reset link rides inside the alert as the no-SMTP superset), the
+  /reset-password page as the platform template (white page, the
+  rounded-lg card + 2px bg-gray-900 strip, the gray palette, New
+  Password + Confirm at h-11, the Invalid Reset Link state), and the
+  shadcn Alert family for every auth error/success note
+  (bg-X-50/70 border-X-200 rounded-xl p-4 + text-X-700 text-sm
+  leading-relaxed).
 - The v11 contracts: the charts are container-responsive the recharts way
   (`useContainerWidth` — measure at commit + ResizeObserver; FIXED heights
   dashboard 280 / reports 220 / donut 200; the donut's ring FIXED at

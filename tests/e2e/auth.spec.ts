@@ -16,7 +16,9 @@ test.describe("auth", () => {
     for (const provider of ["Google", "Microsoft", "Facebook", "Apple"]) {
       await expect(page.getByRole("button", { name: `Continue with ${provider}` })).toBeVisible();
     }
-    await expect(page.getByText("OR", { exact: true })).toBeVisible();
+    // V12/F2: the OR chip's DOM text is the literal "or" (the reference
+    // uppercases it through CSS — text-xs uppercase on the wrapper).
+    await expect(page.getByText("or", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Email")).toBeVisible();
     await expect(page.getByLabel("Password")).toBeVisible();
     await expect(page.getByTestId("login-submit")).toBeVisible();
@@ -27,7 +29,10 @@ test.describe("auth", () => {
   test("a social button explains itself instead of dead-ending", async ({ page }) => {
     await page.goto("/login");
     await page.getByTestId("social-google").click();
-    await expect(page.getByTestId("social-notice")).toContainText("Google no está configurado");
+    // V12: the notice copy follows the reference's English auth family.
+    await expect(page.getByTestId("social-notice")).toContainText(
+      "Google is not configured",
+    );
   });
 
   test("wrong credentials surface the uniform error", async ({ page }) => {
