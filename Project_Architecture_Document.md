@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.7.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.8.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -195,6 +195,36 @@
 > e2e flake whose failure shape matches a transient chunk failure
 > (the self-heal now covers that path). Gates: 509/509 unit (486+23,
 > 35 files) + 179/179 e2e (176+3). ADR-028 added.
+>
+> v2.8.0 (2026-10-27): the remediation-plan-v21 execution — the
+> deployment-surface truth pass, closing Known-Issue #6 for real. The
+> audit found the reference UNCHANGED for the 6th consecutive cycle
+> (nothing new to mirror), the baseline green first-try (513+179, no
+> flake occurrence), and the one never-actioned PAD row rotting in
+> plain sight: the deployment surfaces still carried the scaffold's
+> identity — and `docs/DEPLOYMENT.md` documented a DIFFERENT app
+> ("ORBITAL" in its opening line, StudyFlow-only features (/rum
+> diagnostics, /export + /import data portability, a Settings→Profile
+> UI) that do not ship here, a missing smoke-test.sh, "16 route
+> handlers" vs the real 27, a dead layout-sim script reference, and
+> the `studyflow` compose service). The fix (ADR-030): Dockerfile +
+> docker-compose rebranded (service `veloxpos`, image
+> `veloxpos:latest`, `VELOXPOS_PORT`), DEPLOYMENT.md rewritten to the
+> ACTUAL app (the real env contract, the real verification commands,
+> the live route count, the account-security API §10), and the four
+> scaffold account-security routes (change-password / change-email /
+> delete-account / resend-verification — real, rate-limited,
+> password-first endpoints the reference lacks entirely) kept as the
+> disclosed API-only superset with their scaffold-colliding comments
+> de-cited to ADR-030 and their contracts pinned end-to-end by the new
+> `tests/e2e/account-security.spec.ts` (they had shipped with ZERO
+> coverage). Also: `package-lock.json` removed (single lockfile =
+> bun.lock), `tests/deployment-surfaces.test.ts` (16 source pins)
+> mechanically guards every surface, the mobile drawer contract
+> re-verified live at 390×844 (10/10 via the v21 self-contained
+> probe) with the fresh v21-* evidence set. Gates: 529/529 unit
+> (513+16, 37 files) + 187/187 e2e (179+8). ADR-030 added;
+> Known-Issue #6 CLOSED.
 >
 > v2.7.0 (2026-10-27): the remediation-plan-v20 execution — the
 > screen-reader announcement on the recovery cards. The V19 cycle
@@ -440,6 +470,7 @@ lowest-risk path. **Verified.**
 | ADR-027 | The v17 lazy-view-registry + CWV-evidence contract set: `src/app/page.tsx` ships NO static view imports — the registry is `VIEW_LOADERS` (one dynamic `import()` per view, the named exports adapted via `.then((m) => ({ default: m.XView }))`) consumed through `React.lazy`, and the boot effect PREFETCHES the active view's chunk fire-and-forget in the same parallel window as `/api/auth/me` + the collection pre-warm (`void VIEW_LOADERS[activeView]()`), so the chunk is resident before `status` flips "ready" (no Suspense gap on the standard flow); `<ActiveView />` mounts inside `<React.Suspense fallback={null}>`. RULE: never re-add a static view import — the monolithic registry billed every route ~69 KiB gz of views it never runs (the authed dashboard measured TBT 550 ms / LCP 3.7 s / perf 54 in Lighthouse 13 pre-split; the split took it to 280 ms / 3.5 s / 67 — measured with the session cookie injected via `--extra-headers`, because a Lighthouse CDP attach opens a FRESH INCOGNITO context that shares no cookies and silently measures the logged-out bounce). The reference benchmark: its public login measures perf 51 / LCP 14.4 s / 2,314 KiB vs the clone's 86 / 2.4 s / 314 KiB — the clone outperforms on every metric. The dashboard's Lighthouse a11y 94 = the disclosed color-contrast family PLUS heading-order (H1→h3, no h2 — measured IDENTICAL on the reference's Dashboard, 2026-10-27); both are reference-parity deviations, not bugs. The react-dom boot cost (~890 ms) is the framework floor — out of scope. The stale study-app Lighthouse evidence (localhost:3200, 2026-10-18) was deleted; the v17 set + the methodology README live in `docs/lighthouse/` | Accepted — Verified (486 unit + 176 e2e; the before/after Lighthouse runs + the mobile drawer's live lifecycle probe) |
 | ADR-028 | The v18 error-recovery architecture contract set (the neo-crm session-170 pattern ported, reproduced live first): the lazy registry NEVER ships a bare Suspense — `<React.Suspense>` mounts INSIDE a `ViewErrorBoundary` class component keyed `` `${view}-${viewEpoch}` `` so a failed view chunk (transient blip or stale-hash-after-redeploy) keeps the SHELL (sidebar, app bar, navigation) alive; a stale-chunk error (the Turbopack message family, live-captured as `ChunkLoadError: Failed to load chunk /_next/static/chunks/….js from module N`) auto-reloads ONCE per 10 s window through the pure injectable seam `src/lib/chunk-recovery.ts` (`isStaleChunkError` / `shouldHardReload` / `reloadOnStaleChunk`; the `veloxpos:chunk-reload-at` sessionStorage flag written BEFORE the reload fires — the crash-mid-reload loop guard; unavailable/corrupt storage disables the reload, never throws); every other error renders the Spanish recovery card ("No se pudo cargar la vista" + "Reintentar" in the `bg-[#0f121a]` dialog chrome + `glass-button-primary` grammar); Reintentar bumps the view EPOCH — the lazy registry is a `useMemo` keyed on it because `React.lazy` caches a rejected initializer FOREVER (only a fresh instance re-imports; a bare boundary reset re-throws the cached error); the outer nets are `src/app/error.tsx` (route segment — non-view crashes; Spanish card in the 404's vx-card dialect + reset()) and `src/app/global-error.tsx` (root — self-contained `<html lang="es">` + body + a direct globals.css import, zero component-tree imports: a resilience surface never stands on the tree that broke); the boot prefetch is fire-and-forget-SILENT (`VIEW_LOADERS[activeView]().catch(() => undefined)` — the lazy mount owns the surfaced error). RUNTIME REALITY (debug-instrumented this cycle): a SINGLE aborted chunk fetch never reaches the boundary — the bundler runtime retries internally and the view renders below it; the card is the surface for failures persisting past the runtime retry budget (the e2e pins block persistently + pre-seed the cooldown to suppress the auto-reload). Pre-fix evidence: the same failure unmounted the ENTIRE app to Next 16's built-in English dead-end screen ("This page couldn't load") — no boundary existed anywhere | Accepted — Verified (509 unit + 179 e2e; the live reproduction probe + the three failure-path e2e pins + the recovery screenshot set) |
 | ADR-029 | The v20 recovery-card announcement contract: every one of the three V18 failure surfaces carries `role="alert"` on the card element that MOUNTS with the failure — the view card (`src/app/page.tsx`'s `data-testid="view-error-card"` div), the segment card (`src/app/error.tsx`'s inner `vx-card` div), and the root card (`src/app/global-error.tsx`'s `data-testid="global-error-card"` div) — so a screen-reader user HEARS that a view failed (the fresh mount of a live-region element with its content is the announcement mechanism; no live region existed pre-fix — the V19 cycle's F1, recorded informational and suggested as the next target by both session logs). LANDMARK-SAFE placement: the role rides the card div, NEVER the `<main>` wrapper — an element carries exactly one role, and `role="alert"` on `<main>` would delete the main landmark from the accessibility tree. Pinned TDD-first: `tests/recovery-a11y.test.ts` (4 source pins in the tailwind-traps idiom — role presence ×3 + the `<main>`-keeps-its-landmark guard) written and verified RED against the unfixed tree, then the three one-attribute fixes, then GREEN; the v18 SHELL SURVIVAL e2e pin gained the live failure-path assertion (`view-error-card` → `role="alert"`), also verified RED-then-GREEN on the real chunk-blocked navigation. A DISCLOSED SUPERSET on two axes: the reference ships no recovery surface at all (any implementation is superset), and neo-crm's own error cards carry no role (no commit there since 2026-10-22 — the pattern reference was checked before diverging). The announcement itself (assistive-tech speech) is not assertable in Chromium — the attribute + fresh-mount pattern is the standard mechanism; the pins are the honest ceiling | Accepted — Verified (513 unit + 179 e2e; RED→GREEN evidence on both pin layers + the v20 mobile evidence set) |
+| ADR-030 | The v21 deployment-surface truth contract: the shipped deployment surfaces describe THIS app, mechanically. (1) The container identity: Dockerfile + docker-compose.yml carry the VeloxPOS identity (service `veloxpos`, image `veloxpos:latest`, `${VELOXPOS_PORT:-3000}`) — the scaffold's `studyflow` service and header rot retired with the last never-actioned Known-Issues row (#6). (2) `docs/DEPLOYMENT.md` tells the truth about the shipped app — the full env contract (every `.env.example` variable documented), the real verification commands (the gate ladder, no phantom smoke-test.sh), the route-handler count pinned to the LIVE filesystem count (27 — the count-the-things rule, mechanically), the renamed Docker walkthrough, and NO documentation of unshipped features (the scaffold's /rum diagnostics, /export + /import portability, and Settings→Profile UI never existed here); every `scripts/` reference must resolve to a real file. (3) The four scaffold account-security routes — `POST /api/auth/change-password` · `change-email` · `delete-account` · `resend-verification` — are KEPT as a disclosed API-only superset (real, rate-limited 10/15-min, password-verified PRE-WRITE, no-enumeration uniform 200s; the reference has none of them; no UI ships — a future feature cycle if the operator wants one), with their scaffold-colliding comments (S24/ADR-022-style citations that collide with THIS repo's ADR numbering; StudyFlow model names in the delete cascade prose) re-cited to ADR-030 and their contracts pinned end-to-end by `tests/e2e/account-security.spec.ts` (8 behavioral tests: the 400/409 ladders, the uniform no-enumeration 200, the rotation round-trips via fresh-context logins, the delete cascade + cookie clear + subsequent 401 — written with the fresh-context discipline so the demo owner's storageState cookie can never ride an authenticated scratch call). (4) Single lockfile: `bun.lock` — the vestigial npm `package-lock.json` (still named "omni-study") removed. All guarded by `tests/deployment-surfaces.test.ts` (16 source pins — raw scans where the finding lives IN comments, live fs checks for the script refs and route count). The e2e layer is NEW COVERAGE of already-correct behavior (the routes worked; they had zero tests) — the TDD RED→GREEN applied to the deployment-surface pins (15/16 failed pre-fix) | Accepted — Verified (529 unit + 187 e2e; the RED→GREEN pin evidence + the 10/10 live mobile probe + the v21 evidence set) |
 
 ---
 
@@ -628,8 +659,8 @@ Two layers, two runners, disjoint file globs:
 
 | Layer | Runner | Scope | Count |
 |---|---|---|---|
-| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 513 tests / 36 files — Verified |
-| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 179 specs — Verified |
+| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 529 tests / 37 files — Verified |
+| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 187 specs — Verified |
 
 - **Unit seams**: money (the verified ticket math), ticket (V-ID shape),
   router (8-view map + aliases), date (es-MX formatters), validation
@@ -704,7 +735,7 @@ Two layers, two runners, disjoint file globs:
 | 3 | In-memory rate limiter (per-process) | Accepted for single-tenant; revisit for multi-instance |
 | 4 | ~~Product images: the dialog accepts a file but the clone does not store/serve uploads~~ | CLOSED by v6/ADR-016 (data-URL storage) — retired from the open list |
 | 5 | ~~Receipt email action (`Mail` icon) is present but not wired (no SMTP)~~ | CLOSED by v6/ADR-016 (`mailto:` with the full ticket) — retired from the open list |
-| 6 | Dockerfile/DEPLOYMENT.md inherited from the scaffold reference the old app name in prose | Pending doc refresh |
+| 6 | ~~Dockerfile/DEPLOYMENT.md inherited from the scaffold reference the old app name in prose~~ | CLOSED by v21/ADR-030 (the deployment-surface truth pass: Dockerfile + compose rebranded, DEPLOYMENT.md rewritten to the shipped app, the account-security routes documented + pinned) — retired from the open list |
 | 7 | `next.config.ts` sets `typescript.ignoreBuildErrors: true` (scaffold default) | Mitigated by the mandatory `bun run typecheck` gate; keeping the gate green is the contract |
 | 8 | a11y: the reference's own low-contrast headings are replicated for parity (axe color-contrast excluded, disclosed) | Disclosed deviation |
 | 9 | Per-route og:url/canonical/twitter:url variance (the reference varies them per route; the single-page architecture serves one server-rendered card — SD-14) | Disclosed deviation (v7) |

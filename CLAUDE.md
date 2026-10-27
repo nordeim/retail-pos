@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (513 tests / 36 files)
-bun run test:e2e       # playwright e2e layer (179 specs, boots standalone :3100)
+bun run test           # vitest unit layer (529 tests / 37 files)
+bun run test:e2e       # playwright e2e layer (187 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -242,6 +242,21 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   SURVIVAL e2e assertion (the live failure path). A disclosed
   superset: the reference ships no recovery surface at all and
   neo-crm's own cards carry no role (ADR-029).
+- The v21 contracts: the deployment surfaces tell the truth —
+  Dockerfile/docker-compose carry the VeloxPOS identity (service
+  `veloxpos`, image `veloxpos:latest`, `VELOXPOS_PORT`),
+  `docs/DEPLOYMENT.md` documents the ACTUAL app (the 6-var env
+  contract, the real verification commands, the live route-handler
+  count, the renamed Docker walkthrough, the account-security API as
+  the disclosed API-only superset — no /rum, no export/import, no
+  smoke-test), `bun.lock` is the SINGLE lockfile (the npm one was
+  removed), and the four account-security routes
+  (change-password/change-email/delete-account/resend-verification —
+  real, rate-limited, password-first scaffold inheritances the
+  reference lacks) are behaviorally pinned by
+  `tests/e2e/account-security.spec.ts` + the source pins in
+  `tests/deployment-surfaces.test.ts` (ADR-030; Known-Issue #6
+  closed).
 - The v15 contracts: the hover micro-interaction families — every
   row-action icon button carries `rounded-lg p-2 text-slate-400
   transition-colors` + its per-action family (edit/detail indigo,

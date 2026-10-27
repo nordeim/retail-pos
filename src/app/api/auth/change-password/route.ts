@@ -1,10 +1,12 @@
 // ---------------------------------------------------------------------------
 // POST /api/auth/change-password — the account-security rotation
-// (S24/ADR-022). Rate-limited 10/15-min per user. The current password is
-// verified against the stored scrypt hash FIRST (a wrong current → 400
-// "Your current password is incorrect.", PRE-WRITE). The session SURVIVES
-// the rotation by design — the cookie is an HMAC over AUTH_SECRET, not the
-// password (revoking other sessions is ADR-022's rejected alternative).
+// (ADR-030: the API-only superset the hosted reference lacks; pinned by
+// tests/e2e/account-security.spec.ts). Rate-limited 10/15-min per user.
+// The current password is verified against the stored scrypt hash FIRST
+// (a wrong current → 400 "Your current password is incorrect.",
+// PRE-WRITE). The session SURVIVES the rotation by design — the cookie is
+// an HMAC over AUTH_SECRET, not the password (revoking other sessions is
+// the rejected alternative).
 // ---------------------------------------------------------------------------
 
 import { NextResponse, type NextRequest } from "next/server";

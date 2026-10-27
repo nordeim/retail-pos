@@ -1,9 +1,11 @@
 // ---------------------------------------------------------------------------
 // POST /api/auth/resend-verification — re-issue the 6-digit code for an
-// UNVERIFIED account (the verify screen's resend action). Uniform 200 for
-// every caller — the response shape's `code` presence is the only signal
-// (no SMTP: the self-hosted delivery), and unknown/verified accounts never
-// get one (no enumeration).
+// UNVERIFIED account (ADR-030: the API-only superset; pinned by
+// tests/e2e/account-security.spec.ts — the signup verify stage ships no
+// resend button; drive this over HTTP). Uniform 200 for every caller —
+// the response shape's `code` presence is the only signal (no SMTP: the
+// self-hosted delivery), and unknown/verified accounts never get one
+// (no enumeration).
 // ---------------------------------------------------------------------------
 
 import { NextResponse, type NextRequest } from "next/server";

@@ -1,10 +1,13 @@
 // ---------------------------------------------------------------------------
-// POST /api/auth/delete-account — the ownership exit (S25/ADR-023).
-// Rate-limited 10/15-min per user. The password is verified FIRST (a wrong
-// password → 400, PRE-WRITE), then the ONE cascade write: db.user.delete
-// wipes every collection (all 22 user relations carry onDelete: Cascade).
-// The session cookie is cleared with the account (maxAge 0 — the logout
-// mechanism).
+// POST /api/auth/delete-account — the ownership exit (ADR-030: the
+// API-only superset; pinned by tests/e2e/account-security.spec.ts).
+// Rate-limited 10/15-min per user. The password is verified FIRST (a
+// wrong password → 400, PRE-WRITE), then the ONE cascade write:
+// db.user.delete wipes every owned collection (products, categories,
+// registers, cashiers, shifts, sales, settings — every user relation
+// carries onDelete: Cascade). The session cookie is cleared with the
+// account (maxAge 0 — the logout mechanism). No UI surface ships; back
+// up the SQLite file first (docs/DEPLOYMENT.md §10).
 // ---------------------------------------------------------------------------
 
 import { NextResponse, type NextRequest } from "next/server";
@@ -39,8 +42,8 @@ export async function POST(request: NextRequest) {
       return errorResponse(400, "Your password is incorrect.");
     }
 
-    // The ONE cascade write — subjects, tasks, notes, decks, grades, files,
-    // chat, RUM events, tokens: every user relation carries Cascade.
+    // The ONE cascade write — products, categories, registers, cashiers,
+    // shifts, sales, settings, tokens: every user relation carries Cascade.
     await db.user.delete({ where: { id: user.id } });
 
     return clearSessionCookie(NextResponse.json({ ok: true }));

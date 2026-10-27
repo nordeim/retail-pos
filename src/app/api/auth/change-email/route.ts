@@ -1,12 +1,13 @@
 // ---------------------------------------------------------------------------
 // POST /api/auth/change-email — the account-identity rotation
-// (S26/ADR-024). Rate-limited 10/15-min per user. The password is verified
-// FIRST (a wrong password → 400, PRE-WRITE); then the route-side guards —
-// must-differ (posting the current address → 400) and uniqueness (an
-// address owned by ANY account → 409). The ONE write moves the login
-// identifier lowercased; emailVerified STAYS TRUE (the password proof IS
-// the verification); the stateless session survives untouched and the
-// response carries the new email for the store's identity slice.
+// (ADR-030: the API-only superset; pinned by
+// tests/e2e/account-security.spec.ts). Rate-limited 10/15-min per user.
+// The password is verified FIRST (a wrong password → 400, PRE-WRITE);
+// then the route-side guards — must-differ (posting the current address
+// → 400) and uniqueness (an address owned by ANY account → 409). The ONE
+// write moves the login identifier lowercased; emailVerified STAYS TRUE
+// (the password proof IS the verification); the stateless session
+// survives untouched and the response carries the new email.
 // ---------------------------------------------------------------------------
 
 import { NextResponse, type NextRequest } from "next/server";

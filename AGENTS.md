@@ -640,6 +640,12 @@ retry shape fights the first Tab).
   not assets); `docs/screenshots/` holds this app's own screenshots
   (`bun scripts/capture-screenshots.ts` against a running dev server
   regenerates the set).
+- The deployment surfaces are TRUTH-PINNED (v21/ADR-030): the Dockerfile
+  + docker-compose identity (`veloxpos`, `VELOXPOS_PORT`), DEPLOYMENT.md's
+  env/script/route-count claims, and the single-lockfile rule
+  (`bun.lock` — never commit a `package-lock.json`) are enforced by
+  `tests/deployment-surfaces.test.ts`. Editing any of those files means
+  running it.
 - Git: single-branch (`main`), no merge commits without need; pushes go
   through `docs/ssh_git_wrapper_v3.py` (see
   `docs/how-to-git-push-using-ssh-wrapper_SKILL.md`).

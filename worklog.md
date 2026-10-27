@@ -1514,3 +1514,79 @@ Stage Summary:
 - Known-open (disclosed): the F2 flake watch; the react-dom boot
   floor; the reference's own broken flows (nothing to mirror); every
   standing v8–v19 disclosure unchanged.
+
+---
+
+Task ID: V21
+Agent: Z.ai (main agent)
+Task: The V21 cycle — audit the codebase + the reference, close Known-Issue #6 as the deployment-surface truth pass (Dockerfile/compose/DEPLOYMENT.md), pin the untested account-security superset, verify the mobile mandate, docs lockstep, commit + SSH push (main only).
+
+Work Log:
+- Baseline: workspace intact (main @ e87bd95 after git pull brought
+  docs/session_34.md; the previous session died mid-validation with the
+  tool environment down — the restart re-verified everything with
+  isolated minimal git commands). V20 reference docs + core docs
+  re-read and validated against the code (role="alert" x3, .env,
+  root db/, both test configs). One tool-output integrity incident:
+  an rg returned mangled signup text; the direct re-read confirmed
+  the file correct (recorded; the untrusted-output protocol worked).
+- Baseline gates: lint 0 · tsc 0 · build ✓ · unit 513/513 · e2e
+  179/179 FIRST-TRY (no flake occurrence — a clean F2-watch data
+  point).
+- The audit: reference UNCHANGED 6th consecutive cycle (Terminal
+  gated, both cajas Cerrada, 12 products, 2 sales, Reports "Sin datos
+  en este período"); at 390px still NO hamburger (220px sidebar, main
+  170px); Tailwind v4 sweep clean (95 pins, traps 8/8, no duration- on
+  dialogs); neo-crm unchanged since 2026-10-22.
+- Known-Issue #6 scoped and found deeper than the name: DEPLOYMENT.md
+  opened "ORBITAL", documented unshipped StudyFlow features (/rum,
+  /export, /import, a Settings->Profile UI), referenced missing
+  scripts (smoke-test.sh, docker-layout-sim-s27.sh), claimed 16 route
+  handlers (real: 27), and the compose service was "studyflow".
+- F3 scoped: the four scaffold account-security routes
+  (change-password/change-email/delete-account/resend-verification) —
+  real, rate-limited, password-first, reference-lacking — shipped with
+  ZERO tests, no README/PAD documentation, and comments citing the
+  scaffold's colliding ADR numbers + StudyFlow models.
+- TDD RED: tests/deployment-surfaces.test.ts (16 source pins) failed
+  15/16 pre-fix (one pin corrected against reality first: 5 env vars,
+  not 6). GREEN: Dockerfile + compose rebranded (veloxpos,
+  veloxpos:latest, VELOXPOS_PORT); DEPLOYMENT.md rewritten to the
+  actual app (11 sections incl. the new account-security API §10);
+  the four route comments re-cited to ADR-030; README API row;
+  package-lock.json removed (single lockfile = bun.lock). Pins 16/16.
+- New behavioral coverage: tests/e2e/account-security.spec.ts (8
+  tests — the 400/409 ladders, the uniform no-enumeration 200, the
+  rotation round-trips, the delete cascade + cookie clear + 401).
+  Drafting caught a real hazard: authenticated calls must NOT ride the
+  storageState-backed request fixture (the demo owner's cookie could
+  mutate the wrong account) — every authenticated call goes through a
+  fresh context + explicit cookie header.
+- The evidence set: scripts/probe-v21-mobile-recovery.ts — the full
+  mobile drawer contract LIVE at 390x844 on the remediated build:
+  10/10 PASS + the three fresh v21-* captures.
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 529/529 (37 files,
+  513+16) · e2e 187/187 (3.2m, 179+8).
+- Docs lockstep: README (badge 529+187, feature row, API row); CLAUDE
+  (v21 contracts note + counts); PAD v2.8.0 (history entry + ADR-030 +
+  Known-Issue #6 CLOSED + testing table); SKILL v1.15.0; AGENTS (the
+  repo-hygiene truth-pin line); docs/remediation-plan-v21.md (ledger
+  L1-L11 + execution results); docs/session_35.md; this entry.
+
+Stage Summary:
+- V21 closed the last never-actioned Known-Issues row as a TRUTH
+  pass: the deployment surfaces now describe THIS app, mechanically
+  (16 source pins guard the identity, the env/script/route-count
+  claims, and the single-lockfile rule).
+- The four account-security routes went from zero-coverage scaffold
+  inheritances to a pinned, documented, disclosed API-only superset
+  (8 behavioral e2e tests + README/DEPLOYMENT documentation).
+- The reference is unchanged for the 6th consecutive cycle; the
+  mobile drawer contract re-verified live (10/10) with the fresh v21
+  evidence set.
+- Gates: 529 unit + 187 e2e green; all counts bumped in the same
+  commit (513->529, 179->187 everywhere).
+- Known-open (disclosed): the F2 flake watch (clean this run); the
+  react-dom boot floor; the account-security routes remain UI-less by
+  design; the reference's own broken flows (nothing to mirror); every
+  standing v8-v20 disclosure unchanged.
