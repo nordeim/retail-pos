@@ -634,6 +634,22 @@ hamburger. The rAF loop LATCHES once focus lands inside the drawer — a focus
 loop must never re-steal focus the user has already moved (the unbounded
 retry shape fights the first Tab).
 
+**The drawer-open SPINE FREEZE (v25/ADR-034, the neo-crm session-196
+doctrine):** the RENDERED geometry ledger is pinned at TRUE 390×844 —
+panel `[0,0,288,844]` · header `[0,0,287,69]` · nav `[0,69,287,727]` ·
+footer `[0,796,287,48]` · close `[235,16,36,36]` · 8 links at `[12,y,263,40]`
+with y = 81+44k — plus the footer "VeloxPOS" wordmark, via the
+`expect.poll` starved-read idiom with EXACT equality on rounded reads (the
+heights are padding-driven, never font-driven). The pin is MUTATION-PROVEN:
+a planted `mb-2` on the drawer header (the trap-4 computed-margin shape)
+goes RED at the nav/link/footer boxes while every other drawer pin stays
+green — a computed-margin regression can no longer falsify the drawer's
+layout with the gates green. The lg-breakpoint close is pinned in the same
+spec (crossing into lg closes the drawer AND resets `aria-expanded`;
+resizing back below lg it STAYS closed — no `mobileMenuOpen` state leak).
+The `lg:hidden` chrome asserts with `toBeHidden`, never `toHaveCount(0)` —
+`display:none` keeps the element in the DOM.
+
 ## React conventions that bite
 
 - **No setState synchronously inside effect bodies** — the

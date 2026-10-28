@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.18.0
+version: 1.19.0
 last_updated: "2026-10-28"
 tags:
   - pos
@@ -25,9 +25,25 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v24 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 556/556 unit · 199/199 e2e** (the v24
-> close: the gate-coverage truth pass — every shipped behavioral claim
+> template), validated against the codebase at the v25 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 556/556 unit · 201/201 e2e** (the v25
+> close: the drawer-contract completion — the drawer-open SPINE FREEZE,
+> the neo-crm session-196 doctrine adopted (the s195a1 wire-freeze
+> doctrine's next member): the mobile drawer's RENDERED geometry ledger
+> is e2e-pinned at TRUE 390×844 (panel [0,0,288,844] · header
+> [0,0,287,69] · nav [0,69,287,727] · footer [0,796,287,48] · close
+> [235,16,36,36] · 8 links at [12,y,263,40] y=81+44k + the VeloxPOS
+> wordmark — the expect.poll starved-read idiom, exact equality on
+> rounded reads), MUTATION-PROVEN (a planted mb-2 on the drawer header
+> went RED at the nav/link/footer boxes — nav y 69→77, links +8 — while
+> the other 11 drawer tests stayed green: the battery gap demonstrated
+> live), and the lg-breakpoint close pinned in the same spec (390→1280
+> closes + aria reset; back at 390 it STAYS closed — no mobileMenuOpen
+> state leak; lg:hidden asserts with toBeHidden, never toHaveCount(0) —
+> display:none keeps the element in the DOM); ADR-034, PAD v2.12.0; the
+> RED run caught two first-draft pin defects — the transcribed y=12 vs
+> the measured 81, and the toHaveCount(0) shape). The prior close (v24):
+> the gate-coverage truth pass — every shipped behavioral claim
 > a doc or consumer leans on now carries a standing assertion: the
 > true-HTTP-404 status pin, the public 404 registered in the a11y
 > smoke at both widths, the /api/health body contract pinned by its
@@ -169,7 +185,7 @@ not the ceiling). Core philosophy, in binding order:
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
 | Unit | vitest ^5.0.1 (node env) | 556 tests / 39 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 199 specs; standalone prod server :3100 (child env shell-state-proof) |
+| E2E | @playwright/test ^1.63.0 + chromium | 201 specs; standalone prod server :3100 (child env shell-state-proof) |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -200,7 +216,7 @@ bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
 bun run test               # vitest: 556/556
-bun run test:e2e           # playwright: 199/199 (boots NODE_ENV=production :3100,
+bun run test:e2e           # playwright: 201/201 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -581,7 +597,7 @@ bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
 bun run test          # 556/556 vitest
-bun run test:e2e      # 199/199 playwright (production posture)
+bun run test:e2e      # 201/201 playwright (production posture)
 ```
 
 Verification beyond the gates:
@@ -625,6 +641,19 @@ Verification beyond the gates:
    gate-coverage doctrine (ADR-033): every behavioral claim a doc or a
    consumer leans on needs a standing assertion — and the RED run itself
    caught a fifth gap (a 62-hex secret under a 64-hex comment claim).
+9. **F9 (v25) — Behavior pins do not catch geometry drift; freeze the
+   spine and mutation-prove it.** The drawer's panel box, pitch
+   uniformity, and close paths were all pinned — yet a computed-margin
+   regression (mb-* re-entering the flex column, the trap-4 family)
+   would shift the header 69→77, cascade through every link and the
+   footer, and keep every gate green. The cure (ADR-034): pin the FULL
+   rendered box ledger (header/nav/footer/close/links) at the phone
+   width with exact equality — and plant the defect's exact shape
+   (mb-2 on the header) to prove the pin goes RED while the rest of the
+   battery stays green. A born-green freeze pin without the mutation
+   proof is a hope; with it, it is a contract. (Corollary: lg:hidden
+   elements stay in the DOM — assert with toBeHidden, never
+   toHaveCount(0).)
 
 ## §13 Pitfalls to Avoid (don't do these in this repo)
 

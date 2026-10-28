@@ -1870,3 +1870,93 @@ Stage Summary:
   (forcing it means breaking the DB mid-suite); the F2 flake watch;
   the react-dom boot floor; the reference's own broken flows (nothing
   to mirror); every standing v8-v23 disclosure unchanged.
+
+---
+Task ID: V25
+Agent: Z.ai (main agent)
+Task: The V25 cycle — the drawer-contract completion (the neo-crm
+session-196 doctrine adopted): audit the codebase + the reference,
+freeze the drawer-open spine as a complete geometry ledger + pin the
+lg-breakpoint close (the two unpinned members of the mobile drawer
+contract — the standing user focus), mutation-prove the spine pin,
+docs lockstep, commit + SSH push (main only).
+
+Work Log:
+- Baseline: the workspace was RESET (the sandbox wiped the clone) — a
+  fresh git clone re-materialized main @ 3631699 (V24 + session_42);
+  the locals rebuilt from scratch (bun install, .env from
+  .env.example with DATABASE_URL="file:../db/custom.db", db:push +
+  db:seed = the reference mirror, the Playwright chromium build).
+  Core docs re-read and validated against the code (AGENTS contracts
+  + Tailwind v4 traps + the account UI + the mobile drawer contract,
+  CLAUDE, README, PAD v2.11.0/ADR-033, SKILL v1.18.0, session_41/42,
+  the v24 plan, the worklog tail).
+- Baseline gates: lint 0 · tsc 0 · build ✓ · unit 556/556 · e2e
+  199/199 (3.5m) — first-try on the fresh clone, zero code changes.
+- The audit (10th cycle): reference UNCHANGED (Terminal gated, both
+  cajas with Caja 2 first, 12 products, 2 sales, Dashboard $0.00,
+  Reports "Sin datos en este período", the five store sections); at
+  390px still NO hamburger (nav 220px, viewport-locked). The clone's
+  mobile drawer re-verified LIVE at 390x844 (opens; Esc close +
+  focus return) — the TailwindCSS v4 mobile-menu trap is NOT present
+  (10th consecutive confirmation). The drawer-open SPINE measured
+  LIVE for the first time as a complete ledger: panel [0,0,288,844] ·
+  header [0,0,287,69] · nav [0,69,287,727] · footer [0,796,287,48] ·
+  close [235,16,36,36] · 8 links at [12,y,263,40] y=81+44k.
+- neo-crm ADVANCED by one material commit (a3ac674 -> 316fbe2:
+  session-196, "THE DRAWER-OPEN SPINE FREEZE") — the doctrine
+  ADOPTED: behavior pins cannot catch a computed-margin regression;
+  freeze the rendered geometry as a complete box ledger and
+  mutation-prove the pin. Two gaps mapped in this repo: F1 the spine
+  ledger itself unpinned (an mb-* re-entering the flex column would
+  shift the header 69->77 and cascade with every gate green); F2 the
+  lg-breakpoint close (mobile-chrome's matchMedia listener) pinned by
+  nothing — live-verified working both directions (close on crossing
+  + aria reset; no state leak on return).
+- TDD RED (the run earning its keep TWICE): the two first-draft pins
+  failed — both defects were in the PINS, not the app: the spine's
+  expected first-link y transcribed as 12 vs the measured 81; and a
+  toHaveCount(0) on the lg:hidden hamburger where display:none keeps
+  the element in the DOM (toBeHidden is the correct assertion). Both
+  fixed -> 12/12 green against the standing build.
+- The mutation proof (ADR-034, the session-196 discipline): planted
+  mb-2 on the drawer header div -> build -> the spine pin RED exactly
+  at the shifted boxes (nav [0,69->77,287,727->719], every link +8,
+  footer +8) while the OTHER 11 drawer tests stayed green (the
+  battery gap demonstrated live); restored -> rebuilt -> 12/12 green.
+- The evidence set: four v25-* captures under docs/screenshots/
+  (mobile-drawer-open-390 — the F1 surface; mobile-terminal-390 —
+  the closed chrome with the reference-matching shift-gated state;
+  mobile-dashboard-390; desktop-dashboard-1280 — the F2 desktop
+  side), all VLM-verified.
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 556/556 (39 files,
+  unchanged) · e2e 201/201 (3.5m, 199+2) — first-try.
+- Docs lockstep: README (badge 556+201 + the testing table); AGENTS
+  (the mobile drawer contract section gains the spine-freeze +
+  breakpoint-close paragraphs); CLAUDE (the v25 contracts note +
+  counts 201); PAD v2.12.0 (history + ADR-034 + the §8 testing table
+  + the e2e spec list); SKILL v1.19.0 (the v25 close layer + the §12
+  F9 lesson); docs/remediation-plan-v25.md (ledger L1-L12 + execution
+  results); docs/session_43.md; this entry.
+
+Stage Summary:
+- V25 closed the drawer-contract completion: the mobile drawer's
+  RENDERED geometry is now frozen as a complete box ledger at TRUE
+  390x844 (the spine: panel/header/nav/footer/close/8 links + the
+  VeloxPOS wordmark), mutation-proven (the planted mb-2 went RED at
+  the shifted boxes while the other 11 drawer tests stayed green),
+  and the lg-breakpoint close is pinned (no mobileMenuOpen state
+  leak) — 2 new e2e specs, zero source changes (the app was already
+  correct; this cycle hardened the contract).
+- The reference is unchanged for the 10th consecutive cycle; the
+  mobile drawer contract re-verified live with the v25 evidence set.
+- The RED run caught two first-draft pin defects (the transcribed
+  y=12 vs the measured 81; the toHaveCount(0)-on-lg:hidden shape) —
+  the TDD loop earning its keep on a freeze cycle, the F5/F9
+  precedent continuing.
+- Gates: 556 unit + 201 e2e green; all counts bumped in the same
+  commit (199->201 everywhere).
+- Known-open (disclosed): the health DEGRADED branch (503) unpinned;
+  the F2 flake watch; the react-dom boot floor; the reference's own
+  broken flows (nothing to mirror); every standing v8-v24 disclosure
+  unchanged.
