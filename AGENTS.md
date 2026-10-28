@@ -268,7 +268,21 @@ rules:
     (`/SALES` → "SALES | VeloxPOS", `/storesettings` → "Storesettings",
     `/Ventas` → "Ventas"). The shell's title effect reads
     `documentTitleForPath(window.location.pathname)` — NOT
-    `DOCUMENT_TITLES[view]`.
+    `DOCUMENT_TITLES[view]`. V27: that effect's write is GUARDED and a
+    MutationObserver on `document.head` stays armed while
+    `status === "ready"` — the not-found-title.tsx (v7) pattern ported to
+    the shell. Next's client metadata manager re-applies the root layout
+    title 5-6 times per boot (last write ~295ms post-commit;
+    `scripts/probe-v27-title-race.ts` is the instrument) and the shell's
+    write lands as little as 9ms after it — a bare write is a
+    permanent-clobber race under load variance (the v9 Spanish-alias
+    title flake's root cause: V18 + V26 occurrences across a 9-cycle
+    watch, always re-run green). Never revert the guard to a bare
+    `document.title = …` write; the write-loop safety lives in the
+    apply-when-different check. Pinned by `tests/title-guard.test.ts`
+    (source pins) + `tests/e2e/title-guard.spec.ts` (the
+    controlled-clobber correction) — editing the effect means running
+    both.
 22. Table + chart contracts (v9, live-measured): the ref's tables are BARE
     (`<table class="w-full">` — 16px base); cells carry their own sizes —
     never add a table-level `text-sm` (it shrank the Ventas Total to 14px;

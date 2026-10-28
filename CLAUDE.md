@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (563 tests / 41 files)
-bun run test:e2e       # playwright e2e layer (201 specs, boots standalone :3100)
+bun run test           # vitest unit layer (568 tests / 42 files)
+bun run test:e2e       # playwright e2e layer (203 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -291,6 +291,19 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   V22 action pins grew to the four-action superset (extend, never
   weaken). The route-count pin in deployment-surfaces counts 28 route
   handlers now — DEPLOYMENT.md §10 carries the update-profile row.
+- The v27 contracts: the shell title-guard — the tab-title effect in
+  `src/app/page.tsx` carries the GUARDED write + the armed
+  MutationObserver (the not-found-title.tsx v7 pattern ported to the
+  shell): Next's client metadata manager re-applies the root layout
+  title 5-6 times per boot (last write ~295ms post-commit — the
+  probe-v27 ledger) and the shell's write lands as little as 9ms after
+  it; a bare write is a permanent-clobber race under load variance (the
+  v9 Spanish-alias title flake's root cause, closed this cycle). The
+  guard wins the last write: apply-when-different, correct on any head
+  mutation, disconnect on cleanup. Pinned by `tests/title-guard.test.ts`
+  (source) + `tests/e2e/title-guard.spec.ts` (the controlled-clobber
+  correction + the post-nav re-arm); editing the title effect means
+  running both.
 - The v26 contracts: the failure-path truth pass (ADR-035 — the ADR-033
   doctrine continued at the unit layer). The health route's DEGRADED
   branch is pinned by `tests/health-route.test.ts`

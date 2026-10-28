@@ -2058,3 +2058,108 @@ Stage Summary:
   cycle, re-run green); the react-dom boot floor; the reference's own
   broken flows (nothing to mirror); every standing v8-v25 disclosure
   unchanged — the health DEGRADED disclosure is CLOSED (pinned).
+
+---
+Task ID: V27
+Agent: Z.ai (main agent)
+Task: The V27 cycle — the shell title-guard pass: audit the codebase +
+the reference, root-cause the F2 flake watch (the v9 Spanish-alias
+title flake — the 9-cycle watch item), port the guarded-MutationObserver
+cure to the shell's title effect, pin it deterministically (the
+controlled-clobber e2e pair + unit source pins), mutation-prove the
+pins, docs lockstep, commit + SSH push (main only).
+
+Work Log:
+- Baseline: the workspace was RESET (twice this session — the second
+  reset is itself a recorded environment fact); a fresh git clone
+  re-materialized main @ d02d793 (V26 + session_47 + session_48); the
+  locals rebuilt (bun install 488 pkgs, .env from .env.example with
+  DATABASE_URL="file:../db/custom.db", db:push + db:seed = the
+  reference mirror). Core docs re-read and validated against the code
+  (AGENTS 31 contracts + traps + account UI + the mobile drawer
+  contract incl. the v25 spine freeze + the v26 failure-path pins,
+  CLAUDE, README, PAD v2.13.0/ADR-035, SKILL v1.20.0, session_47/48,
+  the v26 plan, the worklog tail).
+- Baseline gates: lint 0 · tsc 0 · build ✓ · unit 563/563 · e2e — the
+  first run all-RED at 0-1ms/test: the chromium-1243 binary was absent
+  on the fresh sandbox (an infra miss root-caused on the spot); after
+  `bunx playwright install chromium`: 201/201 (3.6m).
+- The audit (12th cycle): reference UNCHANGED (Terminal gated, Caja 2
+  first, 12 products, 2 sales, Dashboard $0.00, Reports "Sin datos en
+  este período", the five store sections); at 390px a pair of
+  aria-expanded buttons — INVESTIGATED: Radix Select comboboxes on the
+  Ajustes page, NOT a hamburger; viewport-locked. The clone's mobile
+  drawer re-verified LIVE at 390×844 — the spine RE-MEASURED matching
+  the frozen v25 ledger EXACTLY (panel/header/nav/footer/close/8
+  links); Esc close + focus return — the TailwindCSS v4 mobile-menu
+  trap is NOT present (12th consecutive confirmation). neo-crm
+  UNCHANGED at 316fbe2. The citation sweep re-run: 17 refs, all
+  resolve — clean.
+- The flake root-cause pass: the F2 flake watch (v9 Spanish-alias
+  title test: V18 + V26 occurrences, always re-run green, zero code
+  changes) outlived its V18 hypothesis — the chunk-failure fix landed
+  and the flake recurred. The title chain read: the root layout ships
+  title "VeloxPOS" (SSR verified); the shell's effect is a BARE
+  document.title write; not-found-title.tsx (the repo's own v7 fix)
+  documents Next's client metadata manager re-applying the root title
+  and ships the guarded-observer cure for the IDENTICAL race on the
+  404 surface — the shell never got it.
+- The probe (scripts/probe-v27-title-race.ts, committed):
+  self-contained (standalone on :3102, e2e db, native-fetch login —
+  playwright's request API mis-parses relative URLs under Bun), a
+  title recorder via a Document.prototype.title setter patch + a
+  documentElement MutationObserver (documentElement is NULL at
+  init-script time — diagnosed live; the naive document.head observer
+  never fires, the init-time head is a placeholder). The margin
+  ledger (36 iterations): the manager re-applies "VeloxPOS" 5-6 times
+  per boot (last write ~295ms post-commit), the shell's write lands
+  9-30ms after; min margins 9ms natural / 11ms fast-auth — a
+  load-variance flip clobbers the shell's write PERMANENTLY (a bare
+  effect never re-fires): the flake's exact signature.
+- TDD (born RED): tests/e2e/title-guard.spec.ts (the boot clobber
+  corrected — RED with the flake's exact signature over the full 10s
+  window; the post-nav clobber + navigation titling) and
+  tests/title-guard.test.ts (5 source pins — 4 RED). The first RED
+  run exposed a first-draft test defect (the Ventas sidebar link
+  targets the canonical /Sales — "Sales | VeloxPOS"); corrected.
+- The fix: page.tsx's title effect became the guarded observer
+  (apply-when-different, observe document.head subtree+childList+
+  characterData, disconnect on cleanup, [status, view] deps kept) —
+  the not-found-title.tsx pattern ported. GREEN: unit 5/5 · e2e 2/2.
+- The mutation proof (SD-114): planted the bare-write regression (the
+  exact root-cause shape) → rebuild → unit 4 RED + e2e 2 RED while the
+  standing battery stayed green (the battery gap demonstrated live);
+  restored → GREEN.
+- The evidence set: four v27 captures under docs/screenshots/
+  (desktop-ventas-1280 — the F1 surface, title verified live;
+  desktop-dashboard-1280; mobile-terminal-390; mobile-drawer-open-390
+  — the spine freeze holding), PNG-validated. The probe re-ran
+  post-fix: identical timelines, no write-loop.
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 568/568 (42 files,
+  563+5) · e2e 203/203 (201+2, 3.6m, ZERO flakes).
+- Docs lockstep: README (badge 568+203 + the testing table); AGENTS
+  (the §17 title contract gains the V27 guard paragraph); CLAUDE (the
+  v27 contracts note + counts); PAD v2.14.0 (history + ADR-036 + the
+  §8 testing table + both seam lists); SKILL v1.21.0 (the v27 close
+  layer + counts + the §12 F11 lesson); docs/remediation-plan-v27.md
+  (ledger L1-L12 + execution results); docs/session_49.md; this entry.
+
+Stage Summary:
+- V27 closed the shell title-guard pass: the F2 flake watch — the
+  9-cycle known-open item — is root-caused (the bare title write's
+  race with Next's client metadata manager, quantified by the probe:
+  min margin 9ms) and closed (the guarded observer ported from the
+  repo's own v7 404-surface fix), pinned by a deterministic
+  controlled-clobber e2e pair + 5 unit source pins, mutation-proven
+  both directions.
+- The reference is unchanged for the 12th consecutive cycle; the
+  mobile drawer spine re-verified live against the frozen ledger (no
+  Tailwind v4 bug); the citation sweep clean (17/17); neo-crm
+  unchanged.
+- Gates: 568 unit + 203 e2e green (zero flakes); all counts bumped in
+  the same commit (563→568, 41→42 files, 201→203).
+- Known-open (disclosed): the F2 flake watch RETIRED with the
+  mechanism (a post-fix title-family recurrence gets a fresh
+  investigation); the react-dom boot floor; the reference's own
+  broken flows (nothing to mirror); every standing v8-v26 disclosure
+  unchanged.

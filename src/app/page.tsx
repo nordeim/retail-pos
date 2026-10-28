@@ -257,8 +257,8 @@ export default function Home() {
     }
   }, [primaryColor, secondaryColor]);
 
-  // V7/M1 → V9/F2: the tab title follows the PATH, exactly like the
-  // reference (live-measured: its titles are path-driven — exact-case
+  // V7/M1 → V9/F2 → V27/F1: the tab title follows the PATH, exactly like
+  // the reference (live-measured: its titles are path-driven — exact-case
   // canonical match, everything else slug-cased: "/SALES" is
   // "SALES | VeloxPOS" there, "/storesettings" is "Storesettings").
   // Applied once the shell is ready so /login (its own route, its own
@@ -266,9 +266,28 @@ export default function Home() {
   // SPA navigation always pairs a view change with a path change, and
   // alias→alias same-view hops are unreachable through the UI (the
   // sidebar links are canonical).
+  //
+  // V27/F1: the write is GUARDED and the observer stays armed — the
+  // not-found-title.tsx pattern (v7) ported to the shell. Next's client
+  // metadata manager re-applies the root layout title ("VeloxPOS") 5-6
+  // times per boot with the last write as late as ~295ms post-commit
+  // (probe-v27), and this effect's write lands as little as 9ms after
+  // it — under load variance the order flips and a bare write is
+  // clobbered PERMANENTLY (nothing re-fires the effect): the v9 title
+  // flake's root cause. The guard wins the last write instead: apply
+  // only when different (no write-loop), correct on any head mutation,
+  // disconnect on cleanup. Pinned by tests/title-guard.test.ts (source)
+  // + tests/e2e/title-guard.spec.ts (the controlled-clobber correction).
   React.useEffect(() => {
     if (status !== "ready") return;
-    document.title = documentTitleForPath(window.location.pathname);
+    const apply = () => {
+      const desired = documentTitleForPath(window.location.pathname);
+      if (document.title !== desired) document.title = desired;
+    };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(document.head, { subtree: true, childList: true, characterData: true });
+    return () => observer.disconnect();
   }, [status, view]);
 
   if (status !== "ready") {

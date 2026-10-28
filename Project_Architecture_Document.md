@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.13.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.14.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -306,6 +306,43 @@
 > NODE_ENV=production, the 64-hex shape, the two knob pins RED
 > first, the seed-identity pinning). Gates: 556/556 unit (550+6,
 > 39 files) + 199/199 e2e (197+2, 3.5m). ADR-033 added.
+>
+> v2.14.0 (2026-10-28): the remediation-plan-v27 execution — the shell
+> title-guard pass (ADR-036, the F2-flake-watch family root-caused and
+> closed). The audit found the reference UNCHANGED for the 12th
+> consecutive cycle (identical data state; at 390px still no hamburger —
+> the two aria-expanded buttons found are Radix Select comboboxes, not
+> nav controls; viewport-locked; Ajustes = exactly the five store
+> sections), the baseline green exactly as V26 closed it (563+201,
+> first-try on a fresh rebuilt clone after the chromium binary install —
+> an infra miss, not a code failure), the mobile drawer spine re-measured
+> live EXACTLY matching the frozen ledger (12th consecutive confirmation
+> of the absent Tailwind v4 mobile-menu trap), the citation sweep clean
+> (17 test citations in src/, all resolve — the V26 instrument re-run),
+> and neo-crm UNCHANGED at `316fbe2`. The cycle's finding came from the
+> repo's own audit: F1 — the shell's title effect in `src/app/page.tsx`
+> was a BARE effect write racing Next's client metadata manager, the
+> live root cause of the v9 Spanish-alias title flake (1 occurrence in
+> V18, 1 in V26, a 9-cycle known-open watch that outlived its V18
+> hypothesis). The probe (`scripts/probe-v27-title-race.ts`, committed —
+> self-contained: standalone server on :3102, native-fetch login, a
+> title recorder via a Document.prototype setter patch + a
+> documentElement MutationObserver attached by 1ms poll because
+> documentElement is NULL at init-script time, diagnosed live)
+> quantified the race: the manager re-applies the root layout title 5-6
+> times per boot (last write ~295ms post-commit) and the shell's write
+> lands as little as 9ms after it — under full-suite load variance the
+> order flips and the clobber is permanent (a bare effect never
+> re-fires). The cure is the repo's own v7 fix for the IDENTICAL race on
+> the 404 surface (`src/app/not-found-title.tsx` — the guarded
+> MutationObserver that "wins the last write"), ported to the shell:
+> apply-when-different, observe document.head, disconnect on cleanup.
+> TDD born-RED (the unit source pins 4 RED; the e2e controlled-clobber
+> pins 2 RED — a page.evaluate title write after ready sticks forever on
+> the bare tree), fix, GREEN; MUTATION-PROVEN (planted bare-write
+> regression → unit 4 RED + e2e 2 RED; restored → GREEN). Gates:
+> 568/568 unit (42 files, 563+5) + 203/203 e2e (201+2, 3.6m, zero
+> flakes). ADR-036 added.
 >
 > v2.13.0 (2026-10-28): the remediation-plan-v26 execution — the
 > failure-path truth pass (ADR-035, the ADR-033 gate-coverage doctrine
@@ -662,6 +699,8 @@ lowest-risk path. **Verified.**
 
 | ADR-034 | The v25 drawer-open spine-freeze contract (the neo-crm session-196 doctrine adopted — the s195a1 wire-freeze doctrine's next member): the mobile drawer's RENDERED geometry is pinned as a complete box ledger, because behavior pins (the panel box, the pitch uniformity, the close paths, the focus contract) cannot catch a computed-margin regression — the trap-4 defect family this repo exists to guard. (1) **The spine ledger, live-measured then frozen**: panel `[0,0,288,844]` · header `[0,0,287,69]` (h-9 36 + p-4×2 32 + border-b 1) · nav `[0,69,287,727]` · footer `[0,796,287,48]` · close `[235,16,36,36]` · 8 links at `[12,y,263,40]` with y = 81+44k (81 = nav.y 69 + p-3 12; 796 + 48 = 844) + the footer "VeloxPOS" wordmark — read via the `expect.poll` starved-read idiom (the 200ms slide-in must settle) with EXACT equality on rounded reads; the heights are padding-driven, never font-driven, so the values are deterministic across dev and the standalone build. (2) **The mutation proof (the discipline that makes a born-green freeze pin trustworthy)**: a planted `mb-2` on the drawer header div (the exact s177/trap-4 computed-margin shape) → build → the pin goes RED at the shifted boxes (nav y 69→77, every link +8, footer +8) while the OTHER 11 drawer tests stay green — the battery gap demonstrated live, both directions; restored → GREEN. (3) **The lg-breakpoint close is pinned in the same spec** (mobile-chrome's matchMedia listener — "close if the viewport crosses into lg"): crossing 390→1280 unmounts the drawer AND resets `aria-expanded`; resizing back to 390 it STAYS closed (no `mobileMenuOpen` state leak under the visually-vanished lg:hidden overlay — the F2 regression's exact observable). The `lg:hidden` chrome asserts with `toBeHidden`, never `toHaveCount(0)` — `display:none` keeps the element in the DOM (the RED run's own catch). Both pins EXTEND `tests/e2e/mobile-navigation.spec.ts` in place (the drawer family's owner; the V24 in-place-extension precedent); counts only move up (199→201; the unit layer untouched at 556) | Accepted — Verified (556 unit + 201 e2e; the mutation-proof RED/GREEN evidence + the battery-gap demonstration (11 green under the mutation) + the live agent-browser spine walk + the four v25 evidence captures) |
 | ADR-035 | The v26 failure-path truth contract (the ADR-033 gate-coverage doctrine continued at the unit layer): the failure branches a consumer leans on — not just the happy paths — need standing assertions, and the unit layer's `vi.mock` dissolves the "forcing a failure breaks the environment" objection that E2E-layer pinning cannot escape. (1) **The health DEGRADED branch** (`src/app/api/health/route.ts`'s catch → 503 + `{status:"degraded",db:"down",app:"veloxpos"}`) — a known-open disclosure carried since V24 on the belief that pinning it required breaking the DB mid-suite; but `vi.mock("@/lib/db")` is hoisted above the import, so the PrismaClient is never constructed and the probe rejects deterministically with zero DB involvement. The consumer that leans on the 503: docker-compose.yml's healthcheck `fetch(…).then(r => process.exit(r.ok ? 0 : 1))` — a regression to 200-with-degraded-body would report a broken-DB container as HEALTHY with every standing gate green. Pinned by the NEW `tests/health-route.test.ts` (2 tests: both branches' status + exact body). (2) **The boot-guard WIRING + the stale citation** — `src/instrumentation.ts`'s `register()` (fatal → `console.error` + `process.exit(1)`, the validated fail-fast; a plain throw is CAUGHT by Next and leaves a degraded 500-everything server) carried ZERO assertions while the file's own comment claimed "pinned by tests/e2e/s22-boot-guard.spec.ts" — a spec deleted in the V1 pivot (`0b78972`, the study-layer archive) and never replaced: the claim was FALSE today. The repo-wide citation sweep (16 test citations across `src/`, each existence-checked — 15 resolved, 1 stale) is the audit instrument this cycle adds. Pinned by the NEW `tests/boot-guard-wiring.test.ts` (5 tests: both fatal shapes → error + exit(1); both warn shapes → warn, NO exit; ok → silent) over the SPIED console + `process.exit` (mockImplementation — never a real exit; a live exit(1) would kill the vitest worker), with env save/restore around every case; the stale citation comment re-pointed at the real pin (comment-only — no existing pin scans the file). (3) **Both mutation-proven** (the V25 discipline extended to the unit layer): the planted 503→200 defect went RED at the status assertion (the Docker-healthcheck-blindness shape); the planted exit→throw defect (the comment's own documented regression) went RED at both fatal-path tests while the pure-seam env-check pins stayed green — the battery gap demonstrated; both restored → GREEN. Counts only move up (556→563 unit, 39→41 files; e2e untouched at 201) | Accepted — Verified (563 unit + 201 e2e; the mutation-proof RED/GREEN evidence for both pins + the citation-sweep ledger + the four v26 evidence captures) |
+| ADR-036 | The v27 shell title-guard contract: a bare client effect write against a framework-owned DOM slot (document.title) is a RACE, not a write — the framework's own machinery (Next's client metadata manager re-applying the root layout title 5-6 times per boot, last write ~295ms post-commit, measured live by `scripts/probe-v27-title-race.ts`) can land after the effect's write and CLOBBER it permanently, because nothing re-fires a bare effect. (1) **The root cause closed**: the v9 Spanish-alias title flake (title-only failures, full-suite-only occurrences, re-run always green, zero code changes — V18 + V26 occurrences across a 9-cycle known-open watch) was this race; the probe quantified single-digit-ms margins (min 9ms natural / 11ms fast-auth between the shell's write and the manager's last write). The watch item retired WITH the mechanism, not with a hope: a post-fix recurrence of the title family gets a fresh investigation. (2) **The cure is the repo's own v7 precedent ported**: `src/app/not-found-title.tsx` solved the IDENTICAL race on the 404 surface with the guarded MutationObserver ("the guarded observer wins the last write"); V27 ports it to the shell's effect — apply-when-different (the write-loop guard), observe `document.head` (`subtree+childList+characterData`), disconnect on cleanup, keep the `[status, view]` deps (SPA pushState nav re-applies on view change; the manager never writes post-boot because the nav bypasses next/router). (3) **The pins replace the probabilistic race with a controlled clobber**: `tests/e2e/title-guard.spec.ts` writes the root title via `page.evaluate` AFTER ready (the same observable the flake leaves) and asserts the correction — born RED on the bare tree (the clobber sticks for the full 10s retry window, the flake's exact signature) and GREEN with the guard; the second pin re-runs the clobber post-SPA-nav (the guard re-arms on every route) and proves navigation titling survives. `tests/title-guard.test.ts` freezes the source wiring (the observer, the observe shape, the guarded write, the disconnect; the 404 surface keeps its own). (4) **MUTATION-PROVEN both directions**: the planted bare-write regression (the exact root-cause shape restored) flipped the pins RED (unit 4 + e2e 2) while the standing battery stayed green — the battery gap the pins close; restored → GREEN. Counts only move up (563→568 unit, 41→42 files; 201→203 e2e) | Accepted — Verified (568 unit + 203 e2e; the probe's margin ledger + the born-RED evidence + the mutation-proof RED/GREEN evidence + the four v27 evidence captures) |
+
 
 ---
 
@@ -850,8 +889,8 @@ Two layers, two runners, disjoint file globs:
 
 | Layer | Runner | Scope | Count |
 |---|---|---|---|
-| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 563 tests / 41 files — Verified |
-| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 201 specs — Verified |
+| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 568 tests / 42 files — Verified |
+| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 203 specs — Verified |
 
 - **Unit seams**: money (the verified ticket math), ticket (V-ID shape),
   router (8-view map + aliases), date (es-MX formatters), validation
@@ -872,7 +911,9 @@ Two layers, two runners, disjoint file globs:
   stock decrement → close; cash-short block), registers (CRUD + guards),
   cashiers (CRUD), settings (round-trip + live chrome rename), reports
   (periods + verified KPIs), health (the public body contract — v24),
-  a11y smoke (axe minus color-contrast, disclosed; the 404 registered at
+  title-guard (the controlled-clobber correction + the
+  post-nav re-arm — v27/ADR-036, mutation-proven), a11y smoke (axe minus
+  color-contrast, disclosed; the 404 registered at
   both widths — v24).
 - **Infrastructure**: e2e boots `.next/standalone/server.js` on an isolated
   port with `db/e2e.db` (force-reset + reseeded per run); one storageState
