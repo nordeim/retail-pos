@@ -19,6 +19,14 @@
 //         ADRs) and no StudyFlow domain models in their cascade prose.
 //   8     README's API table documents the four account-security routes.
 //   9     Exactly one lockfile: bun.lock, never package-lock.json.
+//   10    V28 (remediation-plan-v28 / SD-116): EVERY live operational doc
+//         references only scripts that exist — the six-doc set (README,
+//         AGENTS, CLAUDE, PAD, SKILL, DEPLOYMENT.md), not DEPLOYMENT.md
+//         alone. F1's stale claim (generate-head-assets.py — never
+//         committed) shipped through AGENTS/SKILL in v6 precisely
+//         because the pin scoped one doc; historical session logs and
+//         executed plans under docs/ are archives of what was true at
+//         their time and stay OUT of scope by design.
 // ---------------------------------------------------------------------------
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -181,4 +189,47 @@ describe("V21 — single lockfile (bun.lock)", () => {
     expect(existsSync(path.join(ROOT, "bun.lock"))).toBe(true);
     expect(existsSync(path.join(ROOT, "package-lock.json"))).toBe(false);
   });
+});
+
+// ---------------------------------------------------------------------------
+// 10 — V28: every LIVE operational doc references only scripts that exist
+// ---------------------------------------------------------------------------
+
+/**
+ * The six live operational docs — the shipped surfaces a reader acts on.
+ * Historical session logs and executed plans under docs/ are archives of
+ * what was true at their own time and stay out of scope by design (a
+ * v6 session log citing a workspace-local script is a historical fact,
+ * not a live claim).
+ */
+const LIVE_DOCS: ReadonlyArray<readonly [string, string]> = [
+  ["README.md", README],
+  ["AGENTS.md", read("AGENTS.md")],
+  ["CLAUDE.md", read("CLAUDE.md")],
+  ["Project_Architecture_Document.md", read("Project_Architecture_Document.md")],
+  ["retail-pos_SKILL.md", read("retail-pos_SKILL.md")],
+  ["docs/DEPLOYMENT.md", DEPLOYMENT],
+];
+
+describe("V28 — every live doc references only scripts that exist", () => {
+  for (const [name, body] of LIVE_DOCS) {
+    it(`${name}: every scripts/ reference resolves`, () => {
+      // The DEPLOYMENT.md pin's own regex, generalized: tolerate the
+      // "bun scripts/x.ts" invocation form, backslashed paths, and a
+      // trailing sentence period or directory slash on the capture.
+      const refs = [...body.matchAll(/\.{0,2}\/?scripts\/([\w./-]+)/g)].map(
+        (m) => m[1].replace(/[/.]+$/, ""),
+      );
+      expect(
+        refs.length,
+        `${name} cites no scripts — the pin's regex may have rotted`,
+      ).toBeGreaterThan(0);
+      for (const ref of refs) {
+        expect(
+          existsSync(path.join(ROOT, "scripts", ref)),
+          `${name} references scripts/${ref} but it does not exist`,
+        ).toBe(true);
+      }
+    });
+  }
 });

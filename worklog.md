@@ -2163,3 +2163,103 @@ Stage Summary:
   investigation); the react-dom boot floor; the reference's own
   broken flows (nothing to mirror); every standing v8-v26 disclosure
   unchanged.
+
+---
+
+## Task V28 (session_51 + session_52) — 2026-10-28
+
+The shipped-artifacts truth pass (remediation-plan-v28, ADR-037).
+
+Setup / baseline (13th cycle; the workspace RESET twice this session —
+the second reset landed mid-execution, after B4's gates but before the
+commit; the whole cycle re-executed on a second fresh clone with every
+step re-verified, born-RED included):
+- Fresh clone at f26630d; locals rebuilt each time (.env from
+  .env.example, bun install 488 pkgs, db:push + db:seed, chromium-1243
+  install — the same sandbox infra miss as V27's session).
+- Baseline gates: lint 0 · tsc 0 · build ✓ · 568/568 unit (42 files) ·
+  203/203 e2e (3.6m) — exactly the V27 close.
+
+Audit (13th cycle):
+- Reference UNCHANGED for the 13th consecutive cycle (Terminal
+  shift-gated; Dashboard $0.00/0/12/0 + flat chart + 5-row legend; 12
+  products; 2 sales; Caja 2 first, both Cerrada; Reports "Sin datos";
+  Ajustes five sections; 390×844 viewport-locked, no hamburger — the
+  aria-expanded pair = the Radix Select comboboxes).
+- The clone's mobile drawer spine re-measured via the spec's own
+  testids: panel [0,0,288,844] · header [0,0,287,69] · nav [0,69,287,727]
+  · footer [0,796,287,48] · close [235,16,36,36] · 8 links y=81+44k —
+  EXACTLY the frozen v25 pin (13th confirmation, no Tailwind v4 trap);
+  Esc + aria reset + focus return verified.
+- Citation sweep 19/19 clean; Known-Issues zero live watch items.
+- neo-crm ADVANCED 316fbe2 → 769ba13: ONE commit, its entire diff the
+  raw session_415 transcript of the ALREADY-ADOPTED session-196
+  (V25/ADR-034). No new doctrine; no adoption.
+- The V27 title-guard probe re-run: 12/12 clean (min margins 9ms/11ms
+  — the race shape live, the guard correcting every iteration).
+- F1 — the script-reference truth family: AGENTS.md §15 + SKILL.md
+  claimed the head assets "regenerate via
+  scripts/generate-head-assets.py" — a file with an EMPTY git log
+  --all (the v6 workspace's generator never shipped). The standing pin
+  scanned DEPLOYMENT.md ONLY — the stale claim survived 22 cycles
+  because the pin's scope was one doc wide.
+- F2 — the dead-dependency census (web-application skill §2, FIRST run
+  in this repo): 4 dead riders — @radix-ui/react-radio-group,
+  @radix-ui/react-scroll-area, @radix-ui/react-toast (the repo's
+  toaster is the custom zustand build), and bun-types (empirically
+  dead: tsc passes with the package physically removed).
+
+Execution (TDD, re-demonstrated after the mid-execution reset):
+- B2 born RED: the deployment-surfaces block 10 (the SIX-live-doc
+  script-reference pin) 2 RED on the exact F1 citations; the NEW
+  tests/dependency-census.test.ts RED listing exactly the four dead
+  packages. The RED phase caught two implementation defects (the
+  census self-reference making bun-types falsely "live" — fixed by
+  excluding the census file from its own surface; a readdirSync
+  union type failing tsc — fixed with Dirent[]).
+- B3: the truthful asset-provenance statement in both docs (a first
+  AGENTS draft retained the literal stale path — caught by re-running
+  the pin, reworded); bun remove of the four dead packages
+  (package.json + bun.lock move together). GREEN: 22/22 · 3/3.
+- B4 mutation-proven both directions: a planted bogus scripts/
+  reference → RED at the exact doc → reverted → GREEN; a planted fake
+  acme-widget row → RED at the exact package → reverted → GREEN.
+  Full gates: lint 0 · tsc 0 · build ✓ · 577/577 unit (43 files,
+  568+9) · 203/203 e2e (3.7m, ZERO flakes). Four v28 captures
+  PNG-validated (ventas-1280 with the title verified live — the V27
+  guard's face; dashboard-1280; mobile-terminal-390;
+  mobile-drawer-open-390).
+- B5 docs lockstep: README (badge 577+203), AGENTS (§15 + the
+  six-live-doc scope + the NEW manifest-census bullet), CLAUDE (the
+  v28 contracts note + counts; the v27 note kept, newest first — a
+  first-clone draft accidentally replaced it and was restored), PAD
+  v2.15.0 (history + ADR-037 + §8 + the two seam rows), SKILL v1.22.0
+  (the v28 close layer + counts + the §12 F12 lesson). THREE V27
+  count residuals swept as a bonus (the SKILL stack-table "201 specs"
+  + two command-block "201/201" lines → 203/203).
+  remediation-plan-v28 §6, session_51, session_52, this entry.
+  .env.example unchanged and bidirectional-true. The unit suite re-ran
+  green after every doc edit (the census + doc pins read the live
+  docs).
+
+Stage Summary:
+- V28 closed the shipped-artifacts truth pass: the repo's CLAIMS (F1)
+  and the repo's MANIFEST (F2) are both gate-pinned — the
+  six-live-docs script-reference pin (deployment-surfaces block 10)
+  and the standing dependency census (tests/dependency-census.test.ts,
+  INFRA allowlist: react-dom, @types/react, @types/react-dom), both
+  born RED on the standing tree and mutation-proven both directions.
+- Four dead dependencies retired via the package manager (three
+  scaffold Radix primitives + bun-types); the stale-from-birth head-
+  asset regeneration claim swept from two live docs.
+- The reference is unchanged for the 13th consecutive cycle; the
+  mobile drawer spine re-verified live against the frozen ledger (no
+  Tailwind v4 bug); the citation sweep clean (19/19); neo-crm's single
+  new commit is the raw transcript of the already-adopted s196.
+- Gates: 577 unit + 203 e2e green (zero flakes); all counts bumped in
+  the same commit (568→577, 42→43 files; e2e 203 held) + three V27
+  count residuals swept.
+- Known-open (disclosed): dependency UPGRADES deliberately not taken
+  (Radix minors + the Prisma 6→7 MAJOR — their own cycle if ever
+  wanted); the react-dom boot floor; the reference's own broken flows
+  (nothing to mirror); every standing v8-v27 disclosure unchanged.

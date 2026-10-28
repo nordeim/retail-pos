@@ -27,7 +27,7 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (568 tests / 42 files)
+bun run test           # vitest unit layer (577 tests / 43 files)
 bun run test:e2e       # playwright e2e layer (203 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
@@ -291,6 +291,26 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   V22 action pins grew to the four-action superset (extend, never
   weaken). The route-count pin in deployment-surfaces counts 28 route
   handlers now — DEPLOYMENT.md §10 carries the update-profile row.
+- The v28 contracts: the shipped-artifacts truth pass — (1) every
+  LIVE operational doc (the six-doc set: README, AGENTS, CLAUDE, PAD,
+  SKILL, DEPLOYMENT.md) references only scripts that exist (the
+  deployment-surfaces pin's block 10 — F1 swept the stale
+  "assets regenerate via a repo script" claim that rode AGENTS/SKILL
+  since v6: the v6 workspace's generator never shipped; the head
+  assets are one-time-generated committed evidence); historical
+  session logs and executed plans under docs/ are archives of what
+  was true at their own time and stay out of the pin's scope by
+  design. (2) The dependency census (`tests/dependency-census.test.ts`)
+  — every manifest package earns its place: a live string reference
+  across the executable surface (src/, tests/, scripts/ minus the
+  archive, prisma/, the root configs, package.json's own scripts
+  block) or an explicit INFRA allowlist row (react-dom — the Next
+  runtime peer; @types/react + @types/react-dom — TSX compilation).
+  V28/F2 retired four dead riders (react-radio-group,
+  react-scroll-area, react-toast — the repo's toaster is the custom
+  zustand build — and bun-types, empirically dead: tsc passes with
+  the package removed). Editing package.json dependencies means
+  running the census.
 - The v27 contracts: the shell title-guard — the tab-title effect in
   `src/app/page.tsx` carries the GUARDED write + the armed
   MutationObserver (the not-found-title.tsx v7 pattern ported to the

@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.21.0
+version: 1.22.0
 last_updated: "2026-10-28"
 tags:
   - pos
@@ -25,9 +25,33 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v27 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 568/568 unit · 203/203 e2e** (the v27
-> close: the shell title-guard pass — the F2-flake-watch family
+> template), validated against the codebase at the v28 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 577/577 unit · 203/203 e2e** (the v28
+> close: the shipped-artifacts truth pass — the repo's CLAIMS and the
+> repo's MANIFEST are both shipped surfaces, both now gate-pinned: F1 —
+> two live docs had claimed since v6 that the head assets "regenerate
+> via a generate-head-assets repo script", a file with an EMPTY git log
+> --all (the v6 workspace's generator never shipped); the standing
+> script-reference pin scanned DEPLOYMENT.md ONLY, which is exactly how
+> the stale claim survived 22 cycles — the cure is the truthful
+> provenance statement + the deployment-surfaces pin's block 10 now
+> iterating the SIX live operational docs (README/AGENTS/CLAUDE/PAD/
+> SKILL/DEPLOYMENT.md; historical session logs and executed plans are
+> archives, out of scope by design); F2 — the web-application skill's
+> §2 dead-dependency census, run for the FIRST time in this repo, found
+> four dead riders (@radix-ui/react-radio-group, react-scroll-area,
+> react-toast — the repo's toaster is the custom zustand build — and
+> bun-types, empirically dead: tsc passes with the package removed),
+> retired via `bun remove` (package.json + bun.lock move together) and
+> pinned by the NEW `tests/dependency-census.test.ts` (every manifest
+> package earns a live string reference across the executable surface
+> or an explicit INFRA allowlist row; the census file itself is
+> excluded from its own surface — a census must not count its
+> instrument as evidence); both pins born RED on the standing tree and
+> MUTATION-PROVEN (a planted bogus scripts/ reference flips the doc pin
+> RED at the exact doc; a planted fake package row flips the census RED
+> at the exact package); ADR-037, PAD v2.15.0). The prior close (v27):
+> the shell title-guard pass — the F2-flake-watch family
 > root-caused and closed: the shell's title effect was a BARE write
 > racing Next's client metadata manager (the probe
 > `scripts/probe-v27-title-race.ts`: the manager re-applies the root
@@ -218,8 +242,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 568 tests / 42 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 201 specs; standalone prod server :3100 (child env shell-state-proof) |
+| Unit | vitest ^5.0.1 (node env) | 577 tests / 43 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 203 specs; standalone prod server :3100 (child env shell-state-proof) |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -249,8 +273,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 568/568
-bun run test:e2e           # playwright: 201/201 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 577/577
+bun run test:e2e           # playwright: 203/203 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -322,8 +346,10 @@ The v6 contract additions (AGENTS.md 14-16, all live-measured):
   the reference's own page buttons).
 - The document head mirrors the reference: title "VeloxPOS", its
   description, OG/Twitter cards, appleWebApp, a WORKING manifest, and the
-  app-router `src/app/icon.png` (the logo). Regenerate the assets with
-  `scripts/generate-head-assets.py`.
+  app-router `src/app/icon.png` (the logo). The head assets are
+  one-time-generated committed evidence — the v6 workspace's generator
+  never shipped, and V28/F1 swept the stale regeneration claim (the
+  live-docs script-reference pin now guards the whole six-doc set).
 - Media are data URLs (`src/lib/image.ts`: canvas ≤512px, JPEG q0.85,
   300KB guard) — product `imageUrl` + settings `logoUrl`; schema ceiling
   600k chars, `logoUrl` nullable (the column boots NULL).
@@ -630,8 +656,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 568/568 vitest
-bun run test:e2e      # 201/201 playwright (production posture)
+bun run test          # 577/577 vitest
+bun run test:e2e      # 203/203 playwright (production posture)
 ```
 
 Verification beyond the gates:
@@ -725,6 +751,33 @@ Verification beyond the gates:
    when a flake's original hypothesis is fixed but the flake recurs,
    the hypothesis is falsified — investigate the mechanism, don't
    re-watch.
+12. **F12 (v28) — A claim about a repo artifact is only true if a pin
+   says so — and the pin must cover the whole claim family, not just
+   the doc you happen to be fixing.** Two live docs had claimed since
+   v6 that the head assets "regenerate via a repo script" — but the
+   script had NEVER been committed (`git log --all` empty for the
+   path): the v6 workspace's generator shipped its ASSETS and its
+   CLAIMS, not itself. The claim survived 22 cycles because the pin
+   guarding the claim family ("every scripts/ reference resolves")
+   scanned ONE doc (DEPLOYMENT.md) while the lie rode two others.
+   Corollaries: (a) scope every docs-truth pin to the full set of LIVE
+   operational docs (here: README, AGENTS, CLAUDE, PAD, SKILL,
+   DEPLOYMENT.md), never to the single file that prompted it —
+   historical session logs and executed plans are archives of what was
+   true at their own time and stay out of scope by design; (b) when a
+   doc claims a repo artifact exists, verify the artifact against the
+   REPO, not against your memory of writing it; (c) the same doctrine
+   covers the MANIFEST — the web-application skill §2 dependency
+   census ("every dependency must have a live import; run the census
+   periodically") found four dead riders on its FIRST run here (three
+   scaffold Radix primitives with no consumer component + bun-types,
+   empirically dead: tsc passes with the package physically removed)
+   — dead weight is invisible to every functional gate, so the census
+   needs its own pin (an explicit INFRA allowlist documents WHY each
+   exempt package earns its place; the census file itself is excluded
+   from its own surface, or its prose makes the retired packages
+   falsely "live" — a census must not count its instrument as
+   evidence).
 
 ## §13 Pitfalls to Avoid (don't do these in this repo)
 

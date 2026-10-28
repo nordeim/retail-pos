@@ -189,8 +189,12 @@ rules:
     WORKING `/manifest.json` (the reference's own manifest link 302s).
     The tab icon rides the app-router `src/app/icon.png` convention (the
     VeloxPOS logo — the same asset the reference's favicon serves); the
-    study-app favicon.svg is deleted. Assets regenerate via
-    `scripts/generate-head-assets.py` (repo scripts/).
+    study-app favicon.svg is deleted. The head assets (og-image, icon,
+    logo) are one-time-generated COMMITTED evidence — the v6 workspace's
+    generator never shipped, and V28/F1 swept the stale "assets
+    regenerate via a repo script" claim that rode two docs for 22
+    cycles; the live-docs script-reference pin (deployment-surfaces
+    test, block 10) now guards the whole six-doc set.
 16. Media + failures (v6): product photos and the store logo are stored as
     DATA URLs (`src/lib/image.ts` — canvas resize to 512px, JPEG q0.85,
     300KB source guard; schema ceiling 600k chars). The Unidad options are
@@ -727,12 +731,25 @@ The `lg:hidden` chrome asserts with `toBeHidden`, never `toHaveCount(0)` —
   not assets); `docs/screenshots/` holds this app's own screenshots
   (`bun scripts/capture-screenshots.ts` against a running dev server
   regenerates the set).
-- The deployment surfaces are TRUTH-PINNED (v21/ADR-030): the Dockerfile
-  + docker-compose identity (`veloxpos`, `VELOXPOS_PORT`), DEPLOYMENT.md's
-  env/script/route-count claims, and the single-lockfile rule
-  (`bun.lock` — never commit a `package-lock.json`) are enforced by
-  `tests/deployment-surfaces.test.ts`. Editing any of those files means
-  running it.
+- The deployment surfaces are TRUTH-PINNED (v21/ADR-030 + v28/ADR-037):
+  the Dockerfile + docker-compose identity (`veloxpos`,
+  `VELOXPOS_PORT`), DEPLOYMENT.md's env/script/route-count claims, and
+  the single-lockfile rule (`bun.lock` — never commit a
+  `package-lock.json`) are enforced by `tests/deployment-surfaces.test.ts`.
+  V28 widened its block 10 to the whole SIX-LIVE-DOC set (README, AGENTS,
+  CLAUDE, PAD, SKILL, DEPLOYMENT.md): every `scripts/…` reference in a
+  live operational doc must resolve to a real file — historical session
+  logs and executed plans under `docs/` are archives, out of scope by
+  design. Editing any of those files means running it.
+- The manifest is CENSUS-PINNED (v28/ADR-037): every package in
+  `package.json` must earn its place — a live string reference across
+  the executable surface (src/, tests/, scripts/ minus the archive,
+  prisma/, the root configs, package.json's own scripts block) or an
+  explicit INFRA allowlist row (`react-dom` the Next runtime peer;
+  `@types/react`/`@types/react-dom` the TSX compilation layer) —
+  enforced by `tests/dependency-census.test.ts`. Removing a dependency
+  goes through `bun remove` (package.json + bun.lock move together);
+  editing the manifest means running the census.
 - Git: single-branch (`main`), no merge commits without need; pushes go
   through `docs/ssh_git_wrapper_v3.py` (see
   `docs/how-to-git-push-using-ssh-wrapper_SKILL.md`).
