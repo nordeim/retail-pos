@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.15.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.16.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -306,6 +306,30 @@
 > NODE_ENV=production, the 64-hex shape, the two knob pins RED
 > first, the seed-identity pinning). Gates: 556/556 unit (550+6,
 > 39 files) + 199/199 e2e (197+2, 3.5m). ADR-033 added.
+>
+> v2.16.0 (2026-10-29): the remediation-plan-v29 execution — the
+> public-surface coverage audit (ADR-038, the neo-crm session-197
+> doctrine adopted). The audit (14th cycle): the reference UNCHANGED
+> for the 14th consecutive cycle; the baseline green exactly as V28
+> closed it (577+203, first-try on the fresh rebuilt clone); the drawer
+> spine re-measured live EXACTLY matching the frozen v25 ledger (14th
+> confirmation, no Tailwind v4 trap; Esc + aria reset + focus return
+> verified); the citation sweep 19/19; the V27 title-guard probe re-run
+> 12/12 clean (margins 12ms/13ms); neo-crm ADVANCED by two commits —
+> session-197 THE SWEEP-STATE COVERAGE AUDIT, the first new doctrine in
+> several cycles, read in full and adopted. THREE cures: F1 the 404
+> content-family freeze (`tests/e2e/not-found-surface.spec.ts` — h1 by
+> role+level, the exact copy, the 404 badge + its 80×80 box, the CTA's
+> accessible name, the card's max-w-md 448px; born-green, mutation-proven
+> ×2: the planted h1→div demotion and the copy drift each RED at the
+> exact assertion, zero collateral); F2 the a11y register COMPLETED
+> (/signup + /reset-password join login + the 404 — the V24 doctrine's
+> "every public surface" made true; the axe `label` rule's placeholder-
+> acceptance discovered — the mutation proof strips BOTH htmlFor and
+> placeholder to show the teeth); S the D-197a2 NAME form for the
+> LIVE_DOCS descriptions (the array is the source of truth; historical
+> records untouched). Gates: 577/577 unit (43 files, held) + 207/207
+> e2e (203+4, 3.7m, zero flakes). ADR-038 added.
 >
 > v2.15.0 (2026-10-28): the remediation-plan-v28 execution — the
 > shipped-artifacts truth pass (ADR-037). The audit found the reference
@@ -747,6 +771,7 @@ lowest-risk path. **Verified.**
 | ADR-035 | The v26 failure-path truth contract (the ADR-033 gate-coverage doctrine continued at the unit layer): the failure branches a consumer leans on — not just the happy paths — need standing assertions, and the unit layer's `vi.mock` dissolves the "forcing a failure breaks the environment" objection that E2E-layer pinning cannot escape. (1) **The health DEGRADED branch** (`src/app/api/health/route.ts`'s catch → 503 + `{status:"degraded",db:"down",app:"veloxpos"}`) — a known-open disclosure carried since V24 on the belief that pinning it required breaking the DB mid-suite; but `vi.mock("@/lib/db")` is hoisted above the import, so the PrismaClient is never constructed and the probe rejects deterministically with zero DB involvement. The consumer that leans on the 503: docker-compose.yml's healthcheck `fetch(…).then(r => process.exit(r.ok ? 0 : 1))` — a regression to 200-with-degraded-body would report a broken-DB container as HEALTHY with every standing gate green. Pinned by the NEW `tests/health-route.test.ts` (2 tests: both branches' status + exact body). (2) **The boot-guard WIRING + the stale citation** — `src/instrumentation.ts`'s `register()` (fatal → `console.error` + `process.exit(1)`, the validated fail-fast; a plain throw is CAUGHT by Next and leaves a degraded 500-everything server) carried ZERO assertions while the file's own comment claimed "pinned by tests/e2e/s22-boot-guard.spec.ts" — a spec deleted in the V1 pivot (`0b78972`, the study-layer archive) and never replaced: the claim was FALSE today. The repo-wide citation sweep (16 test citations across `src/`, each existence-checked — 15 resolved, 1 stale) is the audit instrument this cycle adds. Pinned by the NEW `tests/boot-guard-wiring.test.ts` (5 tests: both fatal shapes → error + exit(1); both warn shapes → warn, NO exit; ok → silent) over the SPIED console + `process.exit` (mockImplementation — never a real exit; a live exit(1) would kill the vitest worker), with env save/restore around every case; the stale citation comment re-pointed at the real pin (comment-only — no existing pin scans the file). (3) **Both mutation-proven** (the V25 discipline extended to the unit layer): the planted 503→200 defect went RED at the status assertion (the Docker-healthcheck-blindness shape); the planted exit→throw defect (the comment's own documented regression) went RED at both fatal-path tests while the pure-seam env-check pins stayed green — the battery gap demonstrated; both restored → GREEN. Counts only move up (556→563 unit, 39→41 files; e2e untouched at 201) | Accepted — Verified (563 unit + 201 e2e; the mutation-proof RED/GREEN evidence for both pins + the citation-sweep ledger + the four v26 evidence captures) |
 | ADR-036 | The v27 shell title-guard contract: a bare client effect write against a framework-owned DOM slot (document.title) is a RACE, not a write — the framework's own machinery (Next's client metadata manager re-applying the root layout title 5-6 times per boot, last write ~295ms post-commit, measured live by `scripts/probe-v27-title-race.ts`) can land after the effect's write and CLOBBER it permanently, because nothing re-fires a bare effect. (1) **The root cause closed**: the v9 Spanish-alias title flake (title-only failures, full-suite-only occurrences, re-run always green, zero code changes — V18 + V26 occurrences across a 9-cycle known-open watch) was this race; the probe quantified single-digit-ms margins (min 9ms natural / 11ms fast-auth between the shell's write and the manager's last write). The watch item retired WITH the mechanism, not with a hope: a post-fix recurrence of the title family gets a fresh investigation. (2) **The cure is the repo's own v7 precedent ported**: `src/app/not-found-title.tsx` solved the IDENTICAL race on the 404 surface with the guarded MutationObserver ("the guarded observer wins the last write"); V27 ports it to the shell's effect — apply-when-different (the write-loop guard), observe `document.head` (`subtree+childList+characterData`), disconnect on cleanup, keep the `[status, view]` deps (SPA pushState nav re-applies on view change; the manager never writes post-boot because the nav bypasses next/router). (3) **The pins replace the probabilistic race with a controlled clobber**: `tests/e2e/title-guard.spec.ts` writes the root title via `page.evaluate` AFTER ready (the same observable the flake leaves) and asserts the correction — born RED on the bare tree (the clobber sticks for the full 10s retry window, the flake's exact signature) and GREEN with the guard; the second pin re-runs the clobber post-SPA-nav (the guard re-arms on every route) and proves navigation titling survives. `tests/title-guard.test.ts` freezes the source wiring (the observer, the observe shape, the guarded write, the disconnect; the 404 surface keeps its own). (4) **MUTATION-PROVEN both directions**: the planted bare-write regression (the exact root-cause shape restored) flipped the pins RED (unit 4 + e2e 2) while the standing battery stayed green — the battery gap the pins close; restored → GREEN. Counts only move up (563→568 unit, 41→42 files; 201→203 e2e) | Accepted — Verified (568 unit + 203 e2e; the probe's margin ledger + the born-RED evidence + the mutation-proof RED/GREEN evidence + the four v27 evidence captures) |
 | ADR-037 | The v28 shipped-artifacts truth contract: the repo's CLAIMS and the repo's MANIFEST are both shipped surfaces, and both need gate teeth. (1) **The script-reference family is scoped to the whole live-doc set, not one doc**: AGENTS.md §15 and retail-pos_SKILL.md had claimed since v6 that the head assets "regenerate via a generate-head-assets repo script" — a file with an EMPTY `git log --all` (the v6 workspace's generator never shipped; only the assets and the claims were committed). The standing pin ("references only scripts that exist") scanned `docs/DEPLOYMENT.md` ONLY — which is exactly how the stale claim survived 22 cycles: the claim family was real, the pin's scope was one doc wide (the ADR-033 gate-coverage shape). The cure: the truthful provenance statement (the assets are one-time-generated committed evidence) + the deployment-surfaces pin's block 10 iterating the SIX live operational docs (README, AGENTS, CLAUDE, PAD, SKILL, DEPLOYMENT.md) — historical session logs and executed plans under `docs/` are archives of what was true at their own time and stay OUT of scope by design; writing a NEW generator instead would be speculative scaffolding that byte-diffs the v6-verified evidence. (2) **The dependency census is standing**: the web-application skill §2 rule ("every dependency must have a live import within one commit of being added; run a dead-dependency census periodically") had never run in this repo; the first run found FOUR dead riders — `@radix-ui/react-radio-group`, `@radix-ui/react-scroll-area`, `@radix-ui/react-toast` (the repo's toaster is the custom zustand build in `src/components/ui/toast.tsx`), and `bun-types` (empirically dead: `tsc --noEmit` passes with the package physically removed). Retired via `bun remove` (package.json + bun.lock move together — the manifest is touched only through the package manager); pinned by `tests/dependency-census.test.ts`: every manifest package earns a live string reference across the executable surface (src/, tests/, scripts/ minus the archive, prisma/, the root config files, package.json's own scripts block — the CLI tools earn their place through the commands the gate runs) OR an explicit INFRA allowlist row documenting its role (react-dom the Next runtime peer; @types/react + @types/react-dom the TSX compilation layer); the census file ITSELF is excluded from its own surface — its prose cites the packages it retired, and a census must not count its instrument as evidence. (3) **Both pins born RED on the standing tree and mutation-proven**: the doc pin RED on both stale citations then GREEN after the sweep (a planted bogus scripts/ reference flips it RED at the exact doc); the census RED on all four dead packages then GREEN after the removal (a planted fake package row flips it RED at the exact package). Counts only move up (568→577 unit, 42→43 files; e2e unchanged at 203) | Accepted — Verified (577 unit + 203 e2e; the born-RED evidence + both mutation proofs + the manifest/lockfile diff + the four v28 evidence captures) |
+| ADR-038 | The v29 public-surface coverage contract (the neo-crm session-197 doctrine adopted): a decoded, behavior-pinned surface can still have ZERO gate teeth on its designed content — the coverage audit asks "which renderable routes have no gate inventory at all," and the answer here was two families. (1) **The 404 content-family freeze**: the designed 404 was status-pinned (V24, the TRUE HTTP 404), visibility-pinned (card + one getByText + the CTA click), title-pinned (v7 slug + the V27 guard), and a11y-registered (V24, both widths) — but the h1's ROLE+LEVEL (getByText passes on a demoted div), the exact body copy, the "404" badge and its 80×80 geometry, the CTA's accessible name, and the card's max-w-md 448px were pinned NOWHERE; a not-found.tsx regression would keep every gate green (the s197 verdict verbatim: "NO gate held its PIXELS"). The cure in the house idiom (the v25 spine-freeze precedent — exact-value e2e pins, NOT a ported pixel-baseline sweep tool, which would be speculative scaffolding against this repo's computed-style pin architecture): `tests/e2e/not-found-surface.spec.ts`, born-green on the measured family, MUTATION-PROVEN ×2 — the planted h1→div demotion REDs exactly at the heading assertion (the s197 text-8xl proof's shape) and the planted copy drift REDs exactly at the copy assertion, both with zero collateral, restored → GREEN. (2) **The a11y register COMPLETED**: the V24 doctrine's own words ("every public surface belongs in the a11y smoke's register") were violated by the register itself — /signup (the SD-20 public superset) and /reset-password (the platform-template page; the session-free render is the no-token "Invalid Reset Link" state) never joined login + the 404. The cure: two registrations in the smoke. DISCOVERED EN ROUTE (recorded as a probe lesson): axe-core's `label` rule ACCEPTS a placeholder as a label (the non-empty-placeholder check) — a label-disconnection regression is NOT caught while placeholders exist; the mutation proof therefore strips BOTH the htmlFor and the placeholder (a bare input) to demonstrate the teeth (label:critical, RED at the exact registration, zero collateral). (3) **The D-197a2 NAME form**: count-anchored LIVE descriptions of the LIVE_DOCS set ("the six live operational docs") go stale the day a doc joins the array — the array is the source of truth, the name form never goes stale; historical records (ADR-037's "SIX", the V28 worklog entry) stay untouched as archives of what was true at their own time. Counts only move up (e2e 203→207: 2 not-found-surface + 2 a11y registrations; unit 577 and 43 files held) | Accepted — Verified (577 unit + 207 e2e; the born-green evidence + three mutation proofs + the five v29 evidence captures incl. the 404 face) |
 
 
 ---
@@ -937,7 +962,7 @@ Two layers, two runners, disjoint file globs:
 | Layer | Runner | Scope | Count |
 |---|---|---|---|
 | Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 577 tests / 43 files — Verified |
-| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 203 specs — Verified |
+| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 207 specs — Verified |
 
 - **Unit seams**: money (the verified ticket math), ticket (V-ID shape),
   router (8-view map + aliases), date (es-MX formatters), validation
@@ -947,8 +972,9 @@ Two layers, two runners, disjoint file globs:
   api-timeout/api-offline (the fetch seam), env-check, site, dev-preflight,
   health-route (BOTH probe branches incl. the 503 DEGRADED pin),
   boot-guard-wiring (register(): fatal/warn/ok over the spied console +
-  process.exit), deployment-surfaces (block 10: the SIX-live-doc
-  script-reference truth — v28/ADR-037), dependency-census (every
+  process.exit), deployment-surfaces (block 10: the LIVE-doc
+  script-reference truth — v28/ADR-037, the NAME form by v29/D-197a2),
+  dependency-census (every
   manifest package earns its place — v28/ADR-037).
 - **E2E**: navigation (8 routes + 404 WITH its true-HTTP-status pin +
   collapse widths), mobile-navigation
@@ -963,7 +989,11 @@ Two layers, two runners, disjoint file globs:
   title-guard (the controlled-clobber correction + the
   post-nav re-arm — v27/ADR-036, mutation-proven), a11y smoke (axe minus
   color-contrast, disclosed; the 404 registered at
-  both widths — v24).
+  both widths — v24; the register COMPLETED with signup +
+  reset-password — v29/ADR-038), not-found-surface (the 404
+  CONTENT-FAMILY freeze: h1 by role+level, the exact copy, the badge +
+  its 80×80 box, the CTA's accessible name, the card's max-w-md 448px —
+  v29/ADR-038, mutation-proven ×2).
 - **Infrastructure**: e2e boots `.next/standalone/server.js` on an isolated
   port with `db/e2e.db` (force-reset + reseeded per run); one storageState
   login (rate-limiter budget); `AUTH_SECRET` pinned to the 64-hex shape;

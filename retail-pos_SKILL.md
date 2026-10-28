@@ -8,8 +8,8 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.22.0
-last_updated: "2026-10-28"
+version: 1.23.0
+last_updated: "2026-10-29"
 tags:
   - pos
   - retail
@@ -25,32 +25,40 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v28 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 577/577 unit · 203/203 e2e** (the v28
-> close: the shipped-artifacts truth pass — the repo's CLAIMS and the
-> repo's MANIFEST are both shipped surfaces, both now gate-pinned: F1 —
-> two live docs had claimed since v6 that the head assets "regenerate
-> via a generate-head-assets repo script", a file with an EMPTY git log
-> --all (the v6 workspace's generator never shipped); the standing
-> script-reference pin scanned DEPLOYMENT.md ONLY, which is exactly how
-> the stale claim survived 22 cycles — the cure is the truthful
-> provenance statement + the deployment-surfaces pin's block 10 now
-> iterating the SIX live operational docs (README/AGENTS/CLAUDE/PAD/
-> SKILL/DEPLOYMENT.md; historical session logs and executed plans are
-> archives, out of scope by design); F2 — the web-application skill's
-> §2 dead-dependency census, run for the FIRST time in this repo, found
-> four dead riders (@radix-ui/react-radio-group, react-scroll-area,
-> react-toast — the repo's toaster is the custom zustand build — and
-> bun-types, empirically dead: tsc passes with the package removed),
-> retired via `bun remove` (package.json + bun.lock move together) and
-> pinned by the NEW `tests/dependency-census.test.ts` (every manifest
-> package earns a live string reference across the executable surface
-> or an explicit INFRA allowlist row; the census file itself is
-> excluded from its own surface — a census must not count its
-> instrument as evidence); both pins born RED on the standing tree and
-> MUTATION-PROVEN (a planted bogus scripts/ reference flips the doc pin
-> RED at the exact doc; a planted fake package row flips the census RED
-> at the exact package); ADR-037, PAD v2.15.0). The prior close (v27):
+> template), validated against the codebase at the v29 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 577/577 unit · 207/207 e2e** (the v29
+> close: the public-surface coverage audit — the neo-crm session-197
+> doctrine adopted: a decoded, behavior-pinned surface can still have
+> ZERO gate teeth on its designed content. F1 — the 404 content-family
+> freeze (`tests/e2e/not-found-surface.spec.ts`): the designed 404 was
+> status-pinned (V24, the TRUE HTTP 404), visibility-pinned (the card +
+> one getByText + the CTA click), title-pinned (v7 slug + the V27
+> guard), and a11y-registered (V24, both widths) — but the h1's
+> ROLE+LEVEL (getByText passes on a demoted div), the exact body copy,
+> the "404" badge + its 80×80 box, the CTA's accessible name, and the
+> card's max-w-md 448px were pinned NOWHERE; born-green on the measured
+> family, MUTATION-PROVEN ×2 (the planted h1→div demotion and the copy
+> drift each RED at the exact assertion, zero collateral); F2 — the
+> a11y register COMPLETED (the V24 doctrine's "every public surface"
+> made true: /signup + /reset-password joined login + the 404;
+> discovered en route: axe-core's `label` rule ACCEPTS a placeholder as
+> a label — the non-empty-placeholder check — so a label-disconnection
+> regression stays green while placeholders exist; the mutation proof
+> strips BOTH the htmlFor and the placeholder to show the teeth); S —
+> the D-197a2 NAME form (count-anchored LIVE descriptions of the
+> LIVE_DOCS set go stale the day a doc joins the array — the array is
+> the source of truth, the name form never goes stale; historical
+> records untouched); ADR-038, PAD v2.16.0). The prior close (v28):
+> the shipped-artifacts truth pass — the repo's CLAIMS and the repo's
+> MANIFEST are both shipped surfaces, both gate-pinned: F1 the
+> live-doc script-reference truth (the stale v6 "regenerate via a repo
+> script" claim swept from AGENTS+SKILL — the pin's scope widened from
+> DEPLOYMENT.md only to the whole LIVE_DOCS array), F2 the standing
+> dependency census (four dead riders retired via bun remove; the
+> explicit INFRA allowlist; the census file excluded from its own
+> surface — a census must not count its instrument as evidence), both
+> born RED on the standing tree and mutation-proven — ADR-037, PAD
+> v2.15.0, 577/203). The prior close (v27):
 > the shell title-guard pass — the F2-flake-watch family
 > root-caused and closed: the shell's title effect was a BARE write
 > racing Next's client metadata manager (the probe
@@ -243,7 +251,7 @@ not the ceiling). Core philosophy, in binding order:
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
 | Unit | vitest ^5.0.1 (node env) | 577 tests / 43 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 203 specs; standalone prod server :3100 (child env shell-state-proof) |
+| E2E | @playwright/test ^1.63.0 + chromium | 207 specs; standalone prod server :3100 (child env shell-state-proof) |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -274,7 +282,7 @@ bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
 bun run test               # vitest: 577/577
-bun run test:e2e           # playwright: 203/203 (boots NODE_ENV=production :3100,
+bun run test:e2e           # playwright: 207/207 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -657,7 +665,7 @@ bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
 bun run test          # 577/577 vitest
-bun run test:e2e      # 203/203 playwright (production posture)
+bun run test:e2e      # 207/207 playwright (production posture)
 ```
 
 Verification beyond the gates:
@@ -778,6 +786,33 @@ Verification beyond the gates:
    from its own surface, or its prose makes the retired packages
    falsely "live" — a census must not count its instrument as
    evidence).
+13. **F13 (v29) — A surface can be decoded, status-pinned,
+   click-pinned, title-pinned, and a11y-registered — and still have
+   ZERO gate teeth on its designed CONTENT.** The 404 had every pin
+   a coverage audit could name (the TRUE HTTP status since V24, the
+   card visibility + a text match + the CTA click, the slug title +
+   the V27 guard, the axe registration at both widths) — but the h1's
+   ROLE+LEVEL (a `getByText` assertion passes on a demoted `<div>`),
+   the exact body copy, the "404" badge and its geometry, and the
+   CTA's accessible name were pinned nowhere: an h1→div demotion or a
+   copy drift would keep every gate green (axe flags no
+   critical/serious violation for a missing heading). The coverage
+   audit that finds this shape asks "which renderable routes have no
+   gate inventory at all" — then freezes the measured family with
+   exact-value pins and PROVES the gap was real by planting the
+   regression (RED at the exact assertion, zero collateral). Two
+   corollaries discovered en route: (a) **axe-core's `label` rule
+   ACCEPTS a placeholder as a label** (the non-empty-placeholder
+   check) — an a11y register's label coverage is weaker than it
+   looks, and a mutation proof of label-teeth must strip BOTH the
+   htmlFor and the placeholder (a bare input) to demonstrate the
+   scan fires; (b) **a count-anchored live description of an
+   array-driven set goes stale the day the array grows** ("the six
+   live docs" → the seventh joins → every "six" in the live docs is
+   now wrong while the pin stays green) — describe the set by NAME
+   ("the LIVE_DOCS array") and let the array be the source of truth;
+   historical records keep their counts (they are archives of what
+   was true at their own time).
 
 ## §13 Pitfalls to Avoid (don't do these in this repo)
 

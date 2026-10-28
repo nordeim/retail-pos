@@ -196,11 +196,13 @@ describe("V21 — single lockfile (bun.lock)", () => {
 // ---------------------------------------------------------------------------
 
 /**
- * The six live operational docs — the shipped surfaces a reader acts on.
- * Historical session logs and executed plans under docs/ are archives of
- * what was true at their own time and stay out of scope by design (a
- * v6 session log citing a workspace-local script is a historical fact,
- * not a live claim).
+ * The live operational docs — the shipped surfaces a reader acts on.
+ * (V29/D-197a2: the NAME form, never a count — a count-anchored
+ * comment goes stale the day a doc joins this array; the array below
+ * is the source of truth.) Historical session logs and executed plans
+ * under docs/ are archives of what was true at their own time and stay
+ * out of scope by design (a v6 session log citing a workspace-local
+ * script is a historical fact, not a live claim).
  */
 const LIVE_DOCS: ReadonlyArray<readonly [string, string]> = [
   ["README.md", README],

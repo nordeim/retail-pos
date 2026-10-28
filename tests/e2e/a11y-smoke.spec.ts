@@ -81,4 +81,34 @@ test.describe("a11y smoke (logged-out)", () => {
       blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
     ).toEqual([]);
   });
+
+  // V29/F2 — the register COMPLETED (the neo-crm session-197 coverage-audit
+  // doctrine adopted): the AGENTS V24 doctrine says every public surface
+  // belongs in this register, and two never made it — /signup (the SD-20
+  // public superset: the reference gates /signup behind its platform login,
+  // the clone renders it publicly) and /reset-password (the base44
+  // platform-template page; the token rides the query string, so the
+  // session-free render is the no-token "Invalid Reset Link" state). Both
+  // ride the light-theme label families the login scan already passes on.
+  test("the public signup surface is clean", async ({ page }) => {
+    await page.goto("/signup");
+    await expect(page.getByRole("heading", { name: /create your account/i })).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the public reset-password surface is clean", async ({ page }) => {
+    await page.goto("/reset-password");
+    await expect(page.getByRole("heading", { name: "Invalid Reset Link" })).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
 });

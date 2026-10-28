@@ -2263,3 +2263,104 @@ Stage Summary:
   (Radix minors + the Prisma 6→7 MAJOR — their own cycle if ever
   wanted); the react-dom boot floor; the reference's own broken flows
   (nothing to mirror); every standing v8-v27 disclosure unchanged.
+
+## Task V29 (session_54 + session_55) — 2026-10-29
+
+Fresh clone after the 4th recorded workspace reset — the log shows the
+prior session HAD closed and pushed V28 (67feee5 + the owner's
+1469ff7/session_53 transcript), so this is the 14th audit cycle.
+Environment rebuilt (.env, install 484, db:push+seed the reference
+mirror, chromium-1243) — baseline gates green FIRST-TRY exactly as V28
+closed them: lint 0 · tsc 0 · build ✓ · 577/577 unit (43 files) ·
+203/203 e2e (3.5m, zero flakes).
+
+Audit (14th cycle):
+- neo-crm ADVANCED 769ba13 → a482f72 + ba30355: session-197 THE
+  SWEEP-STATE COVERAGE AUDIT — the first new doctrine in several
+  cycles, read in full and ADOPTED: a decoded, behavior-pinned surface
+  can still have ZERO gate teeth on its designed content; plus
+  D-197a2 (the count-proof NAME form for array-driven set
+  descriptions).
+- The reference UNCHANGED for the 14th consecutive cycle (data, views,
+  the 390×844 viewport lock; no hamburger).
+- The drawer spine re-measured live at 390×844: panel [0,0,288,844] ·
+  nav [0,69,287,727] · close [235,16,36,36] · 8 links y=81+44k —
+  EXACTLY the frozen v25 ledger (14th confirmation, no Tailwind v4
+  trap); Esc + aria reset + focus return verified live.
+- Citation sweep 19/19 clean; the V27 title-guard probe re-run 12/12
+  clean (margins 12ms/13ms); Known-Issues zero live watch items;
+  count lockstep held (577+203).
+- The s197 coverage inventory applied to this repo:
+  F1 — the 404 CONTENT FAMILY has zero gate teeth: status-pinned
+  (V24), visibility-pinned (card + one getByText + CTA click), title-
+  pinned (v7/V27), a11y-registered (V24) — but the h1's ROLE+LEVEL
+  (getByText passes on a demoted div), the exact body copy, the "404"
+  badge + its 80×80 box, the CTA's accessible name, and the card's
+  max-w-md 448px pinned NOWHERE (measured live on BOTH apps first —
+  the reference's own 404 carries the identical family).
+  F2 — the a11y register incomplete: the V24 doctrine's "every public
+  surface" vs the register's reality — /signup and /reset-password
+  (both public, the SD-20 superset posture) never joined login + the
+  404 (grep-verified: the only AxeBuilder scans live in the smoke).
+  S — the count-anchored "six" live-doc descriptions (the D-197a2
+  shape; the LIVE_DOCS array is the source of truth).
+
+Execution (TDD):
+- B2 born-green: the NEW tests/e2e/not-found-surface.spec.ts (T1 the
+  content family — h1 by role+level+exact name, the exact copy, the
+  badge text, the CTA accessible name; T2 the geometry family — card
+  448px, badge 80×80) 2/2 green; the a11y smoke extended with the
+  signup + reset-password registrations (the session-free render is
+  the no-token "Invalid Reset Link" state) 6/6 green (4+2). Lint 0 ·
+  tsc 0 held.
+- B4 mutation-proven ×3, each RED at the exact target then restored:
+  (a) the planted h1→div demotion RED at getByRole (zero collateral,
+  T2 green); (b) the planted copy drift RED at the exact-string
+  getByText (the h1 step passed first); (c) the register's teeth —
+  DISCOVERED EN ROUTE: stripping htmlFor alone stays GREEN because
+  axe-core's `label` rule ACCEPTS a placeholder as a label (the
+  non-empty-placeholder check, verified against a minimal static
+  page) — the honest proof strips BOTH the htmlFor and the Email
+  field's placeholder: RED with label:critical at the exact signup
+  registration, six other smoke tests green. The lesson recorded in
+  AGENTS/CLAUDE/SKILL §12 F13.
+- Full gates after the restore: lint 0 · tsc 0 · build ✓ · 577/577
+  unit (43 files, HELD) · 207/207 e2e (3.7m, ZERO flakes) — the count
+  ladder 203→207 exactly as designed (+2 not-found-surface +2 a11y
+  registrations). Five v29 captures PNG-validated at exact dimensions
+  (desktop-ventas-1280, desktop-dashboard-1280, desktop-404-1280 —
+  the cycle's own subject, mobile-terminal-390,
+  mobile-drawer-open-390).
+- B5 docs lockstep: README (badge + Tested row 577+207), AGENTS (the
+  gate-coverage doctrine's V29/ADR-038 completion + the axe
+  placeholder probe lesson + the LIVE-DOC name form), CLAUDE (the v29
+  contracts note, newest-first + counts), PAD v2.16.0 (history +
+  ADR-038 + §8 e2e row 207 + the not-found-surface seam row + the
+  name form), SKILL v1.23.0 (the v29 close layer live, the v28 layer
+  demoted + three count sites + the §12 F13 lesson),
+  remediation-plan-v29 §6, session_54, session_55, this entry. The
+  unit suite re-ran green after every doc edit (the census + doc pins
+  read the live docs). Committed to main; pushed via the SSH wrapper
+  (remote == local HEAD verified).
+
+Stage Summary:
+- V29 closed the public-surface coverage audit (ADR-038, the neo-crm
+  session-197 doctrine adopted): the 404's designed content family is
+  gate-frozen (mutation-proven ×2), the a11y register now REALLY holds
+  every public surface (signup + reset-password registered), and the
+  LIVE_DOCS descriptions carry the count-proof NAME form (the array
+  is the source of truth; historical records untouched).
+- The cycle's own probe lesson: axe-core's `label` rule accepts a
+  placeholder as a label — an a11y register's label coverage is
+  weaker than it looks; label-teeth mutation proofs must strip both
+  the htmlFor and the placeholder.
+- The reference is unchanged for the 14th consecutive cycle; the
+  mobile drawer spine re-verified live against the frozen ledger (no
+  Tailwind v4 bug); the citation sweep clean (19/19); the V27
+  title-guard probe 12/12.
+- Gates: 577 unit + 207 e2e green (zero flakes); all counts moved in
+  the same commit (e2e 203→207; unit 577 and 43 files held).
+- Known-open (disclosed): dependency UPGRADES deliberately not taken
+  (Radix minors + the Prisma 6→7 MAJOR — their own cycle if ever
+  wanted); the react-dom boot floor; the reference's own broken flows
+  (nothing to mirror); every standing v8-v28 disclosure unchanged.

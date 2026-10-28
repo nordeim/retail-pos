@@ -721,6 +721,20 @@ The `lg:hidden` chrome asserts with `toBeHidden`, never `toHaveCount(0)` —
   status (the 404 test pins the status line via `page.request.get`), the
   webServer boot poll proves only a 2xx (the health body has its own
   spec), and every public surface belongs in the a11y smoke's register.
+  V29/ADR-038 closed the doctrine's own gaps (the neo-crm session-197
+  coverage-audit adoption): the register now REALLY holds every public
+  surface (signup + reset-password joined login + the 404 — the
+  session-free reset render is the no-token "Invalid Reset Link" state),
+  and the 404's designed CONTENT family is frozen by
+  `tests/e2e/not-found-surface.spec.ts` (h1 by role+level — getByText
+  passes on a demoted div; the exact copy; the 404 badge + its 80×80
+  box; the CTA's accessible name; the card's max-w-md 448px —
+  mutation-proven ×2). Probe lesson: axe's `label` rule ACCEPTS a
+  placeholder as a label (the non-empty-placeholder check) — a
+  label-disconnection regression stays green while placeholders exist;
+  a mutation proof of the register must strip BOTH the htmlFor and the
+  placeholder. Editing not-found.tsx or the auth surfaces means running
+  the corresponding specs.
 - Never weaken or delete a failing pin to make a gate green — fix the cause.
   The archived study-app tests/scripts live in `scripts/archive-study-sweep/`
   (excluded from tsconfig) and are historical reference only.
@@ -736,8 +750,11 @@ The `lg:hidden` chrome asserts with `toBeHidden`, never `toHaveCount(0)` —
   `VELOXPOS_PORT`), DEPLOYMENT.md's env/script/route-count claims, and
   the single-lockfile rule (`bun.lock` — never commit a
   `package-lock.json`) are enforced by `tests/deployment-surfaces.test.ts`.
-  V28 widened its block 10 to the whole SIX-LIVE-DOC set (README, AGENTS,
-  CLAUDE, PAD, SKILL, DEPLOYMENT.md): every `scripts/…` reference in a
+  V28 widened its block 10 to the whole LIVE-DOC set (the LIVE_DOCS
+  array in that test — README, AGENTS, CLAUDE, PAD, SKILL,
+  DEPLOYMENT.md; the array is the source of truth and the NAME form
+  is the rule, a count-anchored description goes stale the day a doc
+  joins): every `scripts/…` reference in a
   live operational doc must resolve to a real file — historical session
   logs and executed plans under `docs/` are archives, out of scope by
   design. Editing any of those files means running it.

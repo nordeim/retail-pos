@@ -28,7 +28,7 @@ bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
 bun run test           # vitest unit layer (577 tests / 43 files)
-bun run test:e2e       # playwright e2e layer (203 specs, boots standalone :3100)
+bun run test:e2e       # playwright e2e layer (207 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -291,6 +291,26 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   V22 action pins grew to the four-action superset (extend, never
   weaken). The route-count pin in deployment-surfaces counts 28 route
   handlers now — DEPLOYMENT.md §10 carries the update-profile row.
+- The v29 contracts: the public-surface coverage audit (the neo-crm
+  session-197 doctrine adopted — a decoded, behavior-pinned surface can
+  still have ZERO gate teeth on its designed content). (1) The 404
+  content-family freeze (`tests/e2e/not-found-surface.spec.ts`): the
+  level-1 h1 BY ROLE+LEVEL (getByText passes on a demoted div — the
+  s197 mutation shape), the exact body copy, the "404" badge + its
+  80×80 geometry, the CTA's accessible name, and the card's measured
+  max-w-md 448px are pinned; mutation-proven ×2 (the planted h1→div
+  demotion and the copy drift each RED at the exact assertion, zero
+  collateral). (2) The a11y register COMPLETED: /signup and
+  /reset-password (both public — the SD-20 superset posture) join the
+  smoke's register (the V24 doctrine's "every public surface" — the
+  register had login + 404 only); the axe `label` rule's
+  placeholder-acceptance (the non-empty-placeholder check) means a
+  label-disconnection regression is NOT caught by the scan while
+  placeholders exist — the mutation proof strips BOTH the htmlFor and
+  the placeholder (a bare input) to demonstrate the teeth. (3) The
+  D-197a2 NAME form: count-anchored live descriptions of the LIVE_DOCS
+  set go stale the day a doc joins — the array is the source of truth,
+  the name form never goes stale (historical records untouched).
 - The v28 contracts: the shipped-artifacts truth pass — (1) every
   LIVE operational doc (the six-doc set: README, AGENTS, CLAUDE, PAD,
   SKILL, DEPLOYMENT.md) references only scripts that exist (the
