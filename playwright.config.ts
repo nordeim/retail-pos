@@ -65,8 +65,23 @@ export default defineConfig({
       // S22: 64-hex shape (the documented production form — openssl rand
       // -hex 32) so the boot guard's weak-secret warn stays silent in the
       // suite's own boot. The setup project re-signs-in each run, so the
-      // value change invalidates nothing.
-      AUTH_SECRET: "5f3a9c1e7b2d4f6a8c0e3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f3a5c7e9b1d3f",
+      // value change invalidates nothing. (V24/F5: the previous value was
+      // 62-hex — the comment's claim was false; the pin in
+      // tests/e2e-harness.test.ts caught it.)
+      AUTH_SECRET: "5c488cfa9214da3ba7446c061a1ff7d6b6bb00fa2db8ba930b5dea807fda1a71",
+      // V24/SD-100 (the neo-crm N-69a doctrine — "the dev server lies" on
+      // the env axis): the child env must not inherit shell state that
+      // flips the auth-behavior contracts the security/account specs
+      // assert. A stray `RESET_INAPP_DELIVERY=1` export in the developer's
+      // shell would hand the C1 production-posture spec the one-shot reset
+      // token in the forgot-password response body; a stray
+      // `AUTH_PROXY_HOPS=1` would break the H3 verify-bucket isolation (a
+      // single-hop xff fails closed to "local" — the shared localhost
+      // verify budget runs at exactly 10/15min). Pinning the defaults
+      // after the spread makes the suite deterministic regardless of
+      // shell state.
+      RESET_INAPP_DELIVERY: "",
+      AUTH_PROXY_HOPS: "0",
     } as Record<string, string>,
   },
 });

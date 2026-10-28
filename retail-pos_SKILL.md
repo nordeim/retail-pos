@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.17.0
+version: 1.18.0
 last_updated: "2026-10-28"
 tags:
   - pos
@@ -25,14 +25,18 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v23 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 550/550 unit · 197/197 e2e** (the v23
-> close: the profile/name-edit superset — `POST /api/auth/update-profile`
-> (the change-email family shape with the DELIBERATE no-password split:
-> fullName is a benign display field, the store-settings-PATCH posture)
-> + the "Cambiar nombre" dialog (the fourth Mi Cuenta action, prefilled,
-> the onChanged seam); ADR-032, PAD v2.10.0; the route-count pin caught
-> the new route exactly as designed — DEPLOYMENT.md now counts 28). The
+> template), validated against the codebase at the v24 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 556/556 unit · 199/199 e2e** (the v24
+> close: the gate-coverage truth pass — every shipped behavioral claim
+> a doc or consumer leans on now carries a standing assertion: the
+> true-HTTP-404 status pin, the public 404 registered in the a11y
+> smoke at both widths, the /api/health body contract pinned by its
+> own spec, the e2e webServer child env shell-state-proof
+> (`RESET_INAPP_DELIVERY: ""` + `AUTH_PROXY_HOPS: "0"` pinned after
+> the spread — the neo-crm N-69a doctrine), the 64-hex AUTH_SECRET
+> truth-restored, and the harness contract frozen by
+> `tests/e2e-harness.test.ts`; ADR-033, PAD v2.11.0; the RED run
+> itself caught the 62-hex secret under a 64-hex claim). The
 > prior close: the account-security loop closed end-to-end — the "Mi
 > Cuenta" UI in Ajustes (change-password / change-email / delete-account
 > dialogs + the identity readout), the signup verify stage's
@@ -164,8 +168,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 550 tests / 38 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 197 specs; standalone prod server :3100 |
+| Unit | vitest ^5.0.1 (node env) | 556 tests / 39 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 199 specs; standalone prod server :3100 (child env shell-state-proof) |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -195,8 +199,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 550/550
-bun run test:e2e           # playwright: 197/197 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 556/556
+bun run test:e2e           # playwright: 199/199 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -576,8 +580,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 550/550 vitest
-bun run test:e2e      # 197/197 playwright (production posture)
+bun run test          # 556/556 vitest
+bun run test:e2e      # 199/199 playwright (production posture)
 ```
 
 Verification beyond the gates:
@@ -613,6 +617,14 @@ Verification beyond the gates:
 7. **F7 — Layout engines outlive the literal colors.** Tailwind v4's OKLCH
    pipeline changes computed strings; write style pins against identity
    probes, not rgb literals.
+8. **F8 (v24) — An unpinned claim is a latent regression.** The 404
+   rendered correctly at the true HTTP 404 status, the health endpoint
+   returned the documented body, and the e2e suite booted deterministically
+   — none of it was PINNED (`page.goto` tolerates any status; the webServer
+   poll proves only a 2xx; the child env inherited the parent shell). The
+   gate-coverage doctrine (ADR-033): every behavioral claim a doc or a
+   consumer leans on needs a standing assertion — and the RED run itself
+   caught a fifth gap (a 62-hex secret under a 64-hex comment claim).
 
 ## §13 Pitfalls to Avoid (don't do these in this repo)
 

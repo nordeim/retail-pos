@@ -40,6 +40,15 @@ test.describe("navigation", () => {
   });
 
   test("unknown routes render the Spanish 404 with the Terminal CTA", async ({ page }) => {
+    // V24/F1: the TRUE HTTP status is part of the contract — page.goto
+    // tolerates any status, so the rendering assertions below alone would
+    // stay green under a catch-all route or rewrite regression that serves
+    // the card with a 200. The status line pins the server's routing truth
+    // (live-verified 404; the born-green freeze form — a battery gap, not
+    // a behavior bug).
+    const response = await page.request.get("/NonExistent");
+    expect(response.status()).toBe(404);
+
     await page.goto("/NonExistent");
     await expect(page.getByTestId("not-found-card")).toBeVisible();
     await expect(page.getByText("Página no encontrada")).toBeVisible();

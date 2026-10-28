@@ -1780,3 +1780,93 @@ Stage Summary:
 - Known-open (disclosed): the F2 flake watch (clean this run); the
   react-dom boot floor; the reference's own broken flows (nothing to
   mirror); every standing v8-v22 disclosure unchanged.
+
+---
+Task ID: V24
+Agent: Z.ai (main agent)
+Task: The V24 cycle — the gate-coverage truth pass (the neo-crm
+session-195 doctrine adopted): audit the codebase + the reference,
+pin the five shipped claims that carried no standing assertions (the
+true-HTTP-404 status, the a11y 404 registration, the webServer child
+env determinism, the /api/health body, the 64-hex secret truth),
+docs lockstep, commit + SSH push (main only).
+
+Work Log:
+- Baseline: the workspace refreshed via git pull (96b1021 -> 9afdcb8,
+  only docs/session_40.md — the V23 raw log — arrived); the locals
+  intact (.env with DATABASE_URL="file:../db/custom.db", db/ at the
+  repo root). Core docs re-read and validated against the code (AGENTS
+  contracts + Tailwind v4 traps + the account UI contract, CLAUDE,
+  README, PAD v2.10.0/ADR-032, SKILL v1.17.0, session_39/40, the v23
+  plan, the worklog tail).
+- Baseline gates: lint 0 · tsc 0 · build ✓ · unit 550/550 · e2e
+  197/197 (3.5m) — first-try, zero code changes.
+- The audit (9th cycle): reference UNCHANGED (Terminal gated, both
+  cajas Cerrada, 12 products, 2 sales, Dashboard "martes 27 de
+  octubre, 2026", Reports "Sin datos en este período", the five store
+  sections); at 390px still NO hamburger (nav 219px, main 170px,
+  viewport-locked). The clone's mobile drawer re-verified LIVE at
+  390x844 (aria-expanded cycle, scroll lock, 8 links at a uniform
+  44px pitch, Esc close + focus return) — the TailwindCSS v4
+  mobile-menu trap is NOT present (9th consecutive confirmation). The
+  V23 additions verified LIVE (the four-action row, the prefilled
+  Cambiar nombre dialog).
+- neo-crm ADVANCED by one material commit (facdd56 -> 9ff0d37:
+  session-195, "THE 404 GATE-COVERAGE PINS") — the doctrine ADOPTED:
+  a shipped behavioral claim that a doc or a consumer leans on, but
+  that no standing assertion pins, is a latent regression. Five gaps
+  mapped in this repo: F1 the true-HTTP-404 status unpinned
+  (page.goto tolerates any status — live-verified the status IS 404);
+  F2 the public 404 outside the a11y register (live-verified: no
+  login bounce — the SD-20 superset); F3 the webServer child env
+  shell-state-dependent (the flip mechanism demonstrated LIVE: a
+  manual standalone boot with a stray RESET_INAPP_DELIVERY=1 export
+  hands out the one-shot reset token in the production response);
+  F4 the /api/health body contract with three documented consumers
+  and zero assertions; F5 (found by the RED run) the e2e AUTH_SECRET
+  62-hex under the S22 "64-hex" claim.
+- TDD RED: the NEW tests/e2e-harness.test.ts (6 source pins) failed
+  3/6 against the unfixed tree (the two knob pins + the hex-shape pin
+  — the RED run surfacing F5); the three born-green freeze pins
+  passed as designed (the disclosed battery-gap form).
+- TDD GREEN (ADR-033): playwright.config.ts gained
+  RESET_INAPP_DELIVERY: "" + AUTH_PROXY_HOPS: "0" pinned AFTER the
+  ...process.env spread (the neo-crm N-69a cure) + a genuine 64-hex
+  AUTH_SECRET. The pin-wins proof: the security spec stays 6/6 green
+  under the same stray exports. Born-green freezes: the status line
+  inside navigation's existing 404 test (page.request.get); the 404
+  registered in the a11y smoke at BOTH widths (the logged-out
+  anon-surface form); the health body pinned by its own spec
+  (tests/e2e/health.spec.ts); the harness contract (isolated e2e.db,
+  NODE_ENV=production, the pinned seed identity) frozen by the same
+  e2e-harness file.
+- The evidence set: four v24-* captures under docs/screenshots/
+  (404-desktop, 404-mobile-390, health-json, mobile-drawer-open-390),
+  all VLM-verified.
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 556/556 (39 files,
+  550+6) · e2e 199/199 (3.5m, 197+2) — first-try.
+- Docs lockstep: README (badge 556+199 + the testing table); AGENTS
+  (the test-suite rules gain the shell-state-proof + gate-coverage
+  doctrine lines); CLAUDE (the v24 contracts note + counts 556/39 ·
+  199); PAD v2.11.0 (history + ADR-033 + the §8 testing table); SKILL
+  v1.18.0 (the §12 F8 lesson); docs/remediation-plan-v24.md (ledger
+  L1-L13 + execution results); docs/session_41.md; this entry.
+
+Stage Summary:
+- V24 closed the gate-coverage truth pass: five shipped claims that
+  carried no standing assertions are now pinned (the true-HTTP-404
+  status, the a11y 404 registration at both widths, the health body
+  contract, the shell-state-proof webServer child env, the 64-hex
+  secret truth) — 6 new source pins + 2 new e2e specs + 2 extended
+  specs, with the determinism proven both ways live.
+- The reference is unchanged for the 9th consecutive cycle; the
+  mobile drawer contract re-verified live (44px pitch, Esc/focus
+  return) with the v24 evidence set.
+- The RED run itself caught a fifth gap (the 62-hex secret under a
+  64-hex claim) — the TDD loop earning its keep on a truth-pass cycle.
+- Gates: 556 unit + 199 e2e green; all counts bumped in the same
+  commit (550->556, 197->199 everywhere).
+- Known-open (disclosed): the health DEGRADED branch (503) unpinned
+  (forcing it means breaking the DB mid-suite); the F2 flake watch;
+  the react-dom boot floor; the reference's own broken flows (nothing
+  to mirror); every standing v8-v23 disclosure unchanged.

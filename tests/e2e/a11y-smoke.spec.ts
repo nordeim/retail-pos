@@ -56,4 +56,29 @@ test.describe("a11y smoke (logged-out)", () => {
       blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
     ).toEqual([]);
   });
+
+  // V24/F2: the 404 is the one PUBLIC app surface (the SD-20 superset —
+  // live-verified: no login bounce) that sat outside the smoke's
+  // registrations. Its slate-800 H1 / slate-400 body ride the same
+  // disclosed color-contrast deviation family the register already
+  // excludes, so the scan rules match. Registered at BOTH widths — the
+  // card is responsive (max-w-md under p-4) and the phone layout is the
+  // one no other registration covers.
+  test("the public 404 surface is clean at desktop and phone widths", async ({ page }) => {
+    await page.goto("/NonExistent");
+    await expect(page.getByTestId("not-found-card")).toBeVisible();
+
+    let blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
 });

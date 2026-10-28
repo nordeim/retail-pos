@@ -661,6 +661,21 @@ retry shape fights the first Tab).
 - The seeded e2e identity is `owner@veloxpos.local` / `VeloxDemo123!`
   (pinned in `tests/e2e/global-setup.ts` + `tests/e2e/helpers.ts`), NOT the
   developer's local owner from `.env`.
+- **The e2e webServer child env is shell-state-proof (v24/ADR-033):** the
+  env block pins `RESET_INAPP_DELIVERY: ""` + `AUTH_PROXY_HOPS: "0"`
+  AFTER the `...process.env` spread — never remove those pins (a stray
+  parent-shell export would flip the C1 production posture or the H3
+  verify-bucket isolation; the neo-crm N-69a "the dev server lies"
+  family). The harness's own contract (the isolated e2e.db, the 64-hex
+  AUTH_SECRET, the pinned seed identity) is frozen by
+  `tests/e2e-harness.test.ts` — editing `playwright.config.ts` or
+  `global-setup.ts` means running it.
+- The gate-coverage doctrine (v24/ADR-033): a shipped behavioral claim a
+  doc or a consumer leans on (an HTTP status, a response body, a
+  registration) needs a standing assertion — `page.goto` tolerates any
+  status (the 404 test pins the status line via `page.request.get`), the
+  webServer boot poll proves only a 2xx (the health body has its own
+  spec), and every public surface belongs in the a11y smoke's register.
 - Never weaken or delete a failing pin to make a gate green — fix the cause.
   The archived study-app tests/scripts live in `scripts/archive-study-sweep/`
   (excluded from tsconfig) and are historical reference only.

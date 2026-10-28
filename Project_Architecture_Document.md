@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.10.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.11.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -269,6 +269,43 @@
 > round-trip with a fresh-context /api/auth/me assertion). Gates:
 > 550/550 unit (542+8, 38 files) + 197/197 e2e (196+1, 3.4m).
 > ADR-032 added.
+>
+> v2.11.0 (2026-10-28): the remediation-plan-v24 execution — the
+> gate-coverage truth pass (ADR-033). The audit found the reference
+> UNCHANGED for the 9th consecutive cycle (every view's data state
+> identical; at 390px still no hamburger, nav 219px, viewport-locked;
+> Ajustes = exactly the five store sections), the baseline green
+> exactly as V23 closed it (550+197, first-try), the mobile drawer
+> contract live-verified at 390×844 (aria cycle, scroll lock, 8 links
+> at the uniform 44px pitch, Esc + focus return — the Tailwind v4
+> trap suite green, 9th consecutive confirmation), and the V23
+> additions working live (the four-action row, the prefilled Cambiar
+> nombre dialog). The rotation trigger: neo-crm ADVANCED by one
+> material commit — session-195, "THE 404 GATE-COVERAGE PINS" — whose
+> doctrine this cycle adopted: a shipped behavioral claim that a doc
+> or a consumer leans on, but that no standing assertion pins, is a
+> latent regression. Four such claims found here (F1 the true-HTTP-404
+> status unpinned — both tests reached the surface via `page.goto`,
+> which tolerates any status; F2 the public 404 surface outside the
+> a11y smoke's register; F3 the e2e webServer child env inheriting
+> stray parent-shell auth-behavior exports; F4 the /api/health body
+> contract with three documented consumers and zero assertions) + a
+> fifth the RED run itself surfaced (F5: the e2e AUTH_SECRET was
+> 62-hex under the S22 comment's "64-hex" claim). The fixes: the
+> status line pinned inside navigation's existing 404 test; the 404
+> registered in the a11y smoke at BOTH widths (the logged-out
+> anon-surface form); `/api/health`'s body pinned by its own spec;
+> `RESET_INAPP_DELIVERY: ""` + `AUTH_PROXY_HOPS: "0"` pinned after
+> the webServer's `...process.env` spread (the neo-crm N-69a "the dev
+> server lies" family — the determinism proven BOTH ways live: a
+> stray `RESET_INAPP_DELIVERY=1` standalone boot hands out the
+> one-shot reset token in the production response, while the suite
+> with the same stray exports stays 6/6 green); a genuine 64-hex
+> AUTH_SECRET; and the harness's own contract frozen by the NEW
+> `tests/e2e-harness.test.ts` (6 source pins — the isolated e2e.db,
+> NODE_ENV=production, the 64-hex shape, the two knob pins RED
+> first, the seed-identity pinning). Gates: 556/556 unit (550+6,
+> 39 files) + 199/199 e2e (197+2, 3.5m). ADR-033 added.
 >
 > v2.8.0 (2026-10-27): the remediation-plan-v21 execution — the
 > deployment-surface truth pass, closing Known-Issue #6 for real. The
@@ -548,6 +585,7 @@ lowest-risk path. **Verified.**
 | ADR-031 | The v22 account-security UI contract: the four ADR-030 routes are UI-wired end-to-end — the loop the reference never ships (it has NO account surface: its sidebar bottom is the collapse chevron alone, its Ajustes is store settings only — live-verified). (1) **Ajustes → "Mi Cuenta"** (`settings-view.tsx`): a SIXTH SectionCard — ShieldCheck/rose-500 at the measured w-5 h-5 (the tone the five store sections leave free; the v10 icon pin counts SIX now) — owning a self-contained /api/auth/me fetch (the async-then setState shape) that renders the email + the "Verificada" emerald badge + member-since (es-MX); change-password and change-email ride the measured Dialog family (max-w-lg chrome, key-remount, the 42px glass-button footer, Spanish chrome with the routes' English errors passing through — the reference's own mixed convention, its login alert measured "Invalid email or password"); delete-account rides a plain Dialog + the NEW `glass-button-danger` @utility (the warning-ramp extension precedent — the reference's own button system one tone further; the AlertDialog primitive stays deliberately UNUSED: its cva `buttonVariants()` defaults clobber the glass fills, the F6 trap), with the cascade warning naming the retail domain's wipe and the logout() exit mechanics (store reset + /login redirect; the route clears the cookie). (2) **The signup verify stage displays the register response's code** (F2 — a REAL bug fixed: `submitForm` discarded the `code` the no-SMTP delivery model puts in the response body; the route's own comment named "the verify screen's self-hosted code note" as the delivery surface and it did not exist — signup verification was UI-unusable on a fresh self-hosted install); the note rides the auth slate-Alert family and hides for the uniform no-code 200 (the already-registered posture). (3) **The login 403 verify sub-card** (F3 — the dead-end closed: UNVERIFIED_COPY told the user to check an email that never arrives): the code entry + "Resend the code" + the delivered-code note (or the neutral no-enumeration copy) + "Verify and sign in" — verify-email sets the session cookie, so the journey completes without a second sign-in; the card is a plain DIV because HTML forbids a nested `<form>` and React hydration silently kills the inner submit (reproduced live: the browser console logged "In HTML, <form> cannot be a descendant of <form>"; Enter in the code field routes to submitVerify explicitly). (4) `AppUser` gains `emailVerified` (the API's publicUser already returned it — the type was stale). (5) The v5 form-control pin caught the first draft's solid input fills — settings-view inputs stay TRANSPARENT (measured trap 13). Pinned TDD-first: `tests/account-ui.test.ts` (13 source pins — RED 12/13 pre-fix, the one pass the trivially-true F5 docs guard) + `tests/e2e/account-ui.spec.ts` (9 behavioral tests, one scratch account deleted LAST; the verify-email bucket isolated via the H3 xff precedent — the shared localhost verify budget runs at exactly 10/15min and the 11th call would 429 M6). PAD Known-Issue #7 closed as a docs-truth row (the config sets no ignoreBuildErrors — the row described a flag retired earlier) | Accepted — Verified (542 unit + 196 e2e; RED→GREEN on both pin layers + the live manual probe of the full 403→resend→verify journey + the five v22 evidence captures) |
 
 | ADR-032 | The v23 profile/name-edit superset: the account-surface family's completion — the account's `fullName` (rendered in the Mi Cuenta readout since v22, set once by the register form or the seed) gains its route and its dialog. (1) **`POST /api/auth/update-profile`** — the change-email family shape (`requireUser()` → per-user rate limit `updateProfile:${user.id}` 10/15min → `parseWith(updateProfileSchema)` → the route-side must-differ guard (posting the current name → 400 "This is already your name." — server state via requireUser's SessionUser, no extra read) → ONE `db.user.update` → `{ ok, name, user: publicUser(updated) }`). The schema: `fullName: z.string().trim().min(1).max(100)` (trim-then-validate; the register ceiling). (2) **The deliberate no-password family split**: the three ADR-030 credential routes verify the password FIRST because they rotate credentials or destroy the account; `fullName` is a benign display field with zero auth-bearing semantics, so the matching posture is the store SETTINGS PATCH (session-gated, no password, rate-limited) — cargo-cult password prompts on benign fields are not security. Disclosed in DEPLOYMENT.md §10 (the five-endpoint table now). (3) **The "Cambiar nombre" dialog** (`settings-view.tsx`): the FOURTH Mi Cuenta action (between the email rotation and the destructive exit — the destructive stays last), the measured Dialog grammar (max-w-lg, key-remount, the 42px glass-button footer), the TRANSPARENT settings-view input (measured trap 13) PREFILLED with the current name, `onChanged(name)` patching the readout's `me.name` (the change-email `onChanged(email)` seam — the route response is the source of truth). (4) **The pins extend, never weaken**: the V22 "three actions" pin grew to the four-action superset; the wiring pin added `/api/auth/update-profile`; 8 new pins guard the route's family shape + the schema + the dialog seam; 1 new e2e behavioral test (the name round-trip: prefill → must-differ 400 → happy path → readout update → a fresh-context `/api/auth/me` reflecting the new name — the no-storageState discipline). (5) The V21 route-count pin caught the new route exactly as designed (the filesystem hit 28 while DEPLOYMENT.md claimed 27 — the count-the-things rule working); DEPLOYMENT.md updated in the same commit | Accepted — Verified (550 unit + 197 e2e; RED→GREEN on the pin layer (9/21 RED pre-fix) + the live manual round-trip: the four-button row, the prefilled dialog, the must-differ 400, the readout + server state update, the seeded name restored + the four v23 evidence captures) |
+| ADR-033 | The v24 gate-coverage truth contract (the neo-crm session-195 doctrine adopted): a shipped behavioral claim that a doc or a consumer leans on, but that no standing assertion pins, is a latent regression — every gate can stay green while the contract silently falsifies. The four claims this cycle found and pinned: (1) **The true-HTTP-404 status** — both 404 e2e tests reached the surface via `page.goto` (which tolerates any status); the cure is the `page.request.get` status assertion INSIDE navigation.spec.ts's existing test (the born-green freeze form — the live-verified truth frozen; a battery gap, not a behavior bug). (2) **The public 404 surface in the a11y register** — the smoke covered dashboard/drawer/login only; the 404 (the one PUBLIC app surface, the SD-20 superset — live-verified no login bounce) is now registered at BOTH widths (1280×800 + 390×844) in the logged-out anon-surface form, the same disclosed color-contrast deviation family. (3) **The e2e webServer child env is shell-state-proof** — the env block spread `...process.env` without pinning the auth-behavior knobs: a stray `RESET_INAPP_DELIVERY=1` parent-shell export would flip the C1 production-posture spec (the one-shot reset token would appear in the forgot-password response body — the flip mechanism demonstrated LIVE on a manual standalone boot), and a stray `AUTH_PROXY_HOPS=1` would break the H3 verify-bucket isolation (single-hop xff fails closed to "local", the shared localhost verify budget at exactly 10/15min). The cure: `RESET_INAPP_DELIVERY: ""` + `AUTH_PROXY_HOPS: "0"` pinned AFTER the spread (the neo-crm N-69a "the dev server lies" family); the determinism proven both ways (the suite with the stray exports stays 6/6 green — the pinned child env overrides the parent shell). (4) **The /api/health body contract** — three documented consumers (the Playwright webServer boot poll, the Docker healthcheck, the README verify-setup instruction) and zero assertions (the poll proves only a 2xx); the cure is the dedicated `tests/e2e/health.spec.ts` pinning the 200 + the exact `{status:"ok",db:"up",app:"veloxpos"}` body. (5) **F5, found by the RED run itself**: the e2e AUTH_SECRET was 62-hex under the S22 comment's "64-hex" claim — a docs-truth defect in the same family; cured with a genuine 64-hex value (the setup project re-signs-in each run, so the rotation is inert). The harness's own contract (the isolated e2e.db, NODE_ENV=production, the 64-hex AUTH_SECRET, the pinned seed identity) is frozen by the NEW `tests/e2e-harness.test.ts` (6 source pins; the two knob pins + the hex pin verified RED pre-fix) | Accepted — Verified (556 unit + 199 e2e; the RED→GREEN pin evidence (3/6 RED pre-fix) + the both-ways determinism proof + the four v24 evidence captures) |
 
 ---
 
@@ -736,8 +774,8 @@ Two layers, two runners, disjoint file globs:
 
 | Layer | Runner | Scope | Count |
 |---|---|---|---|
-| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 550 tests / 38 files — Verified |
-| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 197 specs — Verified |
+| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 556 tests / 39 files — Verified |
+| E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 199 specs — Verified |
 
 - **Unit seams**: money (the verified ticket math), ticket (V-ID shape),
   router (8-view map + aliases), date (es-MX formatters), validation
@@ -745,16 +783,22 @@ Two layers, two runners, disjoint file globs:
   tailwind-traps (the v4 space-y/theme/shadow rules in source), db-path
   (anchors + the v3 mangled-form hardening), auth (scrypt/HMAC/limiter),
   api-timeout/api-offline (the fetch seam), env-check, site, dev-preflight.
-- **E2E**: navigation (8 routes + 404 + collapse widths), mobile-navigation
+- **E2E**: navigation (8 routes + 404 WITH its true-HTTP-status pin +
+  collapse widths), mobile-navigation
   (the drawer contract incl. TRAP-4 geometry guard + no-overflow sweep),
   auth (logged-out surface, bad/good credentials), inventory (CRUD + search +
   chips), terminal-sales (no-shift gate → open shift → sell → receipt →
   stock decrement → close; cash-short block), registers (CRUD + guards),
   cashiers (CRUD), settings (round-trip + live chrome rename), reports
-  (periods + verified KPIs), a11y smoke (axe minus color-contrast, disclosed).
+  (periods + verified KPIs), health (the public body contract — v24),
+  a11y smoke (axe minus color-contrast, disclosed; the 404 registered at
+  both widths — v24).
 - **Infrastructure**: e2e boots `.next/standalone/server.js` on an isolated
   port with `db/e2e.db` (force-reset + reseeded per run); one storageState
-  login (rate-limiter budget); `AUTH_SECRET` pinned to a 64-hex shape.
+  login (rate-limiter budget); `AUTH_SECRET` pinned to the 64-hex shape;
+  the child env is SHELL-STATE-PROOF (`RESET_INAPP_DELIVERY: ""` +
+  `AUTH_PROXY_HOPS: "0"` pinned after the spread — v24/ADR-033); the
+  harness contract frozen by `tests/e2e-harness.test.ts`.
 - **Gates**: `lint → typecheck → build → test → test:e2e`, all green at
   PAD v1.5.0 (worklog entry). Failure policy: fix the cause; never weaken a
   pin (AGENTS.md).

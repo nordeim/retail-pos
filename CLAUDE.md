@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (550 tests / 38 files)
-bun run test:e2e       # playwright e2e layer (197 specs, boots standalone :3100)
+bun run test           # vitest unit layer (556 tests / 39 files)
+bun run test:e2e       # playwright e2e layer (199 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -291,6 +291,25 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   V22 action pins grew to the four-action superset (extend, never
   weaken). The route-count pin in deployment-surfaces counts 28 route
   handlers now — DEPLOYMENT.md §10 carries the update-profile row.
+- The v24 contracts: the gate-coverage truth pass (ADR-033 — the
+  neo-crm session-195 doctrine adopted: a shipped behavioral claim
+  that a doc or consumer leans on, but that no standing assertion
+  pins, is a latent regression). The 404 contract now carries its TRUE
+  HTTP status pin (a `page.request.get` line inside navigation's
+  existing test — `page.goto` tolerates any status); the public 404
+  surface is registered in the a11y smoke at BOTH widths (the
+  logged-out anon-surface form); `/api/health`'s body contract
+  (`{status:"ok",db:"up",app:"veloxpos"}`) is pinned by its own spec
+  (three documented consumers — the webServer boot poll only proves
+  a 2xx); and the Playwright webServer child env PINS
+  `RESET_INAPP_DELIVERY: ""` + `AUTH_PROXY_HOPS: "0"` after the
+  `...process.env` spread (the N-69a "the dev server lies" family — a
+  stray parent-shell export used to be able to flip the C1 production
+  posture or the H3 verify-bucket isolation). The harness's own
+  contract (isolated e2e.db, NODE_ENV=production, the 64-hex
+  AUTH_SECRET, the pinned seed identity) is frozen by
+  `tests/e2e-harness.test.ts` — editing playwright.config.ts or
+  global-setup.ts means running it.
 - The v15 contracts: the hover micro-interaction families — every
   row-action icon button carries `rounded-lg p-2 text-slate-400
   transition-colors` + its per-action family (edit/detail indigo,
