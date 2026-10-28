@@ -6,7 +6,9 @@
 //   - production fatal (missing / blank / the public dev fallback):
 //     console.error + process.exit(1). A plain throw is CAUGHT by Next and
 //     leaves a degraded 500-everything server — the explicit exit is the
-//     validated fail-fast mechanism (pinned by tests/e2e/s22-boot-guard.spec.ts).
+//     validated fail-fast mechanism (pinned by tests/boot-guard-wiring.test.ts;
+//     the e2e s22-boot-guard spec cited here before v26 was deleted with the
+//     V1 study-layer archive and never replaced — the stale citation swept).
 //   - warn (weak production secret / dev without a secret): console.warn.
 // ---------------------------------------------------------------------------
 

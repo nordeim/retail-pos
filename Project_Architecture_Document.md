@@ -1,4 +1,4 @@
-# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.12.0
+# VeloxPOS (`retail-pos`) — Master Project Architecture Document (PAD) v2.13.0
 
 > Generated per the `skills/project-architecture-document-md` canonical
 > section order. Evidence labels: **Verified** (executed/observed in this
@@ -306,6 +306,44 @@
 > NODE_ENV=production, the 64-hex shape, the two knob pins RED
 > first, the seed-identity pinning). Gates: 556/556 unit (550+6,
 > 39 files) + 199/199 e2e (197+2, 3.5m). ADR-033 added.
+>
+> v2.13.0 (2026-10-28): the remediation-plan-v26 execution — the
+> failure-path truth pass (ADR-035, the ADR-033 gate-coverage doctrine
+> continued at the unit layer). The audit found the reference UNCHANGED
+> for the 11th consecutive cycle (identical data state; at 390px still
+> no hamburger, viewport-locked; Ajustes = exactly the five store
+> sections), the baseline green exactly as V25 closed it (556+201,
+> first-try on a fresh clone), the mobile drawer spine re-measured live
+> EXACTLY matching the frozen ledger (11th consecutive confirmation of
+> the absent Tailwind v4 mobile-menu trap), and neo-crm UNCHANGED at
+> `316fbe2` (no new doctrine — the cycle's target came from the repo's
+> own audit). Two findings in the ADR-033 family: F1 the health
+> endpoint's DEGRADED branch (catch → 503 + the degraded body) carried
+> zero standing assertions — a known-open disclosure held since V24 on
+> an E2E-layer objection ("forcing it means breaking the DB mid-suite")
+> that dissolves at the unit layer via `vi.mock("@/lib/db")` (the mock
+> is hoisted above the import — the PrismaClient is never constructed;
+> feasibility prototyped 2/2, then deleted); the Docker healthcheck's
+> `r.ok?0:1` is the consumer that leans on the 503 (a 200-with-
+> degraded-body regression would report a broken-DB container as
+> HEALTHY with every gate green). F2 the boot-guard WIRING (`register()`
+> → console.error + `process.exit(1)` on fatal) carried zero assertions
+> while `src/instrumentation.ts`'s own comment claimed "pinned by
+> tests/e2e/s22-boot-guard.spec.ts" — a spec deleted in the V1 pivot
+> (`0b78972`, the study-layer archive) and never replaced: the claim
+> was FALSE today (the repo-wide citation sweep — 16 test citations in
+> src/, 15 resolved, 1 stale — is the audit's new instrument). Both
+> pinned by two new unit files (`tests/health-route.test.ts`, 2 tests;
+> `tests/boot-guard-wiring.test.ts`, 5 tests over the SPIED console +
+> process.exit — never a real exit) with the stale citation re-pointed
+> at the real pin. Both MUTATION-PROVEN (the planted 503→200 defect went
+> RED at the status assertion — the Docker-healthcheck-blindness shape;
+> the planted exit→throw defect — the comment's own documented
+> regression — went RED at both fatal-path tests while the pure-seam
+> env-check pins stayed green, the battery gap demonstrated; restored →
+> GREEN both). Gates: 563/563 unit (41 files, 556+7) + 201/201 e2e
+> (unchanged; one full-suite flake (the v9 Spanish-alias title test)
+> re-run green alone then 201/201 on the suite re-run). ADR-035 added.
 >
 > v2.12.0 (2026-10-28): the remediation-plan-v25 execution — the
 > drawer-contract completion (ADR-034, the drawer-open spine freeze).
@@ -623,6 +661,7 @@ lowest-risk path. **Verified.**
 | ADR-033 | The v24 gate-coverage truth contract (the neo-crm session-195 doctrine adopted): a shipped behavioral claim that a doc or a consumer leans on, but that no standing assertion pins, is a latent regression — every gate can stay green while the contract silently falsifies. The four claims this cycle found and pinned: (1) **The true-HTTP-404 status** — both 404 e2e tests reached the surface via `page.goto` (which tolerates any status); the cure is the `page.request.get` status assertion INSIDE navigation.spec.ts's existing test (the born-green freeze form — the live-verified truth frozen; a battery gap, not a behavior bug). (2) **The public 404 surface in the a11y register** — the smoke covered dashboard/drawer/login only; the 404 (the one PUBLIC app surface, the SD-20 superset — live-verified no login bounce) is now registered at BOTH widths (1280×800 + 390×844) in the logged-out anon-surface form, the same disclosed color-contrast deviation family. (3) **The e2e webServer child env is shell-state-proof** — the env block spread `...process.env` without pinning the auth-behavior knobs: a stray `RESET_INAPP_DELIVERY=1` parent-shell export would flip the C1 production-posture spec (the one-shot reset token would appear in the forgot-password response body — the flip mechanism demonstrated LIVE on a manual standalone boot), and a stray `AUTH_PROXY_HOPS=1` would break the H3 verify-bucket isolation (single-hop xff fails closed to "local", the shared localhost verify budget at exactly 10/15min). The cure: `RESET_INAPP_DELIVERY: ""` + `AUTH_PROXY_HOPS: "0"` pinned AFTER the spread (the neo-crm N-69a "the dev server lies" family); the determinism proven both ways (the suite with the stray exports stays 6/6 green — the pinned child env overrides the parent shell). (4) **The /api/health body contract** — three documented consumers (the Playwright webServer boot poll, the Docker healthcheck, the README verify-setup instruction) and zero assertions (the poll proves only a 2xx); the cure is the dedicated `tests/e2e/health.spec.ts` pinning the 200 + the exact `{status:"ok",db:"up",app:"veloxpos"}` body. (5) **F5, found by the RED run itself**: the e2e AUTH_SECRET was 62-hex under the S22 comment's "64-hex" claim — a docs-truth defect in the same family; cured with a genuine 64-hex value (the setup project re-signs-in each run, so the rotation is inert). The harness's own contract (the isolated e2e.db, NODE_ENV=production, the 64-hex AUTH_SECRET, the pinned seed identity) is frozen by the NEW `tests/e2e-harness.test.ts` (6 source pins; the two knob pins + the hex pin verified RED pre-fix) | Accepted — Verified (556 unit + 199 e2e; the RED→GREEN pin evidence (3/6 RED pre-fix) + the both-ways determinism proof + the four v24 evidence captures) |
 
 | ADR-034 | The v25 drawer-open spine-freeze contract (the neo-crm session-196 doctrine adopted — the s195a1 wire-freeze doctrine's next member): the mobile drawer's RENDERED geometry is pinned as a complete box ledger, because behavior pins (the panel box, the pitch uniformity, the close paths, the focus contract) cannot catch a computed-margin regression — the trap-4 defect family this repo exists to guard. (1) **The spine ledger, live-measured then frozen**: panel `[0,0,288,844]` · header `[0,0,287,69]` (h-9 36 + p-4×2 32 + border-b 1) · nav `[0,69,287,727]` · footer `[0,796,287,48]` · close `[235,16,36,36]` · 8 links at `[12,y,263,40]` with y = 81+44k (81 = nav.y 69 + p-3 12; 796 + 48 = 844) + the footer "VeloxPOS" wordmark — read via the `expect.poll` starved-read idiom (the 200ms slide-in must settle) with EXACT equality on rounded reads; the heights are padding-driven, never font-driven, so the values are deterministic across dev and the standalone build. (2) **The mutation proof (the discipline that makes a born-green freeze pin trustworthy)**: a planted `mb-2` on the drawer header div (the exact s177/trap-4 computed-margin shape) → build → the pin goes RED at the shifted boxes (nav y 69→77, every link +8, footer +8) while the OTHER 11 drawer tests stay green — the battery gap demonstrated live, both directions; restored → GREEN. (3) **The lg-breakpoint close is pinned in the same spec** (mobile-chrome's matchMedia listener — "close if the viewport crosses into lg"): crossing 390→1280 unmounts the drawer AND resets `aria-expanded`; resizing back to 390 it STAYS closed (no `mobileMenuOpen` state leak under the visually-vanished lg:hidden overlay — the F2 regression's exact observable). The `lg:hidden` chrome asserts with `toBeHidden`, never `toHaveCount(0)` — `display:none` keeps the element in the DOM (the RED run's own catch). Both pins EXTEND `tests/e2e/mobile-navigation.spec.ts` in place (the drawer family's owner; the V24 in-place-extension precedent); counts only move up (199→201; the unit layer untouched at 556) | Accepted — Verified (556 unit + 201 e2e; the mutation-proof RED/GREEN evidence + the battery-gap demonstration (11 green under the mutation) + the live agent-browser spine walk + the four v25 evidence captures) |
+| ADR-035 | The v26 failure-path truth contract (the ADR-033 gate-coverage doctrine continued at the unit layer): the failure branches a consumer leans on — not just the happy paths — need standing assertions, and the unit layer's `vi.mock` dissolves the "forcing a failure breaks the environment" objection that E2E-layer pinning cannot escape. (1) **The health DEGRADED branch** (`src/app/api/health/route.ts`'s catch → 503 + `{status:"degraded",db:"down",app:"veloxpos"}`) — a known-open disclosure carried since V24 on the belief that pinning it required breaking the DB mid-suite; but `vi.mock("@/lib/db")` is hoisted above the import, so the PrismaClient is never constructed and the probe rejects deterministically with zero DB involvement. The consumer that leans on the 503: docker-compose.yml's healthcheck `fetch(…).then(r => process.exit(r.ok ? 0 : 1))` — a regression to 200-with-degraded-body would report a broken-DB container as HEALTHY with every standing gate green. Pinned by the NEW `tests/health-route.test.ts` (2 tests: both branches' status + exact body). (2) **The boot-guard WIRING + the stale citation** — `src/instrumentation.ts`'s `register()` (fatal → `console.error` + `process.exit(1)`, the validated fail-fast; a plain throw is CAUGHT by Next and leaves a degraded 500-everything server) carried ZERO assertions while the file's own comment claimed "pinned by tests/e2e/s22-boot-guard.spec.ts" — a spec deleted in the V1 pivot (`0b78972`, the study-layer archive) and never replaced: the claim was FALSE today. The repo-wide citation sweep (16 test citations across `src/`, each existence-checked — 15 resolved, 1 stale) is the audit instrument this cycle adds. Pinned by the NEW `tests/boot-guard-wiring.test.ts` (5 tests: both fatal shapes → error + exit(1); both warn shapes → warn, NO exit; ok → silent) over the SPIED console + `process.exit` (mockImplementation — never a real exit; a live exit(1) would kill the vitest worker), with env save/restore around every case; the stale citation comment re-pointed at the real pin (comment-only — no existing pin scans the file). (3) **Both mutation-proven** (the V25 discipline extended to the unit layer): the planted 503→200 defect went RED at the status assertion (the Docker-healthcheck-blindness shape); the planted exit→throw defect (the comment's own documented regression) went RED at both fatal-path tests while the pure-seam env-check pins stayed green — the battery gap demonstrated; both restored → GREEN. Counts only move up (556→563 unit, 39→41 files; e2e untouched at 201) | Accepted — Verified (563 unit + 201 e2e; the mutation-proof RED/GREEN evidence for both pins + the citation-sweep ledger + the four v26 evidence captures) |
 
 ---
 
@@ -811,7 +850,7 @@ Two layers, two runners, disjoint file globs:
 
 | Layer | Runner | Scope | Count |
 |---|---|---|---|
-| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 556 tests / 39 files — Verified |
+| Unit | vitest (`tests/**/*.test.ts`, `src/**/*.test.ts`, node env) | Pure seams + source pins | 563 tests / 41 files — Verified |
 | E2E | playwright (chromium, standalone server on :3100) | Browser contracts | 201 specs — Verified |
 
 - **Unit seams**: money (the verified ticket math), ticket (V-ID shape),
@@ -819,7 +858,10 @@ Two layers, two runners, disjoint file globs:
   (schemas + gates), schema (model/cascade/cents pins + .env contract),
   tailwind-traps (the v4 space-y/theme/shadow rules in source), db-path
   (anchors + the v3 mangled-form hardening), auth (scrypt/HMAC/limiter),
-  api-timeout/api-offline (the fetch seam), env-check, site, dev-preflight.
+  api-timeout/api-offline (the fetch seam), env-check, site, dev-preflight,
+  health-route (BOTH probe branches incl. the 503 DEGRADED pin),
+  boot-guard-wiring (register(): fatal/warn/ok over the spied console +
+  process.exit).
 - **E2E**: navigation (8 routes + 404 WITH its true-HTTP-status pin +
   collapse widths), mobile-navigation
   (the drawer contract incl. TRAP-4 geometry guard + no-overflow sweep

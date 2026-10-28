@@ -1960,3 +1960,101 @@ Stage Summary:
   the F2 flake watch; the react-dom boot floor; the reference's own
   broken flows (nothing to mirror); every standing v8-v24 disclosure
   unchanged.
+
+---
+Task ID: V26
+Agent: Z.ai (main agent)
+Task: The V26 cycle — the failure-path truth pass (the ADR-033
+gate-coverage doctrine continued at the unit layer): audit the codebase
++ the reference, pin the health route's DEGRADED branch (503) + the
+boot-guard wiring (register() → console.error + process.exit(1)), sweep
+the stale s22 citation from src/instrumentation.ts, mutation-prove both
+pins, docs lockstep, commit + SSH push (main only).
+
+Work Log:
+- Baseline: the workspace was RESET (the sandbox wiped the clone) — a
+  fresh git clone re-materialized main @ 554b094 (V25 + session_44 +
+  session_45); the locals rebuilt from scratch (bun install 488 pkgs,
+  .env from .env.example with DATABASE_URL="file:../db/custom.db",
+  db:push + db:seed = the reference mirror, the Playwright chromium
+  build). Core docs re-read and validated against the code (AGENTS 31
+  contracts + traps + account UI + the mobile drawer contract incl.
+  the v25 spine freeze, CLAUDE, README, PAD v2.12.0/ADR-034, SKILL
+  v1.19.0, session_44/45, the v25 plan, the worklog tail).
+- Baseline gates: lint 0 · tsc 0 · build ✓ · unit 556/556 · e2e
+  201/201 (3.6m) — first-try on the fresh clone, zero code changes.
+- The audit (11th cycle): reference UNCHANGED (Terminal gated, Caja 2
+  first, 12 products, 2 sales, Dashboard $0.00, Reports "Sin datos en
+  este período", the five store sections); at 390px still NO hamburger
+  (viewport-locked). The clone's mobile drawer re-verified LIVE at
+  390×844 — the spine RE-MEASURED matching the frozen v25 ledger
+  EXACTLY (panel/header/nav/footer/close/8 links); Esc close + focus
+  return — the TailwindCSS v4 mobile-menu trap is NOT present (11th
+  consecutive confirmation). neo-crm UNCHANGED at 316fbe2 — the
+  cycle's target came from the repo's own audit.
+- The citation sweep (the new instrument): rg every tests/** citation
+  across src/ — 16 found, each existence-checked: 15 resolve, 1 STALE
+  (src/instrumentation.ts's "pinned by tests/e2e/s22-boot-guard.spec.ts"
+  — deleted in the V1 pivot 0b78972, never replaced).
+- F1 mapped: the health DEGRADED branch (catch → 503 + the degraded
+  body) carries zero standing assertions — a known-open disclosure
+  since V24; the Docker healthcheck's r.ok?0:1 is the consumer that
+  leans on the 503; the "breaking the DB mid-suite" objection
+  dissolves at the unit layer via vi.mock("@/lib/db") (the mock is
+  hoisted — the PrismaClient is never constructed; feasibility
+  prototyped 2/2, then deleted).
+- F2 mapped: the boot-guard WIRING (register(): fatal → console.error
+  + process.exit(1)) carries zero assertions while its own comment
+  claims the deleted spec pins it — the claim was FALSE; a
+  exit→throw regression (the comment's own documented defect shape)
+  would flip the production fail-fast posture with every gate green.
+- TDD (born-green after one TYPE round): tests/health-route.test.ts
+  (2 tests — both branches' status + exact body) +
+  tests/boot-guard-wiring.test.ts (5 tests — both fatal shapes →
+  error + exit(1) SPIED; both warn shapes → warn, NO exit; ok →
+  silent; env saved/restored; process.env.NODE_ENV readonly in
+  @types/node cured with the record-shaped view). 7/7 green. The
+  stale citation comment re-pointed at the real pin (comment-only).
+- The mutation proofs (SD-110): (a) the planted 503→200 defect went
+  RED exactly at the status assertion ("expected 200 to be 503") —
+  the Docker-healthcheck-blindness shape; restored → 2/2 GREEN. (b)
+  The planted exit→throw defect went RED at BOTH fatal-path tests
+  while the warn/ok tests AND the standing env-check pure-seam pins
+  stayed green — the battery gap demonstrated live; restored → 5/5
+  GREEN.
+- The evidence set: four v26 captures under docs/screenshots/
+  (desktop-dashboard-1280, mobile-drawer-open-390 — the spine freeze
+  holding, desktop-health-json — the F1 surface, 
+  desktop-ajustes-mi-cuenta-1280), all VLM-verified (the drawer 5/5;
+  the health body read back exactly {status:"ok",db:"up",
+  app:"veloxpos"}).
+- Final gate: lint 0 · tsc 0 · build ✓ · unit 563/563 (41 files,
+  556+7) · e2e 201/201 — the first full run hit one flake (the v9
+  Spanish-alias title test, the known F2-flake-watch family), re-run
+  green alone then the full suite 201/201 (3.7m); zero code changes
+  involved.
+- Docs lockstep: README (badge 563+201 + the testing table); AGENTS
+  (the security contract gains the failure-path pins paragraph);
+  CLAUDE (the v26 contracts note + counts); PAD v2.13.0 (history +
+  ADR-035 + the §8 testing table + the unit-seams list); SKILL v1.20.0
+  (the v26 close layer + counts + the §12 F10 lesson);
+  docs/remediation-plan-v26.md (ledger L1-L12 + execution results);
+  docs/session_46.md; this entry.
+
+Stage Summary:
+- V26 closed the failure-path truth pass: the health route's DEGRADED
+  branch and the boot-guard wiring — the two failure contracts a
+  consumer leans on — are now unit-pinned (7 new tests), the stale
+  s22 citation is swept, and both pins are MUTATION-PROVEN (the
+  planted defects went RED at the exact assertions while the standing
+  battery stayed green).
+- The reference is unchanged for the 11th consecutive cycle; the
+  mobile drawer spine re-verified live against the frozen ledger (no
+  Tailwind v4 bug); the citation sweep joins the recurring audit
+  instruments (16 refs, 1 stale → swept).
+- Gates: 563 unit + 201 e2e green; all counts bumped in the same
+  commit (556→563, 39→41 files).
+- Known-open (disclosed): the F2 flake watch (one occurrence this
+  cycle, re-run green); the react-dom boot floor; the reference's own
+  broken flows (nothing to mirror); every standing v8-v25 disclosure
+  unchanged — the health DEGRADED disclosure is CLOSED (pinned).

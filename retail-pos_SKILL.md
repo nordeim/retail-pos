@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.19.0
+version: 1.20.0
 last_updated: "2026-10-28"
 tags:
   - pos
@@ -25,9 +25,26 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v25 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 556/556 unit · 201/201 e2e** (the v25
-> close: the drawer-contract completion — the drawer-open SPINE FREEZE,
+> template), validated against the codebase at the v26 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 563/563 unit · 201/201 e2e** (the v26
+> close: the failure-path truth pass — the ADR-033 gate-coverage doctrine
+> continued at the unit layer: the health route's DEGRADED branch
+> (catch → 503 + the degraded body — the Docker healthcheck's
+> `r.ok?0:1` leans on it) pinned by `tests/health-route.test.ts` via
+> `vi.mock("@/lib/db")` (the mock is hoisted above the import — the
+> PrismaClient is never constructed; the "breaking the DB mid-suite"
+> objection dissolves at the unit layer), and the boot-guard WIRING
+> (register(): fatal → console.error + process.exit(1)) pinned by
+> `tests/boot-guard-wiring.test.ts` (process.exit SPIED — never a real
+> exit) with its stale citation — the comment claimed "pinned by
+> tests/e2e/s22-boot-guard.spec.ts", a spec deleted with the V1
+> study-layer archive — swept (the repo-wide citation sweep: 16 test
+> citations in src/, 15 resolved, 1 stale). Both MUTATION-PROVEN (the
+> planted 503→200 defect went RED at the status assertion; the planted
+> exit→throw defect went RED at both fatal-path tests while the
+> pure-seam env-check pins stayed green — the battery gap demonstrated;
+> restored → GREEN); ADR-035, PAD v2.13.0). The prior close (v25): the
+> drawer-contract completion — the drawer-open SPINE FREEZE,
 > the neo-crm session-196 doctrine adopted (the s195a1 wire-freeze
 > doctrine's next member): the mobile drawer's RENDERED geometry ledger
 > is e2e-pinned at TRUE 390×844 (panel [0,0,288,844] · header
@@ -184,7 +201,7 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 556 tests / 39 files |
+| Unit | vitest ^5.0.1 (node env) | 563 tests / 41 files |
 | E2E | @playwright/test ^1.63.0 + chromium | 201 specs; standalone prod server :3100 (child env shell-state-proof) |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
@@ -215,7 +232,7 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 556/556
+bun run test               # vitest: 563/563
 bun run test:e2e           # playwright: 201/201 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
@@ -596,7 +613,7 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 556/556 vitest
+bun run test          # 563/563 vitest
 bun run test:e2e      # 201/201 playwright (production posture)
 ```
 
@@ -654,6 +671,20 @@ Verification beyond the gates:
    proof is a hope; with it, it is a contract. (Corollary: lg:hidden
    elements stay in the DOM — assert with toBeHidden, never
    toHaveCount(0).)
+10. **F10 (v26) — A "pinned by" comment is a claim; verify the pin
+   exists.** `src/instrumentation.ts`'s comment said "pinned by
+   tests/e2e/s22-boot-guard.spec.ts" — a spec deleted with the V1
+   study-layer archive (`0b78972`) and never replaced: the claim was
+   FALSE, and the wiring it described (register() → console.error +
+   process.exit(1)) carried zero assertions. The citation sweep (rg
+   every `tests/**` citation in src/, existence-check each) is a cheap
+   recurring audit instrument. Companion lesson: the failure branches a
+   consumer leans on (the health DEGRADED 503 the Docker healthcheck's
+   `r.ok?0:1` reads) stay unpinned when pinning them "would break the
+   environment" — but `vi.mock` at the unit layer dissolves that
+   objection (the mocked module's PrismaClient is never constructed;
+   the probe rejects deterministically). An environment-breaking failure
+   is only unpinnable at the layer that owns the environment.
 
 ## §13 Pitfalls to Avoid (don't do these in this repo)
 

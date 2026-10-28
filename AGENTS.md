@@ -89,6 +89,17 @@ Single e2e spec: `bunx playwright test tests/e2e/inventory.spec.ts`.
   (`paymentCoversTotal`, 422 otherwise).
 - Rate-limit buckets are pruned in-flight (L10) — `checkRateLimit` also
   sweeps; don't bypass it with a second map.
+- **Failure-path pins (v26/ADR-035)**: the health route's DEGRADED branch
+  (catch → 503 + `{status:"degraded",db:"down",app:"veloxpos"}`) is
+  unit-pinned by `tests/health-route.test.ts` via `vi.mock("@/lib/db")`
+  (the mock is hoisted — the PrismaClient is never constructed; the
+  e2e-layer "breaking the DB mid-suite" objection never applies at the
+  unit layer). The boot-guard WIRING (`register()` → console.error +
+  `process.exit(1)` on fatal) is unit-pinned by
+  `tests/boot-guard-wiring.test.ts` (process.exit SPIED with
+  mockImplementation — never a real exit; a live exit(1) would kill the
+  vitest worker). Editing `src/app/api/health/route.ts` or
+  `src/instrumentation.ts` means running those two specs.
 
 ## Tailwind v4 traps (the repo's raison d'être)
 

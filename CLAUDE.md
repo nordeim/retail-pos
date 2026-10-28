@@ -27,7 +27,7 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (556 tests / 39 files)
+bun run test           # vitest unit layer (563 tests / 41 files)
 bun run test:e2e       # playwright e2e layer (201 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
@@ -291,6 +291,21 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   V22 action pins grew to the four-action superset (extend, never
   weaken). The route-count pin in deployment-surfaces counts 28 route
   handlers now — DEPLOYMENT.md §10 carries the update-profile row.
+- The v26 contracts: the failure-path truth pass (ADR-035 — the ADR-033
+  doctrine continued at the unit layer). The health route's DEGRADED
+  branch is pinned by `tests/health-route.test.ts`
+  (`vi.mock("@/lib/db")` — the PrismaClient is never constructed, so the
+  probe is made to reject deterministically with zero DB involvement;
+  both branches pinned: 200/ok + 503/degraded — the Docker healthcheck's
+  `r.ok?0:1` leans on the 503). The boot-guard WIRING is pinned by
+  `tests/boot-guard-wiring.test.ts` (register(): fatal → console.error +
+  process.exit(1) SPIED — never a real exit; warn → console.warn, no
+  exit; ok → silent) — and the stale citation that claimed
+  "pinned by tests/e2e/s22-boot-guard.spec.ts" (a spec deleted with the
+  V1 study-layer archive) is swept. Both pins mutation-proven (the
+  planted 503→200 and exit→throw defects went RED at the exact
+  assertions). Editing the health route or instrumentation.ts means
+  running those two specs.
 - The v25 contracts: the drawer-open SPINE FREEZE (the neo-crm
   session-196 doctrine adopted) — the mobile drawer's RENDERED geometry
   ledger is now e2e-pinned at TRUE 390×844: panel [0,0,288,844] · header
