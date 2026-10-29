@@ -1,3 +1,17 @@
+// V33 EXTENSION — the width-scope completion (the neo-crm session-200
+// doctrine adopted): the register's WIDTH census. The authed views (V32)
+// and the public login/signup/reset surfaces (V29) were registered
+// DESKTOP-only — the 404 was the one both-widths public registration —
+// and the reset-password FORM state (the ?token= face, the richer form)
+// was never scanned at any width. The width inventory rides the NAME
+// form (eleven titles), each registration carries the L-164c2 order
+// guard (visible-wait before the scan — the lazy view registry's vacuous-
+// green cure, now at the phone layer), and the 404 test's retired
+// uniqueness claim ("the phone layout is the one no other registration
+// covers" — stale the day the width registrations join) is pinned away
+// (the D-200a2 form; whitespace-normalized — the pin holds the CONTENT,
+// never the wrap, the D-198a2 lesson).
+//
 // ---------------------------------------------------------------------------
 // Source pins for remediation-plan-v31 — the dialog-open a11y coverage
 // audit (the neo-crm session-199 doctrine adopted; the title-guard idiom:
@@ -87,6 +101,16 @@ function read(...segments: string[]): string {
 }
 
 const SMOKE = stripComments(read("tests", "e2e", "a11y-smoke.spec.ts"));
+// The RAW spec source (comment text intact) — the F3 negative pin reads
+// the 404 test's COMMENT, which the stripper removes. Normalized: strip
+// the LINE-LEADING comment markers first (a hard-wrapped comment leaves
+// its `//` between the words — "…the phone layout is the // one no other…"
+// defeats a bare whitespace collapse), THEN collapse whitespace — the pin
+// holds the CONTENT, never the wrap (the D-198a2 lesson; the D-200a2
+// first-draft-fooled lesson re-learned here on the marker axis).
+const SMOKE_RAW_NORMALIZED = read("tests", "e2e", "a11y-smoke.spec.ts")
+  .replace(/^[ \t]*\/\/[ \t]?/gm, " ")
+  .replace(/\s+/g, " ");
 const INVENTORY = stripComments(read("src", "components", "views", "inventory-view.tsx"));
 const REGISTERS = stripComments(read("src", "components", "views", "registers-view.tsx"));
 const SETTINGS = stripComments(read("src", "components", "views", "settings-view.tsx"));
@@ -121,6 +145,28 @@ const VIEW_REGISTRATIONS: readonly string[] = [
   "the Cajeros view is clean of critical/serious violations",
   "the Reportes view is clean of critical/serious violations",
   "the Ajustes view is clean of critical/serious violations",
+];
+
+// V33 — the width-scope register inventory (the NAME form): the phone-width
+// closed surfaces. Eight authed (the phone shell+dashboard landing + the
+// seven views' phone faces) + the public family's both-widths completion
+// (login + signup phone) + the reset-password FORM state (the shape-probe
+// token face, both widths in one registration — the 404's both-widths
+// idiom). The phone CAJEROS registration is the live-catch surface
+// (scrollable-region-focusable, cured this cycle); the phone dialog-open
+// family is the DECLINED next-round candidate (the plan §5).
+const WIDTH_REGISTRATIONS: readonly string[] = [
+  "the phone shell + dashboard are clean of critical/serious violations",
+  "the Terminal view is clean at phone width",
+  "the Inventario view is clean at phone width",
+  "the Ventas view is clean at phone width",
+  "the Cajas view is clean at phone width",
+  "the Cajeros view is clean at phone width",
+  "the Reportes view is clean at phone width",
+  "the Ajustes view is clean at phone width",
+  "the login surface is clean at phone width",
+  "the signup surface is clean at phone width",
+  "the reset-password form state is clean at desktop and phone widths",
 ];
 
 describe("v31 — the dialog-open register census (a11y-smoke.spec.ts)", () => {
@@ -203,5 +249,50 @@ describe("v32 — the view-register completion census (a11y-smoke.spec.ts)", () 
         `"${title}": the visible-wait must precede the scan (the vacuous-green guard)`,
       ).toBeLessThan(scanIdx);
     }
+  });
+});
+
+describe("v33 — the width-scope register census (a11y-smoke.spec.ts)", () => {
+  it("registers every phone-width closed surface by NAME (the width completion)", () => {
+    // The NAME form (the D-197a2/D-199a2/D-200a2 lesson): a count-anchored
+    // claim goes stale the day a registration joins; a name never does. The
+    // desktop shell test stays the Dashboard's desktop face; the phone
+    // shell+dashboard registration here is the PHONE landing.
+    for (const title of WIDTH_REGISTRATIONS) {
+      expect(SMOKE, `width registration missing from the a11y register: "${title}"`).toContain(title);
+    }
+  });
+
+  it("waits for each phone surface before scanning it (the L-164c2 order guard, per registration)", () => {
+    // The lazy view registry + the phone chrome: the surface must be
+    // VISIBLE (the heading-anchored wait) before the axe scan — the same
+    // vacuous-green guard the V32 view layer carries, now at the phone
+    // layer. Index-scoped from each title: the first toBeVisible() and
+    // the first blockingViolations(page) after the title must be in that
+    // order.
+    for (const title of WIDTH_REGISTRATIONS) {
+      const start = SMOKE.indexOf(`"${title}"`);
+      expect(start, `width registration missing: "${title}"`).toBeGreaterThan(-1);
+      const waitIdx = SMOKE.indexOf("toBeVisible()", start);
+      const scanIdx = SMOKE.indexOf("blockingViolations(page)", start);
+      expect(waitIdx, `"${title}": no visible-wait before the scan`).toBeGreaterThan(-1);
+      expect(scanIdx, `"${title}": no axe scan`).toBeGreaterThan(-1);
+      expect(
+        waitIdx,
+        `"${title}": the visible-wait must precede the scan (the vacuous-green guard)`,
+      ).toBeLessThan(scanIdx);
+    }
+  });
+
+  it("the 404 registration's phone-layout claim is the width-scope form (the retired uniqueness claim never returns)", () => {
+    // The D-200a2 form: the 404 test's V24 comment justified its both-
+    // widths registration with "the phone layout is the one no other
+    // registration covers" — true for seventeen cycles, FALSE the day the
+    // width registrations join. The comment is re-anchored to the width-
+    // scope doctrine; this pin holds it there (whitespace-normalized —
+    // the pin holds the CONTENT, never the wrap, the D-198a2 lesson).
+    expect(SMOKE_RAW_NORMALIZED).not.toMatch(
+      /the phone layout is the one no other registration covers/,
+    );
   });
 });

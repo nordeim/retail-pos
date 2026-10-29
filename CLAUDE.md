@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (589 tests / 44 files)
-bun run test:e2e       # playwright e2e layer (225 specs, boots standalone :3100)
+bun run test           # vitest unit layer (592 tests / 44 files)
+bun run test:e2e       # playwright e2e layer (236 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -291,6 +291,37 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   V22 action pins grew to the four-action superset (extend, never
   weaken). The route-count pin in deployment-surfaces counts 28 route
   handlers now — DEPLOYMENT.md §10 carries the update-profile row.
+- The v33 contracts: the width-scope completion (the neo-crm session-200
+  doctrine adopted — the register's WIDTH census) — every authed surface
+  and the public login/signup family carry a phone-width (390×844)
+  registration (the V32 register was desktop-form; eleven new
+  literal-titled tests: the phone shell+dashboard landing + the seven
+  views' phone faces + the login/signup phone faces + the
+  reset-password FORM state at both widths — the shape-probe token
+  idiom, the richer face; the no-token card stays the registered
+  invalid-link face, the shared-component adjudication). THE LIVE CATCH:
+  the phone Cajeros view failed `scrollable-region-focusable (serious)`
+  — the recent-shifts table (`min-w-[720px]`) overflows at 390 with
+  no focusable content (read-only text), so the scroll region was
+  keyboard-unreachable (invisible at desktop — the table fits, the
+  rule never fires; the sibling tables pass via their action buttons);
+  cured with `tabIndex={0}` + `role="region"` + `aria-label` on the
+  wrapper. THE SCROLL-WRAPPER IDIOM: every new scrollable table wrapper
+  that can carry no focusable content ships that triple in the same
+  commit. The census extension (`tests/a11y-register-census.test.ts`,
+  9→12 tests): `WIDTH_REGISTRATIONS` (eleven titles, NAME form) + the
+  width order guard + the 404-comment negative pin (the D-200a2 form —
+  the retired "the phone layout is the one no other registration
+  covers" uniqueness claim never returns; whitespace-normalized, line-
+  comment markers stripped — the pin holds the CONTENT, never the
+  wrap). BORN-RED at three layers: the census pins (titles absent),
+  the phone-Cajeros registration (the live defect), the negative pin
+  (the stale claim present); MUTATION-PROVEN ×2 (the cure strip → the
+  registration REDs at scrollable-region-focusable, the rendered axis;
+  the title deletion → the census REDs at the exact title). Counts
+  only move up (589→592 unit: +3 census tests, 44 files held; 225→236
+  e2e: +11 width registrations — all counts moved in the same commit).
+  The phone dialog-open family is the DECLINED next-round candidate.
 - The v32 contracts: the view-register completion (the V31-declined
   future cycle, taken now) — the a11y register's LAST named gap closed:
   every authed view carries a closed-surface registration (Terminal,

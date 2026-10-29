@@ -2683,3 +2683,174 @@ Stage Summary:
   rotation + dependency upgrades deliberately not taken; neo-crm's
   post-s199 cadence to watch; every standing v8–v31 disclosure
   unchanged.
+
+---
+Task ID: 33
+Agent: main session (V33 cycle — the width-scope completion + the live scrollable-region catch)
+Task: The V33 audit-remediate-align-push cycle (remediation-plan-v33).
+Date: 2026-10-30
+
+Cycle context: fresh clone at `54af646` (V32 complete and pushed: the fix
+commit `c26f169` + the session-log commits d6c951a/54af646; the task brief
+referenced session_65 + remediation-plan-v32 + worklog + session_66 — all
+read, plus the five core docs re-internalized at their V32 state: PAD
+v2.19.0/ADR-041, SKILL v1.26.0). THE ROTATION TRIGGER: neo-crm re-cloned —
+**ADVANCED: `013232a` → `45ae4f6` (session-200 — THE A11Y REGISTER'S
+PAGE-SURFACE COVERAGE AUDIT**, the first movement in three cycles). The
+s200 plan + session_422 + the commit read in full; the doctrine adopted
+this cycle: the page-surface both-widths form, the shape-probe token
+idiom (the richer face), the stale-claim re-anchor (the D-200a2 form),
+and the WIDTH-SCOPE CENSUS (the register enumerated BY WIDTH; their
+phone-dialog family DECLINED as the standing next-round candidate).
+
+Environment rebuild: `.env` (DATABASE_URL="file:../db/custom.db"), bun
+install (484 packages), db:push + db:seed (the reference mirror: 12
+products / 6 categories / 2 registers / 2 sales / 2 shifts),
+chromium-1243 (the workspace reset wiped the browser cache again — the
+third occurrence). Baseline gates: lint 0 · tsc 0 · build ✓ · 589/589
+unit (44 files) · 225/225 e2e (4.2m) — ZERO flakes (the V32 F1c
+pixel-read watch item did NOT recur; the first-occurrence posture
+stands).
+
+The audit (18th cycle), all legs live:
+- Reference site (agent-browser login): $0.00 / 0 / 12 / 0 KPIs,
+  390×844 viewport-locked (scrollWidth 390, scrollHeight 844 =
+  innerHeight, scrollTop 0), no hamburger — UNCHANGED for the 18th
+  consecutive cycle.
+- Clone drawer spine at TRUE 390×844: panel [0,0,288,844] · header
+  [0,0,287,69] · nav [0,69,287,727] · footer [0,796,287,48] · close
+  [235,16,36,36] · 8 links at [12,y,263,40] y=81+44k · the wordmark —
+  the 18th EXACT match to the frozen v25 ledger (no Tailwind v4 bug;
+  Esc + aria-expanded reset verified live). The mobile menu works as
+  expected — the operator's standing ask, re-verified.
+- Citation sweep: 25 unique `@/` citations across 76 spec files, 0
+  unresolved.
+- Probe-v27 title-guard: 90/90 clean (30 natural + 60 fast-auth; min
+  margins 10ms/8ms — the race shape live, the guard correcting).
+- `bun audit`: 1 high — the documented deepmerge-ts decline (the PAD §6
+  ledger row; re-triage clause standing; the zod floor standing: one
+  hoisted 4.6.7, manifest ^4.6.7 + override ^4.6.6).
+- The V31/V32 cures' standing state re-verified: the five label
+  associations + the six V32 view registrations live in the smoke.
+
+THE ROUND (the s200 width-scope census mapped to this repo): the
+register held every NAMED surface — but the authed views were
+registered DESKTOP-only (the V32 decline "the authed-register idiom is
+desktop-form"), the public login/signup/reset surfaces were
+desktop-only (the 404 was the one both-widths public registration),
+and the reset-password FORM state (the ?token= face — any non-empty
+token renders the form, the s200 shape-probe idiom; the richer face)
+had never been axe-scanned at any width.
+
+THE LIVE PROBE (a temporary spec, since deleted — its open paths reborn
+as the registrations; the born-green pre-verification discipline which
+found a live defect instead): twelve surfaces with the smoke's exact
+axe config — eleven CLEAN, and **phone /Cashiers FAILED:
+`scrollable-region-focusable (serious): 1 nodes`** — the recent-shifts
+table wrapper (cashiers-view.tsx:152, the `min-w-[720px]` dense shifts
+table): at 390 the table overflows its wrapper and the table is PURE
+TEXT (no focusable content, no tabindex) — keyboard users cannot reach
+the overflowed columns (WCAG 2.1.1). Invisible to every standing gate:
+at 1280 the table fits (the rule never fires); the cashiers CRUD +
+inventory + sales tables pass at phone width via their action buttons'
+focusable content. THE CURE PRE-VERIFIED LIVE before the plan:
+tabIndex={0} + role="region" + aria-label="Tabla de turnos recientes"
+on the caught wrapper → rebuild → re-probe → the violation GONE →
+reverted (the born-RED discipline preserves the TDD order).
+
+The plan (`docs/remediation-plan-v33.md`) written and validated against
+the codebase: the insertion points (after the Reportes view test /
+inside the logged-out describe / the census tail), the eleven literal
+titles, the count ladder (589→592 unit: +3 census tests; 225→236 e2e:
++11 registrations), the F3 stale-comment find (the 404 test's V24
+comment "the phone layout is the one no other registration covers" —
+true for seventeen cycles, FALSE the day the width registrations join;
+the D-200a2 form caught BEFORE going stale), and the negative pin's
+hard-wrap lesson (the `//` marker survives a bare whitespace collapse —
+strip line-leading markers first).
+
+B2 (born-RED first): the census extension — the WIDTH_REGISTRATIONS
+inventory (eleven titles, NAME form) + the width order guard (title →
+first toBeVisible → first blockingViolations, index-scoped) + the
+404-comment negative pin (whitespace-normalized, line-comment markers
+stripped) → all three RED on the standing tree (the titles absent; the
+stale claim present), the nine standing tests untouched. The eleven
+registrations landed (the eight authed phone tests after the Reportes
+view test — setViewportSize BEFORE goto, heading-anchored
+visible-waits; the three public tests inside the logged-out describe —
+phone login, phone signup, the reset-password form state at BOTH
+widths via the shape-probe token). The order guard caught one idiom
+drift en route (the phone shell+dashboard test first used toHaveText —
+re-anchored to the filter+toBeVisible form the V32 idiom carries).
+**The phone-Cajeros registration verified born-RED at the LIVE DEFECT
+on the uncurd rebuild: exactly `scrollable-region-focusable (serious):
+1 nodes`** — the registration proves its own teeth before the cure
+exists (the V31 live-catch form, the strongest). The other ten
+born-green. The 404 comment re-anchored (the F3 cure). THE CURE landed
+(tabIndex + role + aria-label + the idiom comment) → the smoke 36
+passed (35 tests + setup). The two probe specs deleted.
+
+B4 (mutation proofs ×2, each RED-at-the-exact-target → restored →
+GREEN): (a) the rendered axis — the cure strip (the three attributes
+removed) → rebuild → the phone-Cajeros registration RED at exactly
+scrollable-region-focusable (serious): 1 nodes → restored → rebuild →
+GREEN; (b) the register axis — the phone Reportes registration title
+deleted → BOTH new census tests RED at the exact title → restored →
+census 12/12 GREEN.
+
+Full gates: **lint 0 · tsc 0 · build ✓ · 592/592 unit (44 files,
+589+3) · 236/236 e2e (4.5m, zero flakes)** — the count ladder exactly
+as planned. The v33 evidence set (5 captures, PNG-validated at exact
+dimensions): v33-phone-cashiers-390 (the cycle's subject — the cured
+surface) + v33-phone-dashboard-390 (the phone landing) +
+v33-phone-login-390 (the public phone family) + v33-reset-form-1280
+(the form state — never captured before) + v33-mobile-drawer-open-390
+(the standing mobile-nav face), via scripts/capture-v33-shots.ts.
+
+B5 (docs lockstep): README (badge 592+236 + the Tested row + the
+register description extended to the width scope), AGENTS (the
+width-scope completion note + the SCROLL-WRAPPER IDIOM rule: every NEW
+scrollable table wrapper that can carry no focusable content ships
+tabIndex + role="region" + aria-label in the same commit), CLAUDE (the
+v33 contracts note, newest-first + the command counts), PAD v2.20.0
+(the history entry + ADR-042 + the §8 count rows), SKILL v1.27.0 (the
+v33 close layer live, the v32 layer demoted at its ship counts
+589/225 + the count sites + the §8 register state), plan-v33 §6,
+session_67 (EN) + session_68 (ZH), this entry. `.env.example` verified
+unchanged and tracked (no new env vars this cycle). The unit suite
+re-ran green after every doc edit (the census pins read the live
+spec).
+
+The register's end state: every public surface + every authed view +
+the drawer + every dialog-open state — at desktop width — PLUS the
+width scope: every authed surface and the public login/signup/reset
+family at phone width (390×844), the reset-password form state at both
+widths. The phone dialog-open family (12 states) is the DECLINED
+standing next-round candidate (the neo-crm s200-declined phone-dialog
+family's exact analog).
+
+Stage Summary:
+- V33 closed the width-scope completion (ADR-042) with a LIVE CATCH:
+  the phone Cajeros view's scrollable region (the read-only shifts
+  table) was keyboard-unreachable — caught by the width probe, cured
+  with the WCAG tabindex/region/label triple, and pinned by three
+  born-RED census layers + eleven registrations (the phone-Cajeros
+  one born-RED at the live defect itself).
+- The census grew the WIDTH_REGISTRATIONS inventory (NAME form) + the
+  width order guard + the 404-comment negative pin (the D-200a2 form —
+  the stale uniqueness claim caught BEFORE it went stale this time);
+  mutation-proven on both axes (the cure strip → the registration RED
+  at the rule; the title deletion → the census RED at the title).
+- The reference is unchanged for the 18th consecutive cycle; the
+  mobile drawer spine re-verified live against the frozen ledger (no
+  Tailwind v4 bug); the citation sweep clean; the V27 title-guard
+  probe 90/90; the advisories posture unchanged (1 documented decline).
+- Gates: 592 unit + 236 e2e green (zero flakes; the V32 F1c watch item
+  did not recur).
+- Known-open (disclosed): the F1c amber-600 pixel-read flake watch
+  (first occurrence V32's baseline, not seen since); the phone
+  dialog-open family (the standing next-round candidate); the Select
+  dropdown panel interiors (the s199 declined list); the deepmerge-ts
+  decline (re-triage clause standing); the Prisma 6→7 rotation +
+  dependency upgrades deliberately not taken; neo-crm's post-s200
+  cadence to watch; every standing v8–v32 disclosure unchanged.

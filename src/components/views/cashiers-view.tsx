@@ -149,7 +149,20 @@ export function CashiersView() {
         Turnos Recientes
       </h3>
       <div className="vx-card overflow-hidden">
-        <div className="vx-scroll overflow-x-auto">
+        {/* V33/F1a — the scrollable-region cure: the min-w-[720px] table
+            overflows at phone width and its rows carry no focusable
+            content (read-only text), so the wrapper itself must be
+            keyboard-reachable (WCAG 2.1.1 / axe scrollable-region-focusable).
+            tabIndex + role="region" + the Spanish aria-label name the
+            focus stop for screen readers. IDIOM (AGENTS): every NEW
+            scrollable table wrapper that can carry no focusable content
+            ships this triple in the same commit. */}
+        <div
+          className="vx-scroll overflow-x-auto"
+          tabIndex={0}
+          role="region"
+          aria-label="Tabla de turnos recientes"
+        >
           <table className="w-full min-w-[720px]" data-testid="recent-shifts-table">
             <thead>
               {/* V5/C1: the reference's dense shifts table — px-4 py-2 headers

@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.26.0
+version: 1.27.0
 last_updated: "2026-10-30"
 tags:
   - pos
@@ -25,9 +25,41 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v32 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 589/589 unit · 225/225 e2e** (the v32
-> close: the view-register completion — the V31-declined future cycle,
+> template), validated against the codebase at the v33 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 592/592 unit · 236/236 e2e** (the v33
+> close: the width-scope completion + the live scrollable-region catch —
+> the neo-crm session-200 doctrine adopted (the register's WIDTH
+> census; neo-crm ADVANCED `013232a` → `45ae4f6`, the first movement in
+> three cycles). The V32 register was desktop-form; the width probe
+> (twelve surfaces, the smoke's exact axe config) found ONE LIVE CATCH:
+> the phone Cajeros view failed `scrollable-region-focusable (serious)`
+> — the recent-shifts table (`min-w-[720px]`) overflows at 390 and its
+> rows carry no focusable content (read-only text), so the scroll
+> region was keyboard-unreachable (WCAG 2.1.1; invisible at desktop
+> where the table fits). THE CURE: `tabIndex={0}` + `role="region"` +
+> `aria-label` on the wrapper (the WCAG pattern) + the IDIOM RULE:
+> every new scrollable table wrapper that can carry no focusable
+> content ships that triple in the same commit. THE REGISTRATIONS:
+> eleven literal-titled width registrations (the phone shell+dashboard
+> landing + the seven views' phone faces + the login/signup phone
+> faces + the reset-password FORM state at both widths — the
+> shape-probe token idiom, the richer face). THE PINS (the census
+> extension, 9→12 tests): the WIDTH_REGISTRATIONS inventory (eleven
+> titles, NAME form) + the width order guard + the 404-comment
+> negative pin (the D-200a2 form — the retired "the phone layout is
+> the one no other registration covers" claim never returns;
+> whitespace-normalized with line-comment markers stripped — the pin
+> holds the CONTENT, never the wrap). BORN-RED at THREE layers: the
+> census pins (titles absent), the phone-Cajeros registration (the
+> live defect — the registration proves its teeth before the cure
+> exists), the negative pin (the stale claim present). MUTATION-PROVEN
+> ×2 (the cure strip → the registration REDs at
+> scrollable-region-focusable, the rendered axis; the title deletion →
+> the census REDs at the exact title). Counts only move up (589→592
+> unit, 44 files held; 225→236 e2e). The phone dialog-open family is
+> the DECLINED next-round candidate. ADR-042, PAD v2.20.0).
+> The prior close (v32): the view-register completion — the
+> V31-declined future cycle,
 > taken now: the a11y register's LAST named gap closed. The register's
 > doctrine chain (V24 register → V29 public-surface completion → V31
 > dialog-open coverage) had one remainder — six of the eight authed
@@ -331,8 +363,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 589 tests / 44 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 225 specs; standalone prod server :3100 (child env shell-state-proof) |
+| Unit | vitest ^5.0.1 (node env) | 592 tests / 44 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 236 specs; standalone prod server :3100 (child env shell-state-proof) |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -362,8 +394,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 589/589
-bun run test:e2e           # playwright: 225/225 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 592/592
+bun run test:e2e           # playwright: 236/236 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -663,6 +695,15 @@ PasswordResetToken (one-shot)        (SetNull)─┘   (Cascade)─┘   (SetNul
   the drawer — a focus loop must never re-steal user-moved focus.
 - Axe smoke (`a11y-smoke.spec.ts`): critical/serious only;
   color-contrast is a disclosed exclusion (the reference's own palette).
+  The register: every public surface, every authed view, the drawer, every
+  dialog-open state — at desktop width — PLUS the v33 width scope: every
+  authed surface and the login/signup/reset family at phone width
+  (390×844), the reset-password form state at both widths (the
+  shape-probe token idiom). The scroll-wrapper idiom (v33): every NEW
+  scrollable table wrapper that can carry no focusable content (read-only
+  tables) ships `tabIndex={0}` + `role="region"` + `aria-label` in the
+  same commit — a wrapper whose rows carry action buttons passes via its
+  focusable content (the V33 live catch rode the read-only shape).
 - All interactive chrome shares `vx-focus` (visible focus-visible ring);
   disabled states carry opacity + `cursor-not-allowed`; the toaster is an
   `aria-live=polite` region.
@@ -745,8 +786,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 589/589 vitest
-bun run test:e2e      # 225/225 playwright (production posture)
+bun run test          # 592/592 vitest
+bun run test:e2e      # 236/236 playwright (production posture)
 ```
 
 Verification beyond the gates:

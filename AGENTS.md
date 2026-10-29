@@ -750,6 +750,29 @@ The `lg:hidden` chrome asserts with `toBeHidden`, never `toHaveCount(0)` —
   plus the per-registration order guard (title → first `toBeVisible()`
   → first `blockingViolations(page)`) — editing the smoke's view
   registrations means running the census.
+- **The width-scope completion (v33/ADR-042, the neo-crm session-200
+  doctrine adopted): every authed surface AND the public login/signup
+  family carry a phone-width (390×844) registration** — the V32 register
+  was desktop-form; the phone closed surfaces joined (`the <view> view
+  is clean at phone width` ×7 + the phone shell+dashboard landing +
+  `the login/signup surface is clean at phone width`), and the
+  reset-password FORM state (any non-empty `?token=` renders the form —
+  the shape-probe idiom; the richer face, both widths in one
+  registration) joined the public family. THE LIVE CATCH this cycle:
+  the phone Cajeros view failed `scrollable-region-focusable (serious)`
+  — the recent-shifts table (`min-w-[720px]`) overflows at 390 and its
+  rows carry no focusable content, so the scroll region was
+  keyboard-unreachable; cured with `tabIndex={0}` + `role="region"` +
+  `aria-label` on the wrapper (the WCAG pattern). **THE SCROLL-WRAPPER
+  IDIOM: every NEW scrollable table wrapper that can carry no
+  focusable content (read-only tables) ships that triple in the same
+  commit** — wrappers whose rows carry action buttons pass via their
+  focusable content. The phone dialog-open family (12 states, a
+  genuinely different DOM below sm — `rounded-2xl sm:rounded-lg`) is
+  the DECLINED next-round candidate. The census's
+  `WIDTH_REGISTRATIONS` (eleven titles, NAME form) + the width order
+  guard + the 404-comment negative pin hold the inventory — editing the
+  smoke's phone registrations means running the census.
 - **The dialog-open register (v31/ADR-040, the neo-crm session-199
   doctrine adopted): a Radix Dialog's content is ABSENT from the DOM
   while closed — every dialog-open state carries its own registration in

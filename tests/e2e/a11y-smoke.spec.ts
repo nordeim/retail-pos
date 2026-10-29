@@ -250,6 +250,118 @@ test.describe("a11y smoke", () => {
     ).toEqual([]);
   });
 
+  // V33 — the width-scope registrations (the neo-crm session-200 doctrine
+  // adopted; the census pins in tests/a11y-register-census.test.ts hold
+  // this inventory by NAME). The V32 register was desktop-form; the
+  // phone-width closed surfaces join here — every authed surface at
+  // 390×844, each with its own heading-anchored visible-wait (the lazy
+  // view registry's L-164c2 guard, at the phone layer). The LIVE CATCH
+  // this cycle rode the phone Cajeros surface (scrollable-region-focusable
+  // — the recent-shifts table's scroll region was keyboard-unreachable;
+  // cured in cashiers-view.tsx). The phone dialog-open family is the
+  // DECLINED next-round candidate (remediation-plan-v33 §5).
+  test("the phone shell + dashboard are clean of critical/serious violations", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/Dashboard");
+    await expect(page.locator("main h1").filter({ hasText: "Dashboard" })).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Terminal view is clean at phone width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await expect(
+      page.locator("main h1, main h2").filter({ hasText: "No hay turno activo" }).first(),
+    ).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Inventario view is clean at phone width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/Inventory");
+    await expect(page.locator("main h1").filter({ hasText: "Inventario" })).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Ventas view is clean at phone width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/Sales");
+    await expect(
+      page.locator("main h1").filter({ hasText: "Historial de Ventas" }),
+    ).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Cajas view is clean at phone width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/Registers");
+    await expect(
+      page.locator("main h1").filter({ hasText: "Cajas Registradoras" }),
+    ).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Cajeros view is clean at phone width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/Cashiers");
+    await expect(page.locator("main h1").filter({ hasText: "Cajeros" })).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Reportes view is clean at phone width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/Reports");
+    await expect(page.locator("main h1").filter({ hasText: "Reportes" })).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Ajustes view is clean at phone width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/StoreSettings");
+    await expect(page.getByTestId("settings-categories-card")).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
   // The state-gated pair LAST (its cycle mutates server state and restores
   // it within the same test): a real shift opened on the first register,
   // the payment dialog scanned (Escape — no sale, no stock change), the
@@ -305,8 +417,10 @@ test.describe("a11y smoke (logged-out)", () => {
   // registrations. Its slate-800 H1 / slate-400 body ride the same
   // disclosed color-contrast deviation family the register already
   // excludes, so the scan rules match. Registered at BOTH widths — the
-  // card is responsive (max-w-md under p-4) and the phone layout is the
-  // one no other registration covers.
+  // public family's both-widths duty (V33 completed the family: the
+  // phone login/signup registrations + the reset-password form state
+  // joined below; the authed phone surfaces carry their own
+  // registrations above).
   test("the public 404 surface is clean at desktop and phone widths", async ({ page }) => {
     await page.goto("/NonExistent");
     await expect(page.getByTestId("not-found-card")).toBeVisible();
@@ -349,6 +463,55 @@ test.describe("a11y smoke (logged-out)", () => {
     await expect(page.getByRole("heading", { name: "Invalid Reset Link" })).toBeVisible();
 
     const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  // V33 — the public family's both-widths completion (the width-scope
+  // doctrine): the login and signup phone faces, plus the reset-password
+  // FORM state — the ?token= face (any non-empty token renders the form;
+  // validity is submit-checked only, the shape-probe idiom), the richer
+  // form (two htmlFor/id-wired password inputs + the submit). The
+  // no-token card above stays the registered invalid-link face; the
+  // shared-component adjudication follows the s200 precedent.
+  test("the login surface is clean at phone width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/login");
+    await expect(page.getByRole("heading", { name: "Welcome to VeloxPOS" })).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the signup surface is clean at phone width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/signup");
+    await expect(page.getByRole("heading", { name: /create your account/i })).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the reset-password form state is clean at desktop and phone widths", async ({ page }) => {
+    await page.goto("/reset-password?token=e2e-shape-probe");
+    await expect(page.getByRole("heading", { name: "Set new password" })).toBeVisible();
+
+    let blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    blocking = await blockingViolations(page);
     expect(
       blocking.map((v) => `${v.id}:${v.impact}`),
       blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),

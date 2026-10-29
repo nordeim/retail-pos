@@ -1,6 +1,6 @@
 # VeloxPOS — Punto de venta, your store
 
-![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-589%20%2B%20225%20green-22c55e)
+![Next.js](https://img.shields.io/badge/Next.js-16.4-000000) ![React](https://img.shields.io/badge/React-19-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6) ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748) ![Bun](https://img.shields.io/badge/Bun-1.3-F69220) ![Tests](https://img.shields.io/badge/tests-592%20%2B%20236%20green-22c55e)
 
 **VeloxPOS** is a production-ready, self-hosted clone (functional superset) of
 the [`veloxposretail.base44.app`](https://veloxposretail.base44.app/) point-of-sale
@@ -72,7 +72,7 @@ flowchart TB
 | DB | Prisma 6 + SQLite | Zero-ops persistence at `<repo>/db/custom.db` |
 | Charts | Hand-rolled SVG | Zero dependencies, deterministic, pixel-controlled |
 | Views | React.lazy code-split registry behind a self-healing error boundary | Each surface ships only its own view; a failed chunk keeps the shell alive and heals (Reintentar re-imports fresh; stale chunks auto-reload once per 10s — see `docs/remediation-plan-v18.md`) |
-| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (589 + 225 green) |
+| Tests | Vitest 5 + Playwright | Unit seams + browser contracts (592 + 236 green) |
 | Runtime | Bun 1.3 | Scripts, seed, and the standalone server |
 
 ## Quick start
@@ -139,7 +139,12 @@ bun run test:e2e    # browser layer — boots the standalone build on :3100
   (a Radix Dialog's content is absent from the DOM while closed — each
   open state carries its own registration, per
   `docs/remediation-plan-v31.md`; the view register completed in v32, per
-  `docs/remediation-plan-v32.md`).
+  `docs/remediation-plan-v32.md`; the width scope completed in v33 —
+  every authed surface and the public login/signup/reset family carry
+  phone-width (390×844) registrations, the reset-password form state is
+  scanned at both widths, and the cycle's live catch (a phone-width
+  scrollable table region unreachable by keyboard) is cured in
+  `cashiers-view.tsx`, per `docs/remediation-plan-v33.md`).
 
 ## API reference
 
