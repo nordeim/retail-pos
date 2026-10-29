@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (587 tests / 44 files)
-bun run test:e2e       # playwright e2e layer (219 specs, boots standalone :3100)
+bun run test           # vitest unit layer (589 tests / 44 files)
+bun run test:e2e       # playwright e2e layer (225 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -291,6 +291,29 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   V22 action pins grew to the four-action superset (extend, never
   weaken). The route-count pin in deployment-surfaces counts 28 route
   handlers now — DEPLOYMENT.md §10 carries the update-profile row.
+- The v32 contracts: the view-register completion (the V31-declined
+  future cycle, taken now) — the a11y register's LAST named gap closed:
+  every authed view carries a closed-surface registration (Terminal,
+  Inventario, Ventas, Cajas, Cajeros, Reportes join the shell+dashboard
+  landing test and the Ajustes view; the Dashboard rides the shell test —
+  documented in the census, not double-registered). Each view
+  registration carries its own heading-anchored visible-wait BEFORE the
+  axe scan (the L-164c2 guard at the view layer: the lazy registry means
+  the chunk may still be loading after goto — a scan on a
+  not-yet-rendered view passes vacuously; the anchors are the navigation
+  spec's own ROUTES headings). The census extension
+  (`tests/a11y-register-census.test.ts`): the VIEW_REGISTRATIONS
+  inventory (seven titles, the NAME form — a name never goes stale when
+  a registration joins) + the per-registration order guard (title →
+  first toBeVisible → first blockingViolations, in that order —
+  deleting a registration's wait goes RED at the exact registration).
+  The six registrations probed CLEAN live before adoption (the
+  coverage-extension form — no live catch this cycle, the teeth are the
+  cure); mutation-proven ×2 (the cashiers edit aria-label removal → the
+  Cajeros registration RED at button-name — the rendered axis; the
+  Reportes title deletion → the census RED at the exact title). Counts
+  only move up (587→589 unit: +2 census tests, 44 files held; 219→225
+  e2e: +6 view registrations — all counts moved in the same commit).
 - The v31 contracts: the dialog-open a11y coverage audit (the neo-crm
   session-199 doctrine adopted) — a Radix Dialog's content is ABSENT
   from the DOM while closed, so every dialog-open state carries its own

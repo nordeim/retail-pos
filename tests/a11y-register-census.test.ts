@@ -3,6 +3,17 @@
 // audit (the neo-crm session-199 doctrine adopted; the title-guard idiom:
 // comment-stripped source, regex pins).
 //
+// V32 EXTENSION — the view-register completion (the V31-declined future
+// cycle, taken now): the register's LAST named gap closes — every authed
+// view carries a closed-surface registration. The view inventory rides
+// the same NAME form (seven titles: Ajustes + the six V32 registrations;
+// the Dashboard's closed surface rides the shell test — the register's
+// landing test since V24 — documented here, not double-pinned), and each
+// view registration carries its own L-164c2 order guard: the view must be
+// VISIBLE (the heading-anchored wait) before the axe scan — the lazy view
+// registry means the chunk may still be loading after goto, and a scan on
+// a not-yet-rendered view passes vacuously.
+//
 // The a11y register's own truth pass: a Radix Dialog's content is ABSENT
 // from the DOM while closed, so every dialog-open state carries its own
 // registration in tests/e2e/a11y-smoke.spec.ts (the F-172c criterion).
@@ -97,6 +108,21 @@ const DIALOG_REGISTRATIONS: readonly string[] = [
   "the Ajustes view is clean of critical/serious violations",
 ];
 
+// V32 — the authed view closed-surface register inventory (the NAME form).
+// The Dashboard's closed surface rides "the shell + dashboard are clean of
+// critical/serious violations" (the register's landing test, its own h1
+// toHaveText guard predating this census layer) — a fact this comment
+// holds, not a membership row.
+const VIEW_REGISTRATIONS: readonly string[] = [
+  "the Terminal view is clean of critical/serious violations",
+  "the Inventario view is clean of critical/serious violations",
+  "the Ventas view is clean of critical/serious violations",
+  "the Cajas view is clean of critical/serious violations",
+  "the Cajeros view is clean of critical/serious violations",
+  "the Reportes view is clean of critical/serious violations",
+  "the Ajustes view is clean of critical/serious violations",
+];
+
 describe("v31 — the dialog-open register census (a11y-smoke.spec.ts)", () => {
   it("carries the shared scanner with the visible-wait + asserted-close contract", () => {
     // The L-164c2 vacuous-green cure, pinned in ORDER inside the helper:
@@ -145,5 +171,37 @@ describe("v31 — the five label associations cure the button-name catch", () =>
   it("the Ajustes Proveedor select carries the htmlFor/id pair", () => {
     expect(SETTINGS).toContain('htmlFor="settings-card-provider"');
     expect(SETTINGS).toMatch(/id="settings-card-provider"/);
+  });
+});
+
+describe("v32 — the view-register completion census (a11y-smoke.spec.ts)", () => {
+  it("registers every authed view closed surface by NAME (the register's end state)", () => {
+    // The NAME form (the D-197a2/D-199a2 lesson): a count-anchored claim
+    // goes stale the day a registration joins; a name never does. The
+    // Dashboard rides the shell test (the comment at VIEW_REGISTRATIONS).
+    for (const title of VIEW_REGISTRATIONS) {
+      expect(SMOKE, `view registration missing from the a11y register: "${title}"`).toContain(title);
+    }
+  });
+
+  it("waits for each view before scanning it (the L-164c2 order guard, per registration)", () => {
+    // The lazy view registry means the view chunk may still be loading
+    // after page.goto — a scan on a not-yet-rendered view passes
+    // vacuously. Each view registration must carry a toBeVisible() wait
+    // BEFORE its blockingViolations(page) scan, scoped from its own title
+    // (the first wait and the first scan after the title must be in that
+    // order — the next test's body starts after this one's scan).
+    for (const title of VIEW_REGISTRATIONS) {
+      const start = SMOKE.indexOf(`"${title}"`);
+      expect(start, `view registration missing: "${title}"`).toBeGreaterThan(-1);
+      const waitIdx = SMOKE.indexOf("toBeVisible()", start);
+      const scanIdx = SMOKE.indexOf("blockingViolations(page)", start);
+      expect(waitIdx, `"${title}": no visible-wait before the scan`).toBeGreaterThan(-1);
+      expect(scanIdx, `"${title}": no axe scan`).toBeGreaterThan(-1);
+      expect(
+        waitIdx,
+        `"${title}": the visible-wait must precede the scan (the vacuous-green guard)`,
+      ).toBeLessThan(scanIdx);
+    }
   });
 });

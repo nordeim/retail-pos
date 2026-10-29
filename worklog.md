@@ -2564,3 +2564,122 @@ Stage Summary:
   dropdown panel interiors (the s199 declined list); the deepmerge-ts
   decline (re-triage clause standing); dependency UPGRADES deliberately
   not taken; every standing v8–v30 disclosure unchanged.
+
+---
+Task ID: 32
+Agent: main session (V32 cycle — the view-register completion)
+Task: The V32 audit-remediate-align-push cycle (remediation-plan-v32).
+Date: 2026-10-30
+
+Cycle context: fresh clone at `98485cb` (V31 complete and pushed; the
+task brief referenced session_61 + remediation-plan-v31 + worklog +
+session_62 — all read, plus the five core docs re-internalized).
+neo-crm re-cloned: UNCHANGED at `013232a` (session-199 — the same
+commit V31 adopted; no new doctrine this cycle). Round material: the
+V31-declined "future cycle's register completion," taken now.
+
+Environment rebuild: `.env` (DATABASE_URL="file:../db/custom.db"), bun
+install (484 packages), db:push + db:seed (the reference mirror: 12
+products / 6 categories / 2 registers / 2 sales / 2 shifts),
+chromium-1243 (the workspace reset wiped the browser cache again).
+Baseline gates: lint 0 · tsc 0 · build ✓ · 587/587 unit (44 files) ·
+219/219 e2e — with ONE first-occurrence flake-watch item: the first
+full e2e run failed exactly F1c (the v16 amber-600 pixel read;
+functional-parity-v16.spec.ts) — isolated re-run 8/8, full-suite
+re-run 219/219, zero code changes between. Recorded in the V18/V26
+title-flake watch posture (documented first occurrence; root-cause if
+it recurs — the ±1-per-channel color-space rounding boundary under
+load is the standing hypothesis). It did NOT recur in this cycle's
+final 225-spec run.
+
+The audit (17th cycle), all legs live:
+- Reference site (agent-browser login): $0.00 / 0 / 12 / 0 KPIs,
+  390×844 viewport-locked (scrollHeight 844 = innerHeight, scrollTop
+  0), no hamburger — UNCHANGED for the 17th consecutive cycle.
+- Clone drawer spine at TRUE 390×844: panel [0,0,288,844] · header
+  [0,0,287,69] · nav [0,69,287,727] · footer [0,796,287,48] · close
+  [235,16,36,36] · 8 links at [12,y,263,40] y=81+44k · the VeloxPOS
+  wordmark — 17th consecutive EXACT match of the frozen v25 ledger
+  (NO Tailwind v4 bug — the mobile menu works as expected); Esc
+  closes, aria-expanded resets, the panel leaves the DOM.
+- V27 title-guard probe: 90/90 clean (30 natural + 60 fast-auth; min
+  margins 7ms/7ms — the race shape live, the guard correcting).
+- `bun audit`: 1 high — the documented deepmerge-ts decline (PAD §6
+  ledger row, re-triage clause standing). No drift; the zod floor
+  verified standing.
+- Citation sweep: all @/ imports in the 44 unit + 32 e2e files resolve.
+- The V31 cure re-verified standing: the five label associations
+  present; the repo-wide <Label sweep finds ZERO unassociated consumer
+  Labels.
+- The round's own live census (a temporary probe spec, since deleted):
+  the SIX unregistered authed views driven with the smoke's exact axe
+  config — Terminal, Inventario, Ventas, Cajas, Cajeros, Reportes ALL
+  CLEAN (the coverage-extension form; no live catch this cycle).
+
+The remediation (plan-v32, TDD):
+- B2 born-RED: the census extension (`tests/a11y-register-census.test.ts`,
+  7→9 tests) — the VIEW_REGISTRATIONS inventory (7 titles, the NAME
+  form) + the per-registration order guard (title → first toBeVisible →
+  first blockingViolations). Both new tests RED on the standing tree at
+  the exact missing titles; the 7 standing tests untouched and green.
+  The six view registrations landed in the smoke (literal titles,
+  heading-anchored visible-waits — the navigation spec's ROUTES
+  headings as mount proofs; the L-164c2 guard at the view layer for the
+  lazy registry), placed before the state-gated pair. Probe spec
+  deleted. Census 9/9; smoke 25 passed.
+- B4 mutation proofs ×2, each RED-at-the-exact-target → restored →
+  GREEN: (a) the planted cashiers edit-action aria-label removal → the
+  Cajeros view registration RED at exactly `button-name (critical):
+  1 nodes` (the rendered-tree class no source pin sees); (b) the
+  planted Reportes registration-title deletion → both census tests RED
+  at the exact title. En-route lesson recorded: the whole-spec
+  `git checkout` restore also reverted the six new registrations —
+  re-applied and re-verified (census + smoke re-run green).
+- Full gates: **lint 0 · tsc 0 · build ✓ · 589/589 unit (44 files,
+  587+2) · 225/225 e2e (4.3m, zero flakes)**. Zero src/ changes by
+  construction (the registrations ARE the cure) — proven in the bytes:
+  3 of the 4 same-state v32 captures BYTE-IDENTICAL to the v31 set;
+  the drawer shot differs by 9 of 329,160 pixels (0.0027%, max channel
+  delta 7 — capture-time font rasterization noise, the v30→v31
+  precedent's own 2-byte shape); the new subject capture
+  desktop-reports-1280 (the bright-H1 surface never captured before).
+- B5 docs lockstep: README (badge 589+225 + Tested row + the register
+  description extended to every authed view), AGENTS (the
+  view-register completion note), CLAUDE (the v32 contracts note,
+  newest-first + counts), PAD v2.19.0 (history + ADR-041 + §8 rows),
+  SKILL v1.26.0 (the v32 close layer live, the v31 layer demoted at
+  its ship counts + five count sites), plan §6, session_63 (EN) +
+  session_64 (ZH), this entry. `.env.example` verified unchanged and
+  tracked. The unit suite re-ran green after every doc edit (the
+  census pins read the live spec).
+
+The register's end state: every public surface + every authed view
+(the Dashboard rides the shell+dashboard landing test — documented in
+the census, not double-registered) + the mobile drawer + every
+dialog-open state.
+
+Stage Summary:
+- V32 closed the view-register completion (ADR-041): the register's
+  doctrine chain (V24 register → V29 public completion → V31
+  dialog-open) reached its end state — six authed views gained
+  closed-surface registrations (all probed CLEAN live first; the
+  coverage-extension form — the teeth are the cure).
+- The census grew the VIEW_REGISTRATIONS inventory (NAME form) + the
+  per-registration visible-wait order guard (the view-layer L-164c2
+  pin); mutation-proven on both axes (the rendered tree via the
+  cashiers aria-label removal; the register via the title deletion).
+- The reference is unchanged for the 17th consecutive cycle; the
+  mobile drawer spine re-verified live against the frozen ledger (no
+  Tailwind v4 bug); the citation sweep clean; the V27 title-guard
+  probe 90/90; the advisories posture unchanged (1 documented decline).
+- Gates: 589 unit + 225 e2e green (zero flakes; the baseline's
+  first-occurrence F1c pixel-read flake documented in the watch
+  posture, did not recur); all counts moved in the same commit
+  (587→589 unit, 44 files held; 219→225 e2e).
+- Known-open (disclosed): the F1c amber-600 pixel-read flake watch
+  (first occurrence this cycle's baseline; root-cause if it recurs);
+  the Select dropdown panel interiors (the s199 declined list); the
+  deepmerge-ts decline (re-triage clause standing); the Prisma 6→7
+  rotation + dependency upgrades deliberately not taken; neo-crm's
+  post-s199 cadence to watch; every standing v8–v31 disclosure
+  unchanged.

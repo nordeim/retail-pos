@@ -8,8 +8,8 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.25.0
-last_updated: "2026-10-29"
+version: 1.26.0
+last_updated: "2026-10-30"
 tags:
   - pos
   - retail
@@ -25,10 +25,41 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v31 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 587/587 unit · 219/219 e2e** (the v31
-> close: the dialog-open a11y coverage audit — the neo-crm session-199
-> doctrine adopted: a Radix Dialog's content is ABSENT from the DOM
+> template), validated against the codebase at the v32 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 589/589 unit · 225/225 e2e** (the v32
+> close: the view-register completion — the V31-declined future cycle,
+> taken now: the a11y register's LAST named gap closed. The register's
+> doctrine chain (V24 register → V29 public-surface completion → V31
+> dialog-open coverage) had one remainder — six of the eight authed
+> views carried ZERO closed-surface registration (Terminal, Inventario,
+> Ventas, Cajas, Cajeros, Reportes). The round's live probe (a temporary
+> spec, since deleted — its paths reborn as the registrations) drove all
+> six with the smoke's exact axe config: ALL CLEAN, the
+> coverage-extension form (no live catch; the teeth are the cure). The
+> register completes: six closed-surface registrations, the Ajustes-view
+> idiom (goto → heading-anchored visible-wait → axe scan → empty
+> assertion), before the state-gated pair (which stays LAST). THE
+> VIEW-LAYER L-164c2 GUARD: the lazy view registry means the chunk may
+> still be loading after goto — a scan on a not-yet-rendered view passes
+> vacuously; every view registration waits on the navigation spec's own
+> ROUTES headings (each view's PageHeading as its mount proof). The
+> Dashboard rides the shell+dashboard landing test (documented in the
+> census, not double-registered). The pins (the census extension,
+> 7→9 tests): the VIEW_REGISTRATIONS inventory (seven titles, the NAME
+> form) + the per-registration ORDER GUARD (title → first toBeVisible →
+> first blockingViolations — deleting a registration's wait REDs at the
+> exact registration). BORN-RED at the census (the six titles absent on
+> the standing tree); the six registrations born-green; MUTATION-PROVEN
+> ×2 (the cashiers edit aria-label removal → the Cajeros registration
+> RED at button-name, the rendered axis; the Reportes title deletion →
+> the census RED at the exact title). ZERO-SOURCE-DELTA by construction
+> (tests + docs only; the evidence set: 3 of 4 same-state captures
+> byte-identical, the drawer shot's 9-px (0.0027%) rasterization noise
+> — the v30→v31 precedent's shape — plus the new subject capture
+> desktop-reports-1280). ADR-041, PAD v2.19.0).
+> The prior close (v31): the dialog-open a11y coverage audit — the
+> neo-crm session-199 doctrine
+> adopted: a Radix Dialog's content is ABSENT from the DOM
 > while closed, so every dialog-open state carries its own registration
 > in the a11y smoke. The register held ZERO dialog-open registrations
 > while the app shipped 14; the first live census found **5 critical
@@ -51,7 +82,8 @@ tags:
 > source pin sees it; the planted title deletion → exactly 1 RED at
 > the inventory pin). Probe lesson: the naive comment-stripper
 > swallows `accept="image/*"` regions as phantom block comments — the
-> census suite ships the QUOTE-AWARE stripper. ADR-040, PAD v2.18.0).
+> census suite ships the QUOTE-AWARE stripper. ADR-040, PAD v2.18.0,
+> at its ship counts 587/587 unit · 219/219 e2e.
 > The prior close (v30): the advisories re-triage — the neo-crm
 > session-198 doctrine
 > adopted: the manifest-truth family's OTHER half. The repo-included
@@ -299,8 +331,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 587 tests / 44 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 219 specs; standalone prod server :3100 (child env shell-state-proof) |
+| Unit | vitest ^5.0.1 (node env) | 589 tests / 44 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 225 specs; standalone prod server :3100 (child env shell-state-proof) |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -330,8 +362,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 587/587
-bun run test:e2e           # playwright: 219/219 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 589/589
+bun run test:e2e           # playwright: 225/225 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -713,8 +745,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 587/587 vitest
-bun run test:e2e      # 219/219 playwright (production posture)
+bun run test          # 589/589 vitest
+bun run test:e2e      # 225/225 playwright (production posture)
 ```
 
 Verification beyond the gates:

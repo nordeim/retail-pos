@@ -735,6 +735,21 @@ The `lg:hidden` chrome asserts with `toBeHidden`, never `toHaveCount(0)` —
   a mutation proof of the register must strip BOTH the htmlFor and the
   placeholder. Editing not-found.tsx or the auth surfaces means running
   the corresponding specs.
+- **The view-register completion (v32/ADR-041): EVERY authed view carries
+  a closed-surface registration in the a11y smoke** — Terminal,
+  Inventario, Ventas, Cajas, Cajeros, Reportes, and Ajustes each own a
+  `the <view> view is clean of critical/serious violations` test (the
+  Dashboard rides the shell+dashboard landing test — documented in the
+  census, not double-registered). Every view registration carries its
+  own heading-anchored visible-wait BEFORE the axe scan (the L-164c2
+  guard at the view layer: the lazy view registry means the chunk may
+  still be loading after `page.goto` — a scan on a not-yet-rendered
+  view passes vacuously; the anchors are the navigation spec's ROUTES
+  headings, each view's own PageHeading as its mount proof). The census
+  pins the view inventory BY NAME (`VIEW_REGISTRATIONS`, seven titles)
+  plus the per-registration order guard (title → first `toBeVisible()`
+  → first `blockingViolations(page)`) — editing the smoke's view
+  registrations means running the census.
 - **The dialog-open register (v31/ADR-040, the neo-crm session-199
   doctrine adopted): a Radix Dialog's content is ABSENT from the DOM
   while closed — every dialog-open state carries its own registration in

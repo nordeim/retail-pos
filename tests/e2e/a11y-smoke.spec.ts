@@ -150,12 +150,98 @@ test.describe("a11y smoke", () => {
   // V31/F1b — the Ajustes view's own closed surface joins the register:
   // it is the defect-bearing surface (the Moneda + Proveedor selects —
   // the live census found the same unassociated-label shape there), and
-  // the only authed view carrying the family. The other seven authed
-  // views probed CLEAN (the v31 plan §0 ledger) and stay unregistered
-  // this cycle (disclosed, decision #8).
+  // the only authed view carrying the family.
+  //
+  // V32 — the view-register completion (the V31-declined future cycle,
+  // taken now): the six remaining authed views' closed surfaces join
+  // below, each with its own heading-anchored visible-wait (the lazy view
+  // registry means the chunk may still be loading after goto — a scan on
+  // a not-yet-rendered view passes vacuously; the L-164c2 guard, here at
+  // the view layer). The Dashboard's closed surface rides the shell test
+  // above — the register now covers every public surface, every authed
+  // view, the drawer, and every dialog-open state.
   test("the Ajustes view is clean of critical/serious violations", async ({ page }) => {
     await page.goto("/StoreSettings");
     await expect(page.getByTestId("settings-categories-card")).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  // V32 — the six view closed-surface registrations (the census pins in
+  // tests/a11y-register-census.test.ts hold this inventory by NAME). The
+  // visible-wait anchors are the navigation spec's own ROUTES headings —
+  // each view renders its own PageHeading, so the heading's visibility is
+  // the view's mount proof. The Terminal registration scans the seeded
+  // no-shift state (the default e2e posture; the state-gated pair below
+  // owns the open-shift cycle).
+  test("the Terminal view is clean of critical/serious violations", async ({ page }) => {
+    await page.goto("/");
+    await expect(
+      page.locator("main h1, main h2").filter({ hasText: "No hay turno activo" }).first(),
+    ).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Inventario view is clean of critical/serious violations", async ({ page }) => {
+    await page.goto("/Inventory");
+    await expect(page.locator("main h1").filter({ hasText: "Inventario" })).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Ventas view is clean of critical/serious violations", async ({ page }) => {
+    await page.goto("/Sales");
+    await expect(
+      page.locator("main h1").filter({ hasText: "Historial de Ventas" }),
+    ).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Cajas view is clean of critical/serious violations", async ({ page }) => {
+    await page.goto("/Registers");
+    await expect(
+      page.locator("main h1").filter({ hasText: "Cajas Registradoras" }),
+    ).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Cajeros view is clean of critical/serious violations", async ({ page }) => {
+    await page.goto("/Cashiers");
+    await expect(page.locator("main h1").filter({ hasText: "Cajeros" })).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  test("the Reportes view is clean of critical/serious violations", async ({ page }) => {
+    await page.goto("/Reports");
+    await expect(page.locator("main h1").filter({ hasText: "Reportes" })).toBeVisible();
 
     const blocking = await blockingViolations(page);
     expect(
