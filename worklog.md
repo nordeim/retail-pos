@@ -2364,3 +2364,106 @@ Stage Summary:
   (Radix minors + the Prisma 6→7 MAJOR — their own cycle if ever
   wanted); the react-dom boot floor; the reference's own broken flows
   (nothing to mirror); every standing v8-v28 disclosure unchanged.
+
+## Task V30 (session_57 + session_58) — 2026-10-29
+
+Fresh clone after the 5th recorded workspace reset — the log shows the
+prior session closed and pushed V29 (5403ab9 + the owner's
+41acd3c/session_56 transcript), so this is the 15th audit cycle.
+Environment rebuilt (.env, install 484, db:push+seed the reference
+mirror, chromium-1243) — baseline gates green FIRST-TRY exactly as V29
+closed them: lint 0 · tsc 0 · build ✓ · 577/577 unit (43 files) ·
+207/207 e2e (3.6m, zero flakes).
+
+Audit (15th cycle):
+- neo-crm ADVANCED ba30355 → 56deef8: session-198 THE ADVISORIES
+  RE-TRIAGE — new doctrine, read in full and ADOPTED: the standing
+  pre-ship duty's own catch (bun audit re-run live; their census
+  drifted 9→12 with a critical on a runtime chain), D-198a1 (the
+  transitive override + the EXHAUSTIVE lockfile pin + the dormancy
+  freeze), D-198a2 (the stale security-ledger census + the
+  whitespace-normalized doc pin), and the declined list.
+- THE LIVE CATCH (the s198 duty run for the FIRST time in this repo —
+  bun audit had zero duty/pin/ledger here despite the repo-included
+  security-and-hardening skill's Always-Do mandate): 2 highs —
+  F1a zod 4.6.5 < 4.6.6 (GHSA-mrhx-c7xc-m3w5) on the DIRECT runtime
+  validation chain (the one hoisted resolution serving root AND the
+  eslint-config-next › eslint-plugin-react-hooks chain); F1b
+  deepmerge-ts 7.1.5 < 8.0.0 (GHSA-ggr8-5vv4-36mx) via @prisma/config,
+  the prisma CLI's dev-toolchain — the documented decline (zero
+  runtime request-path; re-triage clause). Exposure shape verified:
+  zero .json() parses outside readJson (every zod parse behind the
+  M4 1MB gate, already pinned).
+- The reference UNCHANGED for the 15th consecutive cycle; the drawer
+  spine re-measured live EXACTLY matching the frozen v25 ledger (15th
+  confirmation, no Tailwind v4 trap; Esc + aria reset + focus return
+  verified); citation sweep 19/19; the V27 title-guard probe re-run
+  90/90 clean (min margins 9ms/8ms); Known-Issues zero live items;
+  desktop spot-check green.
+
+Execution (TDD):
+- B2 born-RED (the V28 form — the pins catch a live defect): the
+  census suite's advisories block — the EXHAUSTIVE lockfile zod floor
+  (every zod@x.y.z resolution ≥ 4.6.6, with a zero-match guard), the
+  manifest range floor, and the PAD §6 ledger content pin
+  (whitespace-normalized). 3 RED + the 3 standing V28 tests green.
+- B3 the cure, with the D-198a1 discovery en route: bun add
+  zod@^4.6.6 resolved the root to 4.6.7 but CREATED a NESTED
+  eslint-plugin-react-hooks/zod@4.6.5 surviving on disk — bun update
+  zod could NOT clear it. Completed by the overrides.zod "^4.6.6"
+  tree-wide floor + reinstall (one hoisted 4.6.7; a later
+  revert+reinstall re-proved the manifest reproduces the cure). The
+  manifest-floor pin widened to BOTH seats (dependencies.zod +
+  overrides.zod). Post-cure audit: 1 high, the documented toolchain
+  decline. The PAD §6 advisories ledger row + the AGENTS standing-duty
+  note written. Census suite GREEN 6/6.
+- B4 mutation-proven ×2, each RED at the exact target then restored:
+  (a) the planted NESTED zod@4.6.5 (after the clean root — the
+  first-match-passes shape) RED at the exhaustive lockfile assertion
+  alone; (b) the planted stale census ("zero advisories") RED at the
+  doc content pin alone. Full gates: lint 0 · tsc 0 · build ✓ ·
+  580/580 unit (43 files, 577+3) · 207/207 e2e (3.6m) — the zod
+  bump's compatibility proven by the full battery. One first-run F1c
+  flake (the v16 low-stock color pin, cold standalone boot): isolated
+  re-run 8/8 + full re-run 207/207 green — first occurrence in 15
+  cycles, recorded for watch. Five v30 captures PNG-validated at
+  exact dimensions (desktop-terminal-1280 the cycle's subject,
+  desktop-dashboard-1280, desktop-ventas-1280, mobile-terminal-390,
+  mobile-drawer-open-390).
+- B5 docs lockstep: README (badge + Tested row 580+207), AGENTS (the
+  advisories axis census-pinned note), CLAUDE (the v30 contracts note
+  + counts), PAD v2.17.0 (history + ADR-039 + the §6 advisories
+  ledger row + §8 rows), SKILL v1.24.0 (the v30 close layer + counts
+  + the §12 F14 lesson), remediation-plan-v30 §6, session_57 +
+  session_58, this entry. .env.example verified unchanged and tracked.
+  The unit suite re-ran green after every doc edit. Committed to main;
+  pushed via the SSH wrapper (remote == local HEAD verified).
+
+Stage Summary:
+- V30 closed the advisories re-triage (ADR-039, the neo-crm
+  session-198 doctrine adopted): the manifest-truth family's other
+  half gained standing teeth. The zod HIGH on the direct runtime
+  validation chain is cured at 4.6.7 via the two-seat fix (range +
+  override — the override is load-bearing: the bare add left a nested
+  vulnerable copy on disk, observed live); the deepmerge-ts HIGH is
+  the documented dev-toolchain decline with its re-triage clause in
+  the new PAD §6 ledger row; the exhaustive lockfile pin caught the
+  nested-copy shape during the cure itself; the ledger row is born
+  with doc teeth (the D-198a2 inverted shape).
+- The cycle's own probe lesson: a vulnerable-tree cure is a TWO-SEAT
+  fix — the manifest range alone hoists the root while a nested copy
+  survives; the exhaustive census form (every resolution) plus the
+  override floor is what actually cures and pins the tree.
+- The reference is unchanged for the 15th consecutive cycle; the
+  mobile drawer spine re-verified live against the frozen ledger (no
+  Tailwind v4 bug); the citation sweep clean (19/19); the V27
+  title-guard probe 90/90.
+- Gates: 580 unit + 207 e2e green (one cold-start F1c flake, re-run
+  green, first occurrence, watch); all counts moved in the same
+  commit (577→580 unit; 43 files and 207 e2e held).
+- Known-open (disclosed): the deepmerge-ts decline (re-triage when
+  @prisma/config bumps or a runtime chain appears); dependency
+  UPGRADES deliberately not taken (Radix minors + the Prisma 6→7
+  MAJOR — their own cycle if ever wanted); the react-dom boot floor;
+  the reference's own broken flows (nothing to mirror); every
+  standing v8–v29 disclosure unchanged.

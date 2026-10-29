@@ -27,7 +27,7 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (577 tests / 43 files)
+bun run test           # vitest unit layer (580 tests / 43 files)
 bun run test:e2e       # playwright e2e layer (207 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
@@ -291,6 +291,30 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   V22 action pins grew to the four-action superset (extend, never
   weaken). The route-count pin in deployment-surfaces counts 28 route
   handlers now — DEPLOYMENT.md §10 carries the update-profile row.
+- The v30 contracts: the advisories re-triage (the neo-crm session-198
+  doctrine adopted) — the manifest-truth family's OTHER half. The
+  repo-included security-and-hardening skill's Always-Do tier ("Run
+  `npm audit` (or equivalent) before every release") had never run
+  here; the first live run found 2 highs: **zod 4.6.5 < 4.6.6**
+  (GHSA-mrhx-c7xc-m3w5, memory exhaustion validating oversized
+  constrained collections) on the DIRECT runtime validation chain,
+  and **deepmerge-ts 7.1.5 < 8.0.0** (GHSA-ggr8-5vv4-36mx) on the
+  prisma CLI's dev-toolchain. The cure: `bun add zod@^4.6.6` (root
+  4.6.7) + **`overrides.zod: "^4.6.6"` + reinstall** — the override
+  is LOAD-BEARING (observed live: the bare add hoisted the root while
+  a NESTED `eslint-plugin-react-hooks/zod@4.6.5` survived on disk —
+  the D-198a1 shape; the override dedupes the tree to one hoisted
+  ≥-floor copy; the post-cure audit = 1 high, the documented
+  deepmerge-ts decline). The pins (the census suite's advisories
+  block, born-RED): the EXHAUSTIVE lockfile zod floor (every
+  `zod@x.y.z` resolution ≥ 4.6.6 — first-match/root-only passes a
+  nested copy), the manifest range floors (direct dep + override),
+  and the PAD §6 ledger row's whitespace-normalized content pin (the
+  D-198a2 teeth — the census claim can no longer drift silently).
+  A HIGH on a runtime chain is fixed in-cycle through the package
+  manager; dev-toolchain members are documented declines with the
+  re-triage clause. Editing the zod floors, the overrides block, or
+  the ledger row means running the census.
 - The v29 contracts: the public-surface coverage audit (the neo-crm
   session-197 doctrine adopted — a decoded, behavior-pinned surface can
   still have ZERO gate teeth on its designed content). (1) The 404

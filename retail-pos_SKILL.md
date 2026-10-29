@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.23.0
+version: 1.24.0
 last_updated: "2026-10-29"
 tags:
   - pos
@@ -25,9 +25,32 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v29 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 577/577 unit · 207/207 e2e** (the v29
-> close: the public-surface coverage audit — the neo-crm session-197
+> template), validated against the codebase at the v30 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 580/580 unit · 207/207 e2e** (the v30
+> close: the advisories re-triage — the neo-crm session-198 doctrine
+> adopted: the manifest-truth family's OTHER half. The repo-included
+> security-and-hardening skill's Always-Do tier ("Run `npm audit` (or
+> equivalent) before every release") had never run here; the first live
+> run found 2 highs: zod 4.6.5 < 4.6.6 (GHSA-mrhx-c7xc-m3w5) on the
+> DIRECT runtime validation chain, and deepmerge-ts 7.1.5 < 8.0.0 on
+> the prisma CLI's dev-toolchain. The cure: `bun add zod@^4.6.6`
+> (root 4.6.7) + the `overrides.zod: "^4.6.6"` tree-wide floor +
+> reinstall — the override is LOAD-BEARING (observed live: the bare
+> add left a NESTED `eslint-plugin-react-hooks/zod@4.6.5` surviving
+> on disk, `bun update` unable to clear it — the D-198a1 shape; the
+> override dedupes the tree to one hoisted ≥-floor copy; post-cure
+> audit = 1 high, the documented deepmerge-ts decline with its
+> re-triage clause). The pins (the census suite's advisories block,
+> born-RED): the EXHAUSTIVE lockfile zod floor (every `zod@x.y.z`
+> resolution ≥ 4.6.6 — first-match/root-only passes a nested copy),
+> the manifest range floors (direct dep + override), and the PAD §6
+> ledger row's whitespace-normalized content pin (the D-198a2 teeth —
+> retail-pos's shape was INVERTED: the ledger row never existed, so
+> the cure births it WITH teeth); MUTATION-PROVEN ×2 (the planted
+> nested zod@4.6.5 → exactly 1 RED at the exhaustive assertion; the
+> planted stale census → exactly 1 RED at the doc pin). ADR-039, PAD
+> v2.17.0). The prior close (v29): the public-surface coverage audit
+> — the neo-crm session-197
 > doctrine adopted: a decoded, behavior-pinned surface can still have
 > ZERO gate teeth on its designed content. F1 — the 404 content-family
 > freeze (`tests/e2e/not-found-surface.spec.ts`): the designed 404 was
@@ -250,7 +273,7 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 577 tests / 43 files |
+| Unit | vitest ^5.0.1 (node env) | 580 tests / 43 files |
 | E2E | @playwright/test ^1.63.0 + chromium | 207 specs; standalone prod server :3100 (child env shell-state-proof) |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
@@ -281,7 +304,7 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 577/577
+bun run test               # vitest: 580/580
 bun run test:e2e           # playwright: 207/207 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
@@ -664,7 +687,7 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 577/577 vitest
+bun run test          # 580/580 vitest
 bun run test:e2e      # 207/207 playwright (production posture)
 ```
 
@@ -813,6 +836,27 @@ Verification beyond the gates:
    ("the LIVE_DOCS array") and let the array be the source of truth;
    historical records keep their counts (they are archives of what
    was true at their own time).
+14. **F14 (v30) — An advisories audit is a standing pre-ship duty,
+   not a one-time sweep — and the cure of a vulnerable tree is a
+   TWO-SEAT fix (range + override), never a bare bump.** The axis
+   drifts silently (new advisories land on LOCKED versions; a clean
+   audit today is stale tomorrow), so the census needs LOCKFILE
+   teeth in the EXHAUSTIVE form — collect EVERY `zod@x.y.z` (or any
+   floored package's) resolution in bun.lock, because `bun add`
+   hoists the root entry while a NESTED vulnerable copy survives on
+   disk (observed live: `eslint-plugin-react-hooks/zod@4.6.5` after
+   the root bumped to 4.6.7, `bun update` unable to clear it — the
+   neo-crm D-198a1 shape verbatim) — and the cure is the
+   `overrides.zod` tree-wide floor + a clean reinstall (the override
+   is load-bearing; the manifest range alone is NOT the cure). The
+   ledger needs DOC teeth: the census claim (the post-cure count,
+   the declined toolchain composition, the re-triage clause) is
+   pinned whitespace-normalized in the census suite — the pin holds
+   the CONTENT, never the wrap. Triage by the skill's own ladder: a
+   HIGH on a RUNTIME chain is fixed in-cycle through the package
+   manager; a dev-toolchain member is a DOCUMENTED decline with a
+   review date, never a silent pass and never a mid-rotation
+   override that risks the gate-critical CLI.
 
 ## §13 Pitfalls to Avoid (don't do these in this repo)
 

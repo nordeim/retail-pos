@@ -767,6 +767,26 @@ The `lg:hidden` chrome asserts with `toBeHidden`, never `toHaveCount(0)` —
   enforced by `tests/dependency-census.test.ts`. Removing a dependency
   goes through `bun remove` (package.json + bun.lock move together);
   editing the manifest means running the census.
+- The advisories axis is CENSUS-PINNED too (v30/ADR-039, the neo-crm
+  session-198 doctrine): `bun audit` re-runs every cycle (the
+  security-and-hardening skill's Always-Do tier, made standing — the
+  axis had zero duty before v30 and the first live run found a HIGH
+  on the direct runtime validation chain). A HIGH on a RUNTIME chain
+  is fixed in-cycle through the package manager — the zod cure
+  (GHSA-mrhx-c7xc-m3w5, floor 4.6.6): `bun add zod@^4.6.6` + the
+  `overrides.zod: "^4.6.6"` tree-wide floor + `bun install` (the
+  override is load-bearing — a bare add/update hoists the root while
+  a NESTED vulnerable copy survives on disk, the D-198a1 shape
+  observed live here); dev-toolchain members are documented declines
+  in the PAD §6 ledger row with their re-triage clause
+  (deepmerge-ts via @prisma/config — prisma-CLI-only, zero runtime
+  request-path). The pins (all in the census suite): the EXHAUSTIVE
+  lockfile zod floor (every `zod@x.y.z` resolution ≥ 4.6.6 — a
+  first-match/root-only pin passes a nested copy), the manifest range
+  floors (direct dep + override), and the ledger row's
+  whitespace-normalized content pin (the pin holds the CONTENT, never
+  the wrap). Editing the zod floors, the overrides block, or the
+  ledger row means running the census.
 - Git: single-branch (`main`), no merge commits without need; pushes go
   through `docs/ssh_git_wrapper_v3.py` (see
   `docs/how-to-git-push-using-ssh-wrapper_SKILL.md`).
