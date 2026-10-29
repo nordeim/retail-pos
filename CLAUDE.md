@@ -27,8 +27,8 @@ bun run dev            # dev server :3000 (tees to dev.log)
 bun run lint           # eslint 9 (flat config)
 bun run typecheck      # tsc --noEmit — run BEFORE tests
 bun run build          # production standalone build (REQUIRED before e2e)
-bun run test           # vitest unit layer (580 tests / 43 files)
-bun run test:e2e       # playwright e2e layer (207 specs, boots standalone :3100)
+bun run test           # vitest unit layer (587 tests / 44 files)
+bun run test:e2e       # playwright e2e layer (219 specs, boots standalone :3100)
 bun run db:push        # prisma db push (schema-anchored, see AGENTS.md)
 bun run db:seed        # seed the owner + the reference dataset
 ```
@@ -291,6 +291,29 @@ docs/               investigation dossier, plan, v4 trap report, evidence
   V22 action pins grew to the four-action superset (extend, never
   weaken). The route-count pin in deployment-surfaces counts 28 route
   handlers now — DEPLOYMENT.md §10 carries the update-profile row.
+- The v31 contracts: the dialog-open a11y coverage audit (the neo-crm
+  session-199 doctrine adopted) — a Radix Dialog's content is ABSENT
+  from the DOM while closed, so every dialog-open state carries its own
+  registration in the a11y smoke (`scanDialogOpen` — the shared helper
+  bakes in the L-164c2 vacuous-green cure: visible-wait BEFORE the axe
+  scan, Escape close ASSERTED hidden). The first live census found 5
+  critical `button-name` violations — every Radix `SelectTrigger`
+  renders a `<button>`, and five of them (product Categoría + Unidad,
+  shift-open Cajero/a, Ajustes Moneda + Proveedor) sat under
+  UNASSOCIATED `<Label>`s (no `htmlFor` — inert for accname). The cure
+  is the label association idiom: `<Label htmlFor="X">` +
+  `<SelectTrigger id="X">` (a button IS a labelable element;
+  zero-pixel delta — the full visual battery re-run green is the
+  inertness proof; clicking a label now focuses the select — a
+  disclosed interaction superset matching the Input labels' behavior).
+  The register census (`tests/a11y-register-census.test.ts`) pins the
+  inventory by NAME (the D-197a2 form — a count goes stale the day a
+  registration joins) + the helper contract + the five pairs; the
+  census suite's comment stripper is QUOTE-AWARE (the naive regex
+  swallows `accept="image/*"` regions — a phantom block comment from
+  the attribute to the next real close, observed live on the Moneda
+  label). Editing the register or the five labels means running both
+  layers.
 - The v30 contracts: the advisories re-triage (the neo-crm session-198
   doctrine adopted) — the manifest-truth family's OTHER half. The
   repo-included security-and-hardening skill's Always-Do tier ("Run

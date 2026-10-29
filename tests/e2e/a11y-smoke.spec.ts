@@ -18,6 +18,32 @@ async function blockingViolations(page: import("@playwright/test").Page) {
   );
 }
 
+// V31 — the dialog-open registrations (the neo-crm session-199 doctrine
+// adopted): a Radix Dialog's content is ABSENT from the DOM while closed,
+// so every dialog-open state carries its own registration — the
+// closed-surface scans never see dialog interiors. The shared scanner
+// bakes in the L-164c2 vacuous-green cure: the dialog must be VISIBLE
+// before the scan (a scan on a closed surface passes trivially), and the
+// Escape close is ASSERTED (the Radix close contract), never assumed.
+async function scanDialogOpen(
+  page: import("@playwright/test").Page,
+  label: string,
+  open: () => Promise<void>,
+) {
+  await open();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+
+  const blocking = await blockingViolations(page);
+  expect(
+    blocking.map((v) => `${v.id}:${v.impact}`),
+    `${label} — ${blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n")}`,
+  ).toEqual([]);
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+}
+
 test.describe("a11y smoke", () => {
   test("the shell + dashboard are clean of critical/serious violations", async ({ page }) => {
     await page.goto("/Dashboard");
@@ -42,6 +68,137 @@ test.describe("a11y smoke", () => {
       blocking.map((v) => `${v.id}:${v.impact}`),
       blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
     ).toEqual([]);
+  });
+
+  // V31 — the dialog-open registrations (the register census pins in
+  // tests/a11y-register-census.test.ts hold this inventory by NAME). The
+  // create/edit adjudication follows the s199 declined list: the create
+  // registration scans the SAME dialog DOM the edit flow renders (one
+  // component, key-remounted) — edit-mode registrations add no surface.
+  test("the product dialog opens clean", async ({ page }) => {
+    await page.goto("/Inventory");
+    await scanDialogOpen(page, "product dialog", () =>
+      page.getByTestId("new-product-button").click(),
+    );
+  });
+
+  test("the product delete-confirm opens clean", async ({ page }) => {
+    await page.goto("/Inventory");
+    await scanDialogOpen(page, "product delete-confirm", () =>
+      page.locator('[data-testid^="delete-product-"]').first().click(),
+    );
+  });
+
+  test("the caja create dialog opens clean", async ({ page }) => {
+    await page.goto("/Registers");
+    await scanDialogOpen(page, "caja create dialog", () =>
+      page.getByTestId("new-register-button").click(),
+    );
+  });
+
+  test("the caja delete-confirm opens clean", async ({ page }) => {
+    await page.goto("/Registers");
+    await scanDialogOpen(page, "caja delete-confirm", () =>
+      page.locator('[data-testid^="delete-register-"]').first().click(),
+    );
+  });
+
+  test("the shift-open dialog opens clean", async ({ page }) => {
+    await page.goto("/Registers");
+    await scanDialogOpen(page, "shift-open dialog", () =>
+      page.locator('[data-testid^="open-shift-"]').first().click(),
+    );
+  });
+
+  test("the cashier dialog opens clean", async ({ page }) => {
+    await page.goto("/Cashiers");
+    await scanDialogOpen(page, "cashier dialog", () =>
+      page.getByTestId("new-cashier-button").click(),
+    );
+  });
+
+  test("the cashier delete-confirm opens clean", async ({ page }) => {
+    await page.goto("/Cashiers");
+    await scanDialogOpen(page, "cashier delete-confirm", () =>
+      page.locator('[data-testid^="delete-cashier-"]').first().click(),
+    );
+  });
+
+  test("the ticket modal opens clean", async ({ page }) => {
+    await page.goto("/Sales");
+    await scanDialogOpen(page, "ticket modal", () =>
+      page.locator('[data-testid^="view-sale-"]').first().click(),
+    );
+  });
+
+  test("the four Mi Cuenta dialogs open clean", async ({ page }) => {
+    await page.goto("/StoreSettings");
+    await scanDialogOpen(page, "Mi Cuenta change-password", () =>
+      page.getByTestId("account-change-password-button").click(),
+    );
+    await scanDialogOpen(page, "Mi Cuenta change-email", () =>
+      page.getByTestId("account-change-email-button").click(),
+    );
+    await scanDialogOpen(page, "Mi Cuenta change-name", () =>
+      page.getByTestId("account-change-name-button").click(),
+    );
+    await scanDialogOpen(page, "Mi Cuenta delete-account", () =>
+      page.getByTestId("account-delete-button").click(),
+    );
+  });
+
+  // V31/F1b — the Ajustes view's own closed surface joins the register:
+  // it is the defect-bearing surface (the Moneda + Proveedor selects —
+  // the live census found the same unassociated-label shape there), and
+  // the only authed view carrying the family. The other seven authed
+  // views probed CLEAN (the v31 plan §0 ledger) and stay unregistered
+  // this cycle (disclosed, decision #8).
+  test("the Ajustes view is clean of critical/serious violations", async ({ page }) => {
+    await page.goto("/StoreSettings");
+    await expect(page.getByTestId("settings-categories-card")).toBeVisible();
+
+    const blocking = await blockingViolations(page);
+    expect(
+      blocking.map((v) => `${v.id}:${v.impact}`),
+      blocking.map((v) => `${v.id} (${v.impact}): ${v.nodes.length} nodes`).join("\n"),
+    ).toEqual([]);
+  });
+
+  // The state-gated pair LAST (its cycle mutates server state and restores
+  // it within the same test): a real shift opened on the first register,
+  // the payment dialog scanned (Escape — no sale, no stock change), the
+  // shift-close dialog scanned (Escape — no close), then the shift closed
+  // for real with the float counted back (500 → 500, no discrepancy; the
+  // later specs' assertions are containment-based — the probe verified
+  // the exact cycle green end-to-end).
+  test("the payment dialog opens clean", async ({ page }) => {
+    await page.goto("/Registers");
+    await page.locator('[data-testid^="open-shift-"]').first().click();
+    await page.getByTestId("shift-cashier-select").click();
+    await page.getByRole("option").first().click();
+    await page.getByTestId("shift-float-input").fill("500");
+    await page.getByTestId("shift-submit").click();
+    await expect(page.getByRole("dialog")).toBeHidden();
+
+    await page.goto("/");
+    await page.locator('[data-testid^="terminal-product-"]').first().click();
+    await scanDialogOpen(page, "payment dialog", () =>
+      page.getByTestId("cobrar-button").click(),
+    );
+  });
+
+  test("the shift-close dialog opens clean", async ({ page }) => {
+    await page.goto("/Registers");
+    await scanDialogOpen(page, "shift-close dialog", () =>
+      page.locator('[data-testid^="close-shift-"]').first().click(),
+    );
+
+    // State restoration: close the shift for real (the float 500 counted
+    // back — no cash-short branch, no open shift left for later specs).
+    await page.locator('[data-testid^="close-shift-"]').first().click();
+    await page.getByTestId("shift-closing-input").fill("500");
+    await page.getByTestId("shift-close-submit").click();
+    await expect(page.getByRole("dialog")).toBeHidden();
   });
 });
 

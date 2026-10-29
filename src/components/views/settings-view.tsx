@@ -259,9 +259,9 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
                 />
               </div>
               <div>
-                <Label className="text-slate-200">Moneda</Label>
+                <Label htmlFor="settings-currency" className="text-slate-200">Moneda</Label>
                 <Select value={form.currency} onValueChange={(value) => set("currency", value)}>
-                  <SelectTrigger className="mt-1 w-full" data-testid="settings-currency">
+                  <SelectTrigger id="settings-currency" className="mt-1 w-full" data-testid="settings-currency">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
@@ -355,9 +355,9 @@ function SettingsForm({ initial }: { initial: StoreSettings | typeof DEFAULTS })
           icon={<CreditCard className="h-5 w-5 text-blue-500" />}
         >
           <div>
-            <Label className="text-slate-200">Proveedor</Label>
+            <Label htmlFor="settings-card-provider" className="text-slate-200">Proveedor</Label>
             <Select value={form.cardProvider} onValueChange={(value) => set("cardProvider", value)}>
-              <SelectTrigger className="mt-1 w-full max-w-xs" data-testid="settings-card-provider">
+              <SelectTrigger id="settings-card-provider" className="mt-1 w-full max-w-xs" data-testid="settings-card-provider">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">

@@ -735,6 +735,25 @@ The `lg:hidden` chrome asserts with `toBeHidden`, never `toHaveCount(0)` —
   a mutation proof of the register must strip BOTH the htmlFor and the
   placeholder. Editing not-found.tsx or the auth surfaces means running
   the corresponding specs.
+- **The dialog-open register (v31/ADR-040, the neo-crm session-199
+  doctrine adopted): a Radix Dialog's content is ABSENT from the DOM
+  while closed — every dialog-open state carries its own registration in
+  the a11y smoke** (the `scanDialogOpen` helper: visible-wait BEFORE the
+  axe scan — the L-164c2 vacuous-green cure — and the Escape close
+  ASSERTED hidden). The register census pins the inventory BY NAME in
+  `tests/a11y-register-census.test.ts` (the D-197a2 form; the helper
+  contract + the five label pairs too — editing the smoke's dialog
+  registrations or the five associated labels means running both
+  layers). THE LABEL-ASSOCIATION IDIOM: a Radix `SelectTrigger` renders
+  a `<button>`, and a `<Label>` without `htmlFor` above it is INERT for
+  accname — every new select couples `<Label htmlFor="X">` with
+  `<SelectTrigger id="X">` in the same commit (the five critical
+  button-name catches this census found live: product Categoría +
+  Unidad, shift-open Cajero/a, Ajustes Moneda + Proveedor). PROBE
+  TRAP: the census suite's comment stripper is QUOTE-AWARE because the
+  naive regex swallows `accept="image/*"` regions as phantom block
+  comments (observed live on the Moneda label — pins silently read
+  swallowed source).
 - Never weaken or delete a failing pin to make a gate green — fix the cause.
   The archived study-app tests/scripts live in `scripts/archive-study-sweep/`
   (excluded from tsconfig) and are historical reference only.

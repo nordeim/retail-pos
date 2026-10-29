@@ -2467,3 +2467,100 @@ Stage Summary:
   MAJOR — their own cycle if ever wanted); the react-dom boot floor;
   the reference's own broken flows (nothing to mirror); every
   standing v8–v29 disclosure unchanged.
+
+---
+Task ID: V31
+Agent: general-purpose (audit + remediation executor, session V31 2026-10-29)
+Task: The 16th audit cycle — the neo-crm session-199 doctrine (the a11y
+register's dialog-open coverage audit) mapped to retail-pos, the live
+catch cured TDD-first, docs lockstep, commit + push to main.
+
+Work Log:
+- Fresh clone at f2f2dd7 (the workspace reset again); environment
+  rebuild (.env, install, db:push + db:seed, chromium-1243 reinstall —
+  the reset wiped the browser cache). Baseline gates all green exactly
+  as V30 closed: lint 0 · tsc 0 · build ✓ · 580/580 unit (43 files) ·
+  207/207 e2e (3.7m, zero flakes).
+- The audit legs: neo-crm ADVANCED 56deef8 → 013232a (session-199 read
+  in full — the adoptable doctrine); bun audit at the documented
+  posture (1 high, the deepmerge-ts decline — no drift, the zod floor
+  standing); citation sweep clean; the reference UNCHANGED for the 16th
+  consecutive cycle ($0.00/0/12/0, 390×844 viewport-locked, no
+  hamburger); the drawer spine 16th EXACT match of the frozen v25
+  ledger (no Tailwind v4 bug; Esc + aria reset live); the V27 title
+  probe 90/90 (margins 5ms/7ms).
+- THE LIVE CATCH (the s199 duty's first run here): a temp probe spec
+  drove all 14 dialog-open states + the 8 authed views' closed surfaces
+  with the smoke's exact axe config → 5 critical `button-name`
+  violations (product Categoría + Unidad, shift-open Cajero/a, Ajustes
+  Moneda + Proveedor — all the same shape: an UNASSOCIATED <Label> over
+  a Radix SelectTrigger <button>). The cure idiom pre-verified live
+  (one exploratory association + injected axe 4.10.2 → the fixed node
+  dropped), then reverted for the born-RED discipline.
+- The plan (docs/remediation-plan-v31.md) validated against the
+  codebase before execution (all trigger testids; the count-lockstep
+  sites; no count pins on the smoke).
+- B2 born-RED verified: the census suite (tests/a11y-register-census
+  .test.ts, 7 tests) 6 RED on the standing tree; the extended smoke's
+  3 defect-bearing registrations RED at the exact button-name nodes (2/
+  1/2), the 9 clean registrations born-green, the 7 standing tests
+  untouched. The probe spec deleted (its paths reborn as the
+  registrations).
+- B3 the cure, with the en-route stripper discovery: the 5 htmlFor/id
+  associations landed; the Moneda census pin stayed RED — the naive
+  comment-stripper swallowed settings-view source between the
+  accept="image/*" attribute (line 199) and the next real comment close
+  (line 284) as a phantom block comment (node readFileSync proved the
+  raw file correct, isolating the stripper). The quote-aware stripper
+  shipped; the standing suites verified non-vacuous under the same trap
+  (0 pins in any phantom span; the trap fails loud-false-RED, never
+  false-GREEN). Smoke 19/19 GREEN after the rebuild.
+- B4 mutation-proven ×2, each RED at the exact target then restored:
+  (a) the planted htmlFor removal → 1 RED at the product-dialog
+  registration's RENDERED button-name (no source pin sees it); (b) the
+  planted registration-title deletion → 1 RED at the census inventory
+  pin. Full gates: lint 0 · tsc 0 · build ✓ (the standing V26
+  boot-guard warning alone) · 587/587 unit (44 files, 580+7) · 219/219
+  e2e (4.2m, zero flakes) — the cure's zero-pixel-delta proven by the
+  full visual battery. Five v31 captures PNG-validated at exact
+  dimensions (desktop-product-dialog-1280 the cycle's subject — the
+  dialog element at its 512px max-w-lg base; the other four
+  byte-stable vs the v30 set at the same seeded state).
+- B5 docs lockstep: README (badge 587+219 + the Tested row + the
+  register description extended), AGENTS (the dialog-open register
+  duty + the label-association idiom + the stripper trap), CLAUDE (the
+  v31 contracts note + counts), PAD v2.18.0 (history + ADR-040 + the
+  §8 rows), SKILL v1.25.0 (the v31 close layer + counts + the §12 F15
+  lesson), remediation-plan-v31 §6, session_60 + session_61, this
+  entry. .env.example verified unchanged and tracked. The unit suite
+  re-ran green after every doc edit. Committed to main; pushed via the
+  SSH wrapper with --remote git@github.com:nordeim/retail-pos.git.
+
+Stage Summary:
+- V31 closed the dialog-open a11y coverage audit (ADR-040, the neo-crm
+  session-199 doctrine adopted): the register's other blind spot —
+  Radix dialogs are DOM-absent while closed, so the closed-surface
+  scans never saw their interiors — gained standing registrations (11
+  dialog-open states + the Ajustes view closed surface; the
+  state-gated pair rides an open-shift cycle with state restoration).
+- The live catch: 5 critical button-name violations (three surfaces,
+  one root cause — unassociated Labels over SelectTriggers), cured by
+  the htmlFor/id association idiom (axe-proven, zero-pixel-delta, the
+  label-click-focuses-select interaction superset disclosed). The
+  census pins hold the inventory BY NAME (the D-197a2 form), the
+  scanner contract, and the five pairs.
+- The cycle's own probe lesson: the naive comment-stripper swallows
+  accept="image/*" regions as phantom block comments — the census
+  suite ships the quote-aware stripper; the standing pins verified
+  non-vacuous.
+- The reference is unchanged for the 16th consecutive cycle; the
+  mobile drawer spine re-verified live against the frozen ledger (no
+  Tailwind v4 bug); the citation sweep clean; the V27 title-guard
+  probe 90/90; the advisories posture unchanged (1 documented decline).
+- Gates: 587 unit + 219 e2e green (zero flakes); all counts moved in
+  the same commit (580→587 unit, 43→44 files; 207→219 e2e).
+- Known-open (disclosed): the seven clean authed views' closed-surface
+  registrations (a future cycle's register completion); the Select
+  dropdown panel interiors (the s199 declined list); the deepmerge-ts
+  decline (re-triage clause standing); dependency UPGRADES deliberately
+  not taken; every standing v8–v30 disclosure unchanged.

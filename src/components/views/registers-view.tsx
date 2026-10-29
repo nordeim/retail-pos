@@ -358,9 +358,9 @@ function OpenShiftDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label className="text-slate-200">Cajero/a *</Label>
+            <Label htmlFor="shift-cashier" className="text-slate-200">Cajero/a *</Label>
             <Select value={cashierId || undefined} onValueChange={setCashierId}>
-              <SelectTrigger className="mt-1 w-full bg-[#0d0f1a]" data-testid="shift-cashier-select">
+              <SelectTrigger id="shift-cashier" className="mt-1 w-full bg-[#0d0f1a]" data-testid="shift-cashier-select">
                 <SelectValue placeholder="Seleccionar cajero" />
               </SelectTrigger>
               <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">

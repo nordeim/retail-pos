@@ -8,7 +8,7 @@ description: >
   (security, data integrity, visual parity, hygiene). This SKILL is the
   codebase-verified engineering reference for future agents: architecture,
   contracts, anti-patterns, debugging procedures, and pre-ship gates.
-version: 1.24.0
+version: 1.25.0
 last_updated: "2026-10-29"
 tags:
   - pos
@@ -25,9 +25,35 @@ tags:
 
 > Distilled per `skills/to-distill-project-into-skill` (six-phase process)
 > and `skills/distill-codebase-skill` (the post-remediation reference
-> template), validated against the codebase at the v30 remediation close:
-> **lint 0 · tsc 0 · build ✓ · 580/580 unit · 207/207 e2e** (the v30
-> close: the advisories re-triage — the neo-crm session-198 doctrine
+> template), validated against the codebase at the v31 remediation close:
+> **lint 0 · tsc 0 · build ✓ · 587/587 unit · 219/219 e2e** (the v31
+> close: the dialog-open a11y coverage audit — the neo-crm session-199
+> doctrine adopted: a Radix Dialog's content is ABSENT from the DOM
+> while closed, so every dialog-open state carries its own registration
+> in the a11y smoke. The register held ZERO dialog-open registrations
+> while the app shipped 14; the first live census found **5 critical
+> `button-name` violations** — every Radix `SelectTrigger` renders a
+> `<button>`, and five sat under UNASSOCIATED `<Label>`s (no `htmlFor`
+> — inert for accname): product Categoría + Unidad, shift-open
+> Cajero/a, Ajustes Moneda + Proveedor. The cure: the label-association
+> idiom (`<Label htmlFor="X">` + `<SelectTrigger id="X">` — a button
+> IS a labelable element; axe-proven live pre-adoption; zero-pixel
+> delta — the full visual battery re-run green is the inertness proof).
+> The register: the `scanDialogOpen` helper (visible-wait BEFORE the
+> scan — the L-164c2 vacuous-green cure; Escape close ASSERTED) + 11
+> dialog-open registrations + the Ajustes view closed-surface scan;
+> the state-gated pair (payment + shift-close) rides an open-shift
+> cycle with state restoration. The pins:
+> `tests/a11y-register-census.test.ts` — the inventory BY NAME (the
+> D-197a2 form — a count goes stale the day a registration joins),
+> the helper contract, the five label pairs; MUTATION-PROVEN ×2 (the
+> planted htmlFor removal → exactly 1 RED at the rendered tree — no
+> source pin sees it; the planted title deletion → exactly 1 RED at
+> the inventory pin). Probe lesson: the naive comment-stripper
+> swallows `accept="image/*"` regions as phantom block comments — the
+> census suite ships the QUOTE-AWARE stripper. ADR-040, PAD v2.18.0).
+> The prior close (v30): the advisories re-triage — the neo-crm
+> session-198 doctrine
 > adopted: the manifest-truth family's OTHER half. The repo-included
 > security-and-hardening skill's Always-Do tier ("Run `npm audit` (or
 > equivalent) before every release") had never run here; the first live
@@ -273,8 +299,8 @@ not the ceiling). Core philosophy, in binding order:
 | Data | prisma/@prisma/client ^6.11.1 + SQLite | `DATABASE_URL="file:../db/custom.db"` → `<repo>/db/custom.db` |
 | State | zustand ^5.0.6 | Two stores; no React Context |
 | Validation | zod ^4.6.5 | Strip-mode; raw ZodError maps → 400 |
-| Unit | vitest ^5.0.1 (node env) | 580 tests / 43 files |
-| E2E | @playwright/test ^1.63.0 + chromium | 207 specs; standalone prod server :3100 (child env shell-state-proof) |
+| Unit | vitest ^5.0.1 (node env) | 587 tests / 44 files |
+| E2E | @playwright/test ^1.63.0 + chromium | 219 specs; standalone prod server :3100 (child env shell-state-proof) |
 | Icons | lucide-react ^0.525.0 | |
 | UI primitives | Radix (^1.x per component) via shadcn-style wrappers | `src/components/ui/*` |
 
@@ -304,8 +330,8 @@ bun run db:seed            # owner + 6 categories + 12 products + 2 registers
 bun run dev                # :3000 (tees dev.log; allowedDevOrigins incl. 127.0.0.1)
 bun run lint && bun run typecheck   # the fast gates — ALWAYS before tests
 bun run build              # standalone → .next/standalone/server.js (e2e needs it)
-bun run test               # vitest: 580/580
-bun run test:e2e           # playwright: 207/207 (boots NODE_ENV=production :3100,
+bun run test               # vitest: 587/587
+bun run test:e2e           # playwright: 219/219 (boots NODE_ENV=production :3100,
                            #   its own db/e2e.db force-reset per run)
 ```
 
@@ -687,8 +713,8 @@ IDs.
 bun run lint          # eslint 9 flat config — 0 errors
 bun run typecheck     # tsc --noEmit — strict, noImplicitAny ON
 bun run build         # standalone build compiles + prerenders
-bun run test          # 580/580 vitest
-bun run test:e2e      # 207/207 playwright (production posture)
+bun run test          # 587/587 vitest
+bun run test:e2e      # 219/219 playwright (production posture)
 ```
 
 Verification beyond the gates:
@@ -857,6 +883,29 @@ Verification beyond the gates:
    manager; a dev-toolchain member is a DOCUMENTED decline with a
    review date, never a silent pass and never a mid-rotation
    override that risks the gate-critical CLI.
+
+15. **F15 (v31) — A Radix Dialog's content is absent from the DOM
+   while closed: every dialog-open state needs its own a11y
+   registration, and every Radix SelectTrigger needs its label
+   ASSOCIATED — an unassociated `<Label>` above a trigger is inert
+   for accname.** The closed-surface scans never see dialog
+   interiors (the register held ZERO dialog-open registrations while
+   the app shipped 14 — and the product dialog had carried two
+   critical `button-name` violations through 30 green-gated cycles).
+   The registration form is the shared scanner with the visible-wait
+   BEFORE the axe call (the L-164c2 vacuous-green cure — a scan on a
+   closed surface passes trivially) and the Escape close ASSERTED
+   hidden. The label idiom is the association, never aria-label (ONE
+   name source — the visible label; `<Label htmlFor="X">` +
+   `<SelectTrigger id="X">`, a button IS a labelable element). The
+   register census pins the inventory BY NAME — a count-anchored
+   claim goes stale the day a registration joins. And the source-pin
+   probe trap: the naive comment-stripper regex swallows
+   `accept="image/*"` regions as phantom block comments (from the
+   attribute to the next real close) — source pins then read
+   swallowed source; ship the QUOTE-AWARE stripper (the trap fails
+   loud-false-RED, never false-GREEN — but the confusion costs a
+   diagnosis cycle; it was observed live on the Moneda label).
 
 ## §13 Pitfalls to Avoid (don't do these in this repo)
 

@@ -355,12 +355,13 @@ function ProductDialog({
               />
             </div>
             <div>
-              <Label className="text-slate-200">Categoría</Label>
+              <Label htmlFor="product-category" className="text-slate-200">Categoría</Label>
               <Select
                 value={categoryId || undefined}
                 onValueChange={setCategoryId}
               >
                 <SelectTrigger
+                id="product-category"
                 className="mt-1 w-full"
                 data-testid="product-category-select"
               >
@@ -449,9 +450,9 @@ function ProductDialog({
               />
             </div>
             <div>
-              <Label className="text-slate-200">Unidad</Label>
+              <Label htmlFor="product-unit" className="text-slate-200">Unidad</Label>
               <Select value={unit} onValueChange={setUnit}>
-                <SelectTrigger className="mt-1 w-full" data-testid="product-unit-select">
+                <SelectTrigger id="product-unit" className="mt-1 w-full" data-testid="product-unit-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="border-[#262a36] bg-[#161922] text-[#e7e9ef]">
